@@ -1,58 +1,55 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
 import { TabBar } from '@/components/layout/TabBar'
 import { TJ, TJSpeech } from '@/components/tj/TJ'
 
-const NEARBY_RINKS = [
-  {
-    id: 'newington-ct',
-    name: 'Newington Arena',
-    city: 'Newington', state: 'CT',
-    distance: '2.1 mi',
-    tier: 'trusted' as const,
-    reviewCount: 29,
-    tags: [
-      { label: 'Sharpening', color: 'green' },
-      { label: 'WiFi', color: 'blue' },
-      { label: 'Cold', color: 'yellow' },
-      { label: 'Pro shop', color: 'green' },
-    ],
-  },
-  {
-    id: 'hallenborg-ma',
-    name: 'Hallenborg Ice Rink',
-    city: 'Billerica', state: 'MA',
-    distance: '18 mi',
-    tier: 'emerging' as const,
-    reviewCount: 3,
-    tags: [
-      { label: 'Concessions', color: 'green' },
-      { label: 'Small lot', color: 'yellow' },
-    ],
-  },
-  {
-    id: 'smithfield-ri',
-    name: 'Smithfield Municipal',
-    city: 'Smithfield', state: 'RI',
-    distance: '31 mi',
-    tier: 'single' as const,
-    reviewCount: 1,
-    tags: [
-      { label: 'Great area', color: 'green' },
-      { label: 'LiveBarn', color: 'blue' },
-    ],
-  },
-]
+interface RinkResult {
+  rink_id?: string
+  id?: string
+  rink_name?: string
+  name?: string
+  city: string
+  state: string
+  total_reviews?: number
+  review_count?: number
+  confidence_tier?: string
+}
 
 export default function HomePage() {
   const [query, setQuery] = useState('')
+  const [rinks, setRinks] = useState<RinkResult[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchRinks(query)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  async function fetchRinks(searchQuery: string) {
+    setLoading(true)
+    try {
+      const url = searchQuery
+        ? `/api/rinks/search?q=${encodeURIComponent(searchQuery)}`
+        : `/api/rinks/search`
+      const res = await fetch(url)
+      const data = await res.json()
+      setRinks(data.rinks || [])
+    } catch {
+      setRinks([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar />
+
       <main
         style={{
           flex: 1,
@@ -123,41 +120,68 @@ export default function HomePage() {
             marginBottom: 10,
           }}
         >
-          Nearby rinks
+          {query ? 'Search results' : 'Most reviewed rinks'}
         </div>
 
+        {loading && (
+          <div style={{ textAlign: 'center', padding: 20, color: 'rgba(13,42,74,0.4)', fontSize: 12 }}>
+            Loading rinks...
+          </div>
+        )}
+
+        {!loading && rinks.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 20, color: 'rgba(13,42,74,0.4)', fontSize: 12 }}>
+            No rinks found. Try a different search.
+          </div>
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16 }}>
-          {NEARBY_RINKS.map(rink => (
-            <RinkCard key={rink.id} rink={rink} />
+          {rinks.map(rink => (
+            <RinkCard key={rink.rink_id || rink.id} rink={rink} />
           ))}
         </div>
       </main>
+
       <TabBar />
     </div>
   )
 }
 
-function RinkCard({ rink }: { rink: typeof NEARBY_RINKS[0] }) {
+function RinkCard({ rink }: { rink: RinkResult }) {
+  const id = rink.rink_id || rink.id
+  const name = rink.rink_name || rink.name
+  const reviewCount = rink.total_reviews ?? rink.review_count ?? 0
+  const tier = (rink.confidence_tier || 'NO_DATA').toLowerCase()
+
+  const tierLabels: Record<string, string> = {
+    trusted: 'Trusted',
+    established: 'Established',
+    emerging: 'Emerging',
+    single_voice: '1 reviewer',
+    no_data: 'No reviews',
+  }
+
+  const tierClass: Record<string, string> = {
+    trusted: 'trusted',
+    established: 'trusted',
+    emerging: 'emerging',
+    single_voice: 'single',
+    no_data: 'nodata',
+  }
+
   return (
-    <Link href={`/rink/${rink.id}`} style={{ textDecoration: 'none' }}>
+    <Link href={`/rink/${id}`} style={{ textDecoration: 'none' }}>
       <div className="clay-card" style={{ padding: '10px 12px', cursor: 'pointer' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)' }}>
-            {rink.name}
+            {name}
           </div>
-          <span className={`tier-chip tier-chip--${rink.tier}`}>
-            {rink.tier === 'trusted' ? 'Trusted' : rink.tier === 'emerging' ? 'Emerging' : '1 review'}
+          <span className={`tier-chip tier-chip--${tierClass[tier] || 'nodata'}`}>
+            {tierLabels[tier] || 'No reviews'}
           </span>
         </div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(13,42,74,0.5)', marginBottom: 8 }}>
-          {rink.city}, {rink.state} · {rink.distance}
-        </div>
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-          {rink.tags.map(tag => (
-            <span key={tag.label} className={`tag-pill tag-pill--${tag.color}`}>
-              {tag.label}
-            </span>
-          ))}
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(13,42,74,0.5)' }}>
+          {rink.city}, {rink.state} · {reviewCount} reviews
         </div>
       </div>
     </Link>
