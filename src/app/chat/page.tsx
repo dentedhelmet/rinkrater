@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
@@ -20,7 +20,7 @@ const QUICK_CHIPS = [
   'Skate sharpening cost?',
 ]
 
-export default function ChatPage() {
+function ChatPageContent() {
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
 
@@ -211,5 +211,12 @@ export default function ChatPage() {
         </button>
       </div>
     </div>
+  )
+}
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 20, textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>Loading...</div>}>
+      <ChatPageContent />
+    </Suspense>
   )
 }
