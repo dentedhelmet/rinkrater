@@ -106,7 +106,7 @@ export default function HomePage() {
                 type="search"
                 placeholder="Search for a rink, city, or state..."
                 value={query}
-                onChange={function(e) { setQuery(e.target.value) }}
+                onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
                 style={{
                   flex: 1,
                   border: 'none',
