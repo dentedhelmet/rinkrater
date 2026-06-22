@@ -38,3 +38,7 @@ yarn-error.log*
 next-env.d.ts
 # raw data files - large, not needed in git (already ingested into Supabase)
 /data/
+# raw graphic asset working folders - not needed in git
+/RR Arenas/
+/RR Category Icons/
+/RR Character Profile Images/

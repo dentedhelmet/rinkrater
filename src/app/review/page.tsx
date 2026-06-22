@@ -33,6 +33,27 @@ export default function ReviewPage() {
   const [done, setDone] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
 
+  function handleVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert("Voice input isn't supported in this browser. Try typing instead!")
+      return
+    }
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognitionAPI()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInput(transcript)
+    }
+    recognition.onerror = () => {
+      alert("Didn't catch that — feel free to type instead!")
+    }
+    recognition.start()
+  }
+
   async function handleSend() {
     if (!input.trim() || loading) return
     const text = input.trim()
@@ -199,43 +220,53 @@ export default function ReviewPage() {
         )}
       </div>
 
-      <div style={{ padding: '9px 12px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
+      <div style={{ padding: '9px 12px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            placeholder="Type your review here..."
+            style={{
+              flex: 1, background: '#fff',
+              border: 'var(--rr-outline)', borderRadius: 999,
+              padding: '10px 14px', fontSize: 13,
+              fontFamily: 'var(--font-body)', color: 'var(--rr-navy)', outline: 'none',
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+            aria-label="Send"
+            style={{
+              width: 38, height: 38, borderRadius: '50%',
+              background: 'var(--rr-navy)', border: 'none',
+              cursor: 'pointer', color: '#fff', fontSize: 17,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, opacity: loading || !input.trim() ? 0.5 : 1,
+            }}
+          >→</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+          <div style={{ flex: 1, height: 1, background: 'rgba(13,42,74,0.12)' }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(13,42,74,0.4)', fontFamily: 'var(--font-display)' }}>OR</span>
+          <div style={{ flex: 1, height: 1, background: 'rgba(13,42,74,0.12)' }} />
+        </div>
         <button
-          aria-label="Voice input"
+          onClick={handleVoiceInput}
+          aria-label="Speak your review instead"
           style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'var(--rr-red)', border: 'var(--rr-outline-sm)',
-            boxShadow: 'var(--rr-shadow-sm)', cursor: 'pointer',
-            flexShrink: 0, color: '#fff', fontSize: 15,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '100%', marginTop: 8,
+            background: 'var(--rr-red)', border: 'var(--rr-outline)',
+            borderRadius: 999, padding: '10px 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            cursor: 'pointer', color: '#fff',
+            fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13,
+            boxShadow: 'var(--rr-shadow-sm)',
           }}
         >
-          🎤
+          🎤 Speak your review instead
         </button>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Tell me about the rink..."
-          style={{
-            flex: 1, background: '#fff',
-            border: 'var(--rr-outline)', borderRadius: 999,
-            padding: '8px 13px', fontSize: 12,
-            fontFamily: 'var(--font-body)', color: 'var(--rr-navy)', outline: 'none',
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={loading || !input.trim()}
-          aria-label="Send"
-          style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'var(--rr-navy)', border: 'none',
-            cursor: 'pointer', color: '#fff', fontSize: 16,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, opacity: loading || !input.trim() ? 0.5 : 1,
-          }}
-        >→</button>
       </div>
     </div>
   )
