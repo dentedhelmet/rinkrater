@@ -65,20 +65,12 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+    <div className="page-shell">
+      <div className="page-topbar-fixed">
         <TopBar />
       </div>
 
-      <main
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          background: '#EEF4FA',
-          padding: '12px 12px 0',
-        }}
-        className="scroll-y"
-      >
+      <main className="page-scroll-area scroll-y" style={{ background: '#EEF4FA', padding: '12px 12px 0' }}>
         <div className="home-grid">
 
           <div className="home-main-col">
@@ -274,11 +266,36 @@ export default function HomePage() {
         </div>
       </main>
 
-      <div style={{ position: 'sticky', bottom: 0, zIndex: 100 }}>
+      <div className="page-tabbar-fixed">
         <TabBar />
       </div>
 
       <style jsx>{`
+        .page-shell {
+          display: flex;
+          flex-direction: column;
+          min-height: 100dvh;
+        }
+        .page-topbar-fixed {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 100;
+        }
+        .page-tabbar-fixed {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 100;
+        }
+        .page-scroll-area {
+          flex: 1;
+          overflow-y: auto;
+          padding-top: 75px;
+          padding-bottom: 70px;
+        }
         .home-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -297,6 +314,13 @@ export default function HomePage() {
           }
           .rink-grid {
             grid-template-columns: 1fr 1fr;
+          }
+          .page-topbar-fixed,
+          .page-tabbar-fixed {
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1100px;
           }
         }
       `}</style>

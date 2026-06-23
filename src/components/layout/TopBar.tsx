@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface TopBarProps {
   title?: string
@@ -10,13 +11,20 @@ interface TopBarProps {
   variant?: 'red' | 'navy' | 'transparent'
 }
 
-export function TopBar({
-  title,
-  showBack = false,
-  backHref = '/',
-  rightAction,
-  variant = 'red',
-}: TopBarProps) {
+const NAV_LINKS = [
+  { label: 'About', href: '/about' },
+  { label: 'Partners', href: '/partners' },
+  { label: 'Shop', href: '/shop' },
+]
+
+export function TopBar(props: TopBarProps) {
+  const title = props.title
+  const showBack = props.showBack || false
+  const backHref = props.backHref || '/'
+  const rightAction = props.rightAction
+  const variant = props.variant || 'red'
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const bg = variant === 'red' ? 'var(--rr-red)' : variant === 'navy' ? 'var(--rr-navy)' : 'transparent'
   const color = variant === 'transparent' ? 'var(--rr-navy)' : '#fff'
 
@@ -29,8 +37,8 @@ export function TopBar({
         alignItems: 'center',
         gap: 10,
         borderBottom: variant !== 'transparent' ? 'var(--rr-outline)' : 'none',
-        zIndex: 'var(--z-header)',
-        flexShrink: 0,
+        zIndex: 100,
+        position: 'relative',
       }}
     >
       {showBack && (
@@ -42,37 +50,148 @@ export function TopBar({
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color, fontSize: 18, textDecoration: 'none',
+            color: color, fontSize: 18, textDecoration: 'none',
             flexShrink: 0,
           }}
         >
-          ‹
+          {'\u2039'}
         </Link>
       )}
 
       {!showBack && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
           <LogoMeter />
           <div>
-            <div style={{ color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16 }}>
+            <div style={{ color: color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16 }}>
               Rink Rater
             </div>
             <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase' }}>
               Rate where you skate
             </div>
           </div>
-        </div>
+        </Link>
       )}
 
       {title && showBack && (
-        <span style={{ color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, flex: 1 }}>
+        <span style={{ color: color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, flex: 1 }}>
           {title}
         </span>
       )}
 
-      {rightAction && (
-        <div style={{ marginLeft: 'auto' }}>{rightAction}</div>
+      {!showBack && (
+        <nav className="topbar-desktop-nav" style={{ marginLeft: 'auto', display: 'none', alignItems: 'center', gap: 24 }}>
+          {NAV_LINKS.map(function(link) {
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+          <Link
+            href="/signin"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'var(--rr-warm)',
+              color: 'var(--rr-navy)',
+              fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13,
+              padding: '8px 16px',
+              borderRadius: 999,
+              textDecoration: 'none',
+              border: '2px solid var(--rr-navy)',
+            }}
+          >
+            <span aria-hidden="true">{'\u{1F464}'}</span> Sign In
+          </Link>
+        </nav>
       )}
+
+      {!showBack && (
+        <button
+          className="topbar-hamburger"
+          onClick={function() { setMenuOpen(!menuOpen) }}
+          aria-label="Open menu"
+          style={{
+            marginLeft: 'auto',
+            background: 'rgba(255,255,255,0.18)',
+            border: 'none',
+            borderRadius: 8,
+            width: 36, height: 36,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#fff',
+            fontSize: 18,
+          }}
+        >
+          {menuOpen ? '\u2715' : '\u2630'}
+        </button>
+      )}
+
+      {rightAction && (
+        <div style={{ marginLeft: showBack ? 'auto' : 0 }}>{rightAction}</div>
+      )}
+
+      {menuOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: 'var(--rr-navy)',
+            borderBottom: 'var(--rr-outline)',
+            padding: '12px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            zIndex: 99,
+          }}
+        >
+          {NAV_LINKS.map(function(link) {
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={function() { setMenuOpen(false) }}
+                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+          <Link
+            href="/signin"
+            onClick={function() { setMenuOpen(false) }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center',
+              background: 'var(--rr-warm)',
+              color: 'var(--rr-navy)',
+              fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13,
+              padding: '10px 16px',
+              borderRadius: 999,
+              textDecoration: 'none',
+              border: '2px solid var(--rr-navy)',
+              marginTop: 4,
+            }}
+          >
+            <span aria-hidden="true">{'\u{1F464}'}</span> Sign In
+          </Link>
+        </div>
+      )}
+
+      <style jsx>{`
+        @media (min-width: 768px) {
+          .topbar-desktop-nav {
+            display: flex !important;
+          }
+          .topbar-hamburger {
+            display: none !important;
+          }
+        }
+      `}</style>
     </header>
   )
 }
