@@ -70,7 +70,7 @@ export default function HomePage() {
         <TopBar />
       </div>
 
-      <main className="page-scroll-area scroll-y" style={{ background: '#EEF4FA', padding: '12px 12px 0' }}>
+      <main className="page-scroll-area scroll-y" style={{ background: '#EEF4FA' }}>
         <div className="home-grid">
 
           <div className="home-main-col">
@@ -293,8 +293,7 @@ export default function HomePage() {
         .page-scroll-area {
           flex: 1;
           overflow-y: auto;
-          padding-top: 75px;
-          padding-bottom: 70px;
+          padding: 75px 12px 70px;
         }
         .home-grid {
           display: grid;
