@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
+import { PageShell } from '@/components/layout/PageShell'
 import { TabBar } from '@/components/layout/TabBar'
 import { TJ, TJSpeech } from '@/components/tj/TJ'
 
@@ -65,13 +66,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="page-shell">
-      <div className="page-topbar-fixed">
-        <TopBar />
-      </div>
-
-      <main className="page-scroll-area scroll-y" style={{ background: '#EEF4FA' }}>
-        <div className="home-grid">
+    <PageShell topBar={<TopBar />} tabBar={<TabBar />}>
+      <div className="home-grid" style={{ background: '#EEF4FA' }}>
 
           <div className="home-main-col">
             <div style={{ marginBottom: 14 }}>
@@ -259,71 +255,33 @@ export default function HomePage() {
               </div>
               <div style={{ fontSize: 11, color: 'rgba(13,42,74,0.4)', marginTop: 6 }}>
                 Coming soon
+                </div>
               </div>
             </div>
-          </div>
-
         </div>
-      </main>
-
-      <div className="page-tabbar-fixed">
-        <TabBar />
-      </div>
-
-      <style jsx>{`
-        .page-shell {
-          display: flex;
-          flex-direction: column;
-          min-height: 100dvh;
-        }
-        .page-topbar-fixed {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 100;
-        }
-        .page-tabbar-fixed {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          z-index: 100;
-        }
-        .page-scroll-area {
-          flex: 1;
-          overflow-y: auto;
-          padding: 75px 12px 70px;
-        }
-        .home-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-          padding-bottom: 16px;
-        }
-        .rink-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 8px;
-        }
-        @media (min-width: 768px) {
+        <style jsx>{`
           .home-grid {
-            grid-template-columns: 2fr 1fr;
-            align-items: start;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding-bottom: 16px;
           }
           .rink-grid {
-            grid-template-columns: 1fr 1fr;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
           }
-          .page-topbar-fixed,
-          .page-tabbar-fixed {
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 1100px;
+          @media (min-width: 768px) {
+            .home-grid {
+              grid-template-columns: 2fr 1fr;
+              align-items: start;
+            }
+            .rink-grid {
+              grid-template-columns: 1fr 1fr;
+            }
           }
-        }
-      `}</style>
-    </div>
+        `}</style>
+      </PageShell>
   )
 }
 
