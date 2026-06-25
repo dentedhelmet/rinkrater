@@ -67,7 +67,7 @@ export default function HomePage() {
 
   return (
     <PageShell topBar={<TopBar />} tabBar={<TabBar />}>
-      <div className="home-grid" style={{ background: '#EEF4FA' }}>
+      <div className="home-grid" >
 
         <div className="home-main-col">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>

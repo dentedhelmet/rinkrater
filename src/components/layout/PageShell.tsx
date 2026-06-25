@@ -50,6 +50,10 @@ export function PageShell(props: PageShellProps) {
           flex: 1;
           overflow-y: auto;
           padding: 115px 12px 70px;
+          background-image: url('/background/rr-background.jpg');
+          background-size: cover;
+          background-position: center;
+          background-attachment: fixed;
         }
         .page-scroll-area.no-tabbar {
           padding-bottom: 12px;
