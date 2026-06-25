@@ -49,7 +49,7 @@ export function PageShell(props: PageShellProps) {
         .page-scroll-area {
           flex: 1;
           overflow-y: auto;
-          padding: 75px 12px 70px;
+          padding: 115px 12px 70px;
         }
         .page-scroll-area.no-tabbar {
           padding-bottom: 12px;

@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
-
 const RIVE_READY = false
+const USE_REAL_IMAGE = true
 
 export type TJState =
   | 'idle'
@@ -17,20 +16,33 @@ interface TJProps {
   state?: TJState
   size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
+  crop?: 'full' | 'face'
 }
 
 const SIZE_MAP = {
   sm: 44,
   md: 52,
   lg: 80,
-  xl: 110,
+  xl: 160,
 }
 
-export function TJ({ state = 'idle', size = 'md', className = '' }: TJProps) {
+export function TJ(props: TJProps) {
+  const state = props.state || 'idle'
+  const size = props.size || 'md'
+  const className = props.className || ''
+  const crop = props.crop || 'full'
   const px = SIZE_MAP[size]
 
-  if (RIVE_READY) {
-    return <RivePlayer state={state} size={px} className={className} />
+  if (USE_REAL_IMAGE) {
+    return (
+      <TJImage
+        width={px}
+        height={Math.round(px * 1.25)}
+        crop={crop}
+        className={className}
+        state={state}
+      />
+    )
   }
 
   return (
@@ -43,8 +55,41 @@ export function TJ({ state = 'idle', size = 'md', className = '' }: TJProps) {
   )
 }
 
-function RivePlayer({ state, size, className }: { state: TJState; size: number; className: string }) {
-  return <TJStatic state={state} width={size} height={Math.round(size * 1.25)} className={className} />
+function TJImage(props: {
+  width: number
+  height: number
+  crop: 'full' | 'face'
+  className: string
+  state: TJState
+}) {
+  const src = props.crop === 'face' ? '/tj/tj-face.png' : '/tj/tj-fullpose.png'
+
+  return (
+    <div
+      className={props.className}
+      style={{
+        width: props.width,
+        height: props.height,
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+        borderRadius: props.crop === 'face' ? '50%' : 0,
+      }}
+      aria-label={'TJ mascot - ' + props.state}
+      role="img"
+    >
+      <img
+        src={src}
+        alt="TJ mascot"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: props.crop === 'face' ? 'cover' : 'contain',
+          objectPosition: 'center',
+        }}
+      />
+    </div>
+  )
 }
 
 function TJStatic({
@@ -70,7 +115,7 @@ function TJStatic({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label={`TJ mascot — ${state}`}
+      aria-label={'TJ mascot - ' + state}
       role="img"
     >
       <ellipse cx="32" cy="76" rx="18" ry="4" fill={bodyColor} opacity="0.15" />
@@ -96,8 +141,8 @@ function TJStatic({
       <path d={mouthPath} stroke="#C0392B" strokeWidth="2" strokeLinecap="round" fill="none" />
       <rect x="21" y="70" width="9"  height="9"  rx="2.5" fill="#1a1a1a" />
       <rect x="34" y="70" width="9"  height="9"  rx="2.5" fill="#1a1a1a" />
-      <rect x="17" y="77" width="16" height="4"  rx="2"   fill="#C0C0C0" />
-      <rect x="31" y="77" width="16" height="4"  rx="2"   fill="#C0C0C0" />
+      <rect x="17" y="77" width="16" height="4"  rx="2"  fill="#C0C0C0" />
+      <rect x="31" y="77" width="16" height="4"  rx="2"  fill="#C0C0C0" />
       {state === 'celebrate' && <CelebrationElements />}
       {state === 'nudge'     && <NudgeArm />}
       {state === 'cold'      && <ColdLines />}
@@ -188,13 +233,17 @@ interface TJSpeechProps {
   className?: string
 }
 
-export function TJSpeech({ children, state = 'idle', size = 'md', className = '' }: TJSpeechProps) {
+export function TJSpeech(props: TJSpeechProps) {
+  const state = props.state || 'idle'
+  const size = props.size || 'md'
+  const className = props.className || ''
+
   return (
     <div
       style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}
       className={className}
     >
-      <TJ state={state} size={size === 'lg' ? 'md' : 'sm'} />
+      <TJ state={state} size={size === 'lg' ? 'md' : 'sm'} crop="face" />
       <div
         style={{
           background: 'var(--rr-warm)',
@@ -209,7 +258,7 @@ export function TJSpeech({ children, state = 'idle', size = 'md', className = ''
           flex: 1,
         }}
       >
-        {children}
+        {props.children}
       </div>
     </div>
   )

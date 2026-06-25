@@ -49,14 +49,13 @@ export function TabBar() {
             borderRadius: '50%',
             background: 'var(--rr-red)',
             border: 'var(--rr-outline)',
-            boxShadow: 'var(--rr-shadow)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
           }}
         >
-          <TJ state="idle" size="sm" />
+          <TJ state="idle" size="sm" crop="face" />
         </div>
       </Link>
 

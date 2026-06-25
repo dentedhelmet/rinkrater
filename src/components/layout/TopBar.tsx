@@ -57,18 +57,9 @@ export function TopBar(props: TopBarProps) {
           {'\u2039'}
         </Link>
       )}
-
       {!showBack && (
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <LogoMeter />
-          <div>
-            <div style={{ color: color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16 }}>
-              Rink Rater
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase' }}>
-              Rate where you skate
-            </div>
-          </div>
         </Link>
       )}
 
@@ -198,13 +189,10 @@ export function TopBar(props: TopBarProps) {
 
 function LogoMeter() {
   return (
-    <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
-      <path d="M2 15A11 11 0 0 1 28 15" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3.5" strokeLinecap="round"/>
-      <path d="M2 15A11 11 0 0 1 9 5"   fill="none" stroke="#E24B4A" strokeWidth="3.5" strokeLinecap="round"/>
-      <path d="M9 5A11 11 0 0 1 21 5"   fill="none" stroke="#FFD23F" strokeWidth="3.5" strokeLinecap="round"/>
-      <path d="M21 5A11 11 0 0 1 28 15" fill="none" stroke="#3BB273" strokeWidth="3.5" strokeLinecap="round"/>
-      <line x1="15" y1="15" x2="9" y2="7" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="15" cy="15" r="2" fill="#fff"/>
-    </svg>
+    <img
+      src="/logo/rinkrater-logo.png"
+      alt="Rink Rater logo"
+      style={{ width: 280, height: 80, objectFit: 'contain' }}
+    />
   )
 }
