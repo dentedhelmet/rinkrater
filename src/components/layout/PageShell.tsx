@@ -55,6 +55,11 @@ export function PageShell(props: PageShellProps) {
           background-position: center;
           background-attachment: fixed;
         }
+        @media (max-width: 767px) {
+          .page-scroll-area {
+            background-attachment: scroll;
+          }
+        }
         .page-scroll-area.no-tabbar {
           padding-bottom: 12px;
         }

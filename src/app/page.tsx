@@ -20,7 +20,7 @@ interface RinkResult {
 }
 
 const TRENDING_QUESTIONS = [
-  'Is Newington cold?',
+  'Are there Concessions?',
   'Do they sharpen skates?',
   'Best seating?',
 ]
@@ -68,10 +68,10 @@ export default function HomePage() {
   return (
     <PageShell topBar={<TopBar />} tabBar={<TabBar />}>
       <div className="home-grid" >
-
         <div className="home-main-col">
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
-            <TJ state="idle" size="xl" crop="full" />
+        <div className="tj-intro-row">
+          <TJ state="idle" size="xl" crop="full" />
+          <div className="tj-bubble-col">
             <div
               style={{
                 background: 'var(--rr-warm)',
@@ -82,60 +82,59 @@ export default function HomePage() {
                 lineHeight: 1.55,
                 color: 'var(--rr-navy)',
                 boxShadow: 'var(--rr-shadow)',
-                maxWidth: 220,
-                flex: 1,
               }}
             >
               Ask me about any rink in North America - or search by name!
             </div>
           </div>
-
-          <div
+        </div>
+        <div
+          style={{
+            background: 'var(--rr-warm)',
+            border: 'var(--rr-outline)',
+            borderRadius: 'var(--rr-radius)',
+            boxShadow: 'var(--rr-shadow)',
+            padding: '10px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          <span style={{ fontSize: 18, color: 'rgba(13,42,74,0.35)' }} aria-hidden="true">{'\u2315'}</span>
+          <input
+            type="search"
+            placeholder="Search for a rink, city, or state..."
+            value={query}
+            onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
             style={{
-              background: 'var(--rr-warm)',
-              border: 'var(--rr-outline)',
-              borderRadius: 'var(--rr-radius)',
-              boxShadow: 'var(--rr-shadow)',
-              padding: '10px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 14,
+              flex: 1,
+              border: 'none',
+              fontSize: 13,
+              fontFamily: 'var(--font-body)',
+              color: 'var(--rr-navy)',
+              outline: 'none',
+              background: 'transparent',
+            }}
+            aria-label="Search for a rink"
+          />
+          <button
+            aria-label="Voice search"
+            style={{
+              width: 32, height: 32,
+              borderRadius: '50%',
+              background: 'var(--rr-red)',
+              border: 'var(--rr-outline-sm)',
+              boxShadow: 'var(--rr-shadow-sm)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              color: '#fff', fontSize: 15,
             }}
           >
-            <span style={{ fontSize: 18, color: 'rgba(13,42,74,0.35)' }} aria-hidden="true">{'\u2315'}</span>
-            <input
-              type="search"
-              placeholder="Search for a rink, city, or state..."
-              value={query}
-              onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
-              style={{
-                flex: 1,
-                border: 'none',
-                fontSize: 13,
-                fontFamily: 'var(--font-body)',
-                color: 'var(--rr-navy)',
-                outline: 'none',
-                background: 'transparent',
-              }}
-              aria-label="Search for a rink"
-            />
-            <button
-              aria-label="Voice search"
-              style={{
-                width: 32, height: 32,
-                borderRadius: '50%',
-                background: 'var(--rr-red)',
-                border: 'var(--rr-outline-sm)',
-                boxShadow: 'var(--rr-shadow-sm)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0,
-                color: '#fff', fontSize: 15,
-              }}
-            >
-              {'\u{1F3A4}'}
-            </button>
-          </div>
+            {'\u{1F3A4}'}
+          </button>
+        </div>
+
 
           <button
             onClick={function() { setShowRinkList(!showRinkList) }}
@@ -281,6 +280,25 @@ export default function HomePage() {
           grid-template-columns: 1fr;
           gap: 14px;
           padding-bottom: 16px;
+        }
+        .tj-intro-row {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        .tj-bubble-col {
+          width: 100%;
+        }
+        @media (min-width: 480px) {
+          .tj-intro-row {
+            flex-direction: row;
+            align-items: flex-start;
+          }
+          .tj-bubble-col {
+            width: 260px;
+          }
         }
         .rink-grid {
           display: grid;
