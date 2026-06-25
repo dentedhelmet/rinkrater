@@ -244,7 +244,7 @@ export default function RinkProfilePage() {
                           {r.source === 'ftloh' ? 'FTLOH' : 'Rink Rater'}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.75)', lineHeight: 1.5 }}>
+                      <div style={{ fontSize: 14, color: 'rgba(13,42,74,0.75)', lineHeight: 1.5 }}>
                         {r.comment}
                       </div>
                     </div>

@@ -112,7 +112,7 @@ function ChatPageContent() {
                 <div style={{
                   background: 'var(--rr-red)', color: '#fff',
                   border: 'var(--rr-outline)', borderRadius: '12px 12px 2px 12px',
-                  padding: '9px 13px', fontSize: 12, lineHeight: 1.55,
+                  padding: '9px 13px', fontSize: 14, lineHeight: 1.55,
                   boxShadow: 'var(--rr-shadow)',
                 }}>
                   {msg.text}
@@ -125,7 +125,7 @@ function ChatPageContent() {
                   <div style={{
                     background: 'var(--rr-warm)', border: 'var(--rr-outline)',
                     borderRadius: '12px 12px 12px 2px', padding: '9px 13px',
-                    fontSize: 12, lineHeight: 1.6, color: 'var(--rr-navy)',
+                    fontSize: 14, lineHeight: 1.6, color: 'var(--rr-navy)',
                     boxShadow: 'var(--rr-shadow)', whiteSpace: 'pre-wrap',
                   }}>
                     {msg.text}
