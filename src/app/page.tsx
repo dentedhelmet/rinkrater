@@ -6,6 +6,8 @@ import { TopBar } from '@/components/layout/TopBar'
 import { PageShell } from '@/components/layout/PageShell'
 import { TabBar } from '@/components/layout/TabBar'
 import { TJ, TJSpeech } from '@/components/tj/TJ'
+import { RotatingQuestions } from '@/components/home/RotatingQuestions'
+import { FeaturedPartners } from '@/components/home/FeaturedPartners'
 
 interface RinkResult {
   rink_id?: string
@@ -21,8 +23,9 @@ interface RinkResult {
 
 const TRENDING_QUESTIONS = [
   'Are there Concessions?',
-  'Do they sharpen skates?',
-  'Best seating?',
+  'Is there Skate Sharpening?',
+  "Are there Girl's Locker Rooms?",
+  'How cold is the rink?',
 ]
 
 const THUMBNAIL_COUNT = 14
@@ -184,42 +187,13 @@ export default function HomePage() {
         </div>
 
         <div className="home-side-col">
+          <FeaturedPartners />
           <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>{'\u{1F525}'}</span> Trending Questions
             </div>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
-              {TRENDING_QUESTIONS.map(function(q, i) {
-                return (
-                  <li key={i} style={{ fontSize: 12, color: 'var(--rr-navy)', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                    <span style={{ color: 'var(--rr-red)' }}>{'\u2022'}</span>
-                    <span>{q}</span>
-                  </li>
-                )
-              })}
-            </ul>
-            <button
-              style={{
-                width: '100%',
-                background: 'var(--rr-ice)',
-                border: 'var(--rr-outline-sm)',
-                borderRadius: 999,
-                padding: '8px 12px',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
-                fontSize: 11,
-                color: 'var(--rr-navy)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 4,
-              }}
-            >
-              More trending questions {'\u2192'}
-            </button>
+            <RotatingQuestions questions={TRENDING_QUESTIONS} />
           </div>
-
           <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10 }}>
               Find a Rink Near You
@@ -260,15 +234,6 @@ export default function HomePage() {
             >
               View map
             </button>
-          </div>
-
-          <div className="clay-card" style={{ padding: '14px', marginBottom: 14, opacity: 0.5 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)' }}>
-              Featured Partners
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(13,42,74,0.4)', marginTop: 6 }}>
-              Coming soon
-            </div>
           </div>
         </div>
 
