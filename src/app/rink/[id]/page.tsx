@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { TabBar } from '@/components/layout/TabBar'
 import { TJ } from '@/components/tj/TJ'
 import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
+import { CategorySheet } from '@/components/rink/CategorySheet'
 
 interface RinkData {
   id: string
@@ -33,6 +34,7 @@ export default function RinkProfilePage() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [recentReviews, setRecentReviews] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
@@ -209,7 +211,7 @@ export default function RinkProfilePage() {
                 var cat = entry[0]
                 var count = entry[1]
                 return (
-                  <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px' }}>
+                  <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px', cursor: 'pointer' }} onClick={function() { setSelectedCategory(cat) }}>
                     <div className="label" style={{ marginBottom: 4, color: 'rgba(13,42,74,0.5)' }}>
                       {cat}
                     </div>
@@ -231,6 +233,11 @@ export default function RinkProfilePage() {
       </main>
 
       <TabBar />
+      <CategorySheet
+        rinkId={rink.id}
+        category={selectedCategory}
+        onClose={function() { setSelectedCategory(null) }}
+      />
 
       {showContactModal && (
         <div
