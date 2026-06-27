@@ -35,6 +35,7 @@ export default function RinkProfilePage() {
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [recentReviews, setRecentReviews] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [showCategories, setShowCategories] = useState(false)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
@@ -195,11 +196,30 @@ export default function RinkProfilePage() {
           </Link>
           <LatestReviewsCarousel reviews={recentReviews} />
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
-            Categories with reviews
-          </div>
-
-          {categories.length === 0 ? (
+          <button
+            onClick={function() { setShowCategories(!showCategories) }}
+            style={{
+              width: '100%',
+              background: 'var(--rr-navy)',
+              border: 'var(--rr-outline)',
+              borderRadius: 'var(--rr-radius)',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              marginBottom: showCategories ? 10 : 12,
+            }}
+          >
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16, color: '#fff' }}>
+              Categories with reviews
+            </span>
+            <span style={{ fontSize: 16, color: '#fff', transform: showCategories ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+              {'\u25BC'}
+            </span>
+          </button>
+          {showCategories && (
+            categories.length === 0 ? (
             <div className="clay-card" style={{ padding: '14px', textAlign: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
                 No reviews yet for this rink. Be the first!
@@ -222,6 +242,7 @@ export default function RinkProfilePage() {
                 )
               })}
             </div>
+          )
           )}
 
           <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
