@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
 import { TabBar } from '@/components/layout/TabBar'
 import { TJ } from '@/components/tj/TJ'
+import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 
 interface RinkData {
   id: string
@@ -177,6 +178,20 @@ export default function RinkProfilePage() {
           </Link>
         </div>
 
+<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
+            <div style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <TJ state="idle" size="sm" />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 2 }}>
+                  Ask TJ anything about this rink
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(13,42,74,0.5)' }}>
+                  Is there a girls locker room? How cold is it?
+                </div>
+              </div>
+            </div>
+          </Link>
+          <LatestReviewsCarousel reviews={recentReviews} />
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
             Categories with reviews
@@ -207,52 +222,11 @@ export default function RinkProfilePage() {
             </div>
           )}
 
-          <Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
-            <div style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <TJ state="idle" size="sm" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 2 }}>
-                  Ask TJ anything about this rink
-                </div>
-                <div style={{ fontSize: 10, color: 'rgba(13,42,74,0.5)' }}>
-                  Is there a girls locker room? How cold is it?
-                </div>
-              </div>
-            </div>
-          </Link>
-
           <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
             <div className="clay-btn clay-btn-primary" style={{ width: '100%', padding: '13px', borderRadius: 'var(--rr-radius)', fontSize: 14 }}>
               Add your review - plus 125 XP
             </div>
           </Link>
-
-          {recentReviews.length > 0 && (
-            <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
-                Recent reviews
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 16 }}>
-                {recentReviews.map(function(r, i) {
-                  return (
-                    <div key={i} className="clay-card-sm" style={{ padding: '10px 12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11, color: 'var(--rr-navy)' }}>
-                          {r.category}
-                        </span>
-                        <span style={{ fontSize: 10, color: 'rgba(13,42,74,0.4)' }}>
-                          {r.source === 'ftloh' ? 'FTLOH' : 'Rink Rater'}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: 14, color: 'rgba(13,42,74,0.75)', lineHeight: 1.5 }}>
-                        {r.comment}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
