@@ -172,8 +172,29 @@ export default function HomePage() {
               )}
 
               {!loading && rinks.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 20, color: 'rgba(13,42,74,0.4)', fontSize: 12 }}>
-                  No rinks found. Try a different search.
+                <div style={{ textAlign: 'center', padding: 20 }}>
+                  <div style={{ color: 'rgba(13,42,74,0.5)', fontSize: 12, marginBottom: 10 }}>
+                    No rinks found for "{query}".
+                  </div>
+                  <a
+                    href={'mailto:senan@rinkrater.com?subject=Add a Rink&body=Rink name: ' + encodeURIComponent(query) + '%0ACity, State: %0AAddress (optional): %0AAnything else: '}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'var(--rr-ice)',
+                      border: 'var(--rr-outline-sm)',
+                      borderRadius: 999,
+                      padding: '8px 14px',
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 800,
+                      fontSize: 11,
+                      color: 'var(--rr-navy)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Can't find your rink? Let us know {'\u2192'}
+                  </a>
                 </div>
               )}
 
