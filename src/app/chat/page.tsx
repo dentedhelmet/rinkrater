@@ -121,19 +121,21 @@ function ChatPageContent() {
             disabled={sharing}
             aria-label="Share this conversation"
             style={{
-              width: 30, height: 30,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.18)',
+              width: 36, height: 36,
+              background: 'transparent',
               border: 'none',
               cursor: sharing ? 'default' : 'pointer',
-              color: '#fff',
-              fontSize: 16,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              opacity: sharing ? 0.5 : 1,
             }}
           >
-            {String.fromCharCode(8599)}
+            <img
+              src="/icons/rr_clay_share_chat_button_red.png"
+              alt="Share conversation"
+              style={{ width: 36, height: 36, objectFit: 'contain' }}
+            />
           </button>
         }
       />

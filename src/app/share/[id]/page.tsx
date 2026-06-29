@@ -67,12 +67,11 @@ export default function SharePage() {
   return (
     <div style={{ minHeight: '100dvh', background: '#EEF4FA' }}>
       <div style={{ background: 'var(--rr-red)', padding: '14px 16px', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18, color: '#fff' }}>
-          Rink Rater
-        </div>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-          Rate where you skate
-        </div>
+        <img
+          src="/logo/rinkrater-logo.png"
+          alt="Rink Rater"
+          style={{ width: 160, height: 56, objectFit: 'contain' }}
+        />
       </div>
 
       <div style={{ background: 'var(--rr-navy)', padding: '16px 16px 14px' }}>
