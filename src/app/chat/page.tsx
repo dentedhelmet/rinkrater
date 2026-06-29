@@ -32,6 +32,7 @@ function ChatPageContent() {
   const [input, setInput] = useState('')
   const [tjState, setTjState] = useState<TJState>('idle')
   const [loading, setLoading] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -82,10 +83,60 @@ function ChatPageContent() {
       setTjState('idle')
     }
   }
+  async function handleShare() {
+    if (sharing) return
+    setSharing(true)
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rinkId: rinkId, messages: messages }),
+      })
+      const data = await res.json()
+      if (data.shareId) {
+        const shareUrl = window.location.origin + '/share/' + data.shareId
+        if (navigator.share) {
+          await navigator.share({ title: 'My Rink Rater conversation about ' + rinkName, url: shareUrl })
+        } else {
+          await navigator.clipboard.writeText(shareUrl)
+          alert('Link copied to clipboard!')
+        }
+      }
+    } catch (e) {
+      alert('Could not create share link. Try again.')
+    } finally {
+      setSharing(false)
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <TopBar showBack backHref={rinkId ? `/rink/${rinkId}` : '/'} title="Ask TJ" />
+      <TopBar
+        showBack
+        backHref={rinkId ? `/rink/${rinkId}` : '/'}
+        title="Ask TJ"
+        rightAction={
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            aria-label="Share this conversation"
+            style={{
+              width: 30, height: 30,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.18)',
+              border: 'none',
+              cursor: sharing ? 'default' : 'pointer',
+              color: '#fff',
+              fontSize: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {String.fromCharCode(8599)}
+          </button>
+        }
+      />
 
       <div style={{ background: 'var(--rr-navy)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: 'var(--rr-outline)', flexShrink: 0 }}>
         <TJ state={tjState} size="sm" />
