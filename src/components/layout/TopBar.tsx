@@ -46,14 +46,14 @@ export function TopBar(props: TopBarProps) {
           href={backHref}
           aria-label="Go back"
           style={{
-            width: 36, height: 36,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            textDecoration: 'none',
             flexShrink: 0,
           }}
         >
           <img
             src="/icons/rr_clay_back_button_red.png"
-            alt="Back"
+            alt=""
             style={{ width: 36, height: 36, objectFit: 'contain' }}
           />
         </Link>
