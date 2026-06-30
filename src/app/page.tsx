@@ -8,6 +8,7 @@ import { TabBar } from '@/components/layout/TabBar'
 import { TJ, TJSpeech } from '@/components/tj/TJ'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
+import { AnimatedSearchPlaceholder } from '@/components/home/AnimatedSearchPlaceholder'
 
 interface RinkResult {
   rink_id?: string
@@ -102,12 +103,14 @@ export default function HomePage() {
             alignItems: 'center',
             gap: 8,
             marginBottom: 14,
+            position: 'relative',
           }}
         >
+          <AnimatedSearchPlaceholder visible={!query} />
           <span style={{ fontSize: 18, color: 'rgba(13,42,74,0.35)' }} aria-hidden="true">{'\u2315'}</span>
           <input
             type="search"
-            placeholder="Search for a rink, city, or state..."
+            placeholder=""
             value={query}
             onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
             style={{
