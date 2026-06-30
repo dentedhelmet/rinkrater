@@ -54,7 +54,7 @@ export function TopBar(props: TopBarProps) {
           <img
             src="/icons/rr_clay_back_button_red.png"
             alt=""
-            style={{ width: 36, height: 36, objectFit: 'contain' }}
+            style={{ width: 45, height: 45, objectFit: 'contain' }}
           />
         </Link>
       )}
@@ -111,7 +111,7 @@ export function TopBar(props: TopBarProps) {
             background: 'rgba(255,255,255,0.18)',
             border: 'none',
             borderRadius: 8,
-            width: 36, height: 36,
+            width: 45, height: 45,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
             color: '#fff',

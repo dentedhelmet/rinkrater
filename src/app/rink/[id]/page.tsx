@@ -135,7 +135,7 @@ export default function RinkProfilePage() {
             <img
               src="/icons/rr_clay_share_button_red.png"
               alt="Share"
-              style={{ width: 36, height: 36, objectFit: 'contain' }}
+              style={{ width: 52, height: 52, objectFit: 'contain' }}
             />
           </button>
         }

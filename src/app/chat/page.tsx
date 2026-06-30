@@ -121,7 +121,7 @@ function ChatPageContent() {
             disabled={sharing}
             aria-label="Share this conversation"
             style={{
-              width: 36, height: 36,
+              width: 52, height: 52,
               background: 'transparent',
               border: 'none',
               cursor: sharing ? 'default' : 'pointer',
@@ -134,7 +134,7 @@ function ChatPageContent() {
             <img
               src="/icons/rr_clay_share_chat_button_red.png"
               alt="Share conversation"
-              style={{ width: 36, height: 36, objectFit: 'contain' }}
+              style={{ width: 52, height: 52, objectFit: 'contain' }}
             />
           </button>
         }
@@ -209,6 +209,30 @@ function ChatPageContent() {
         )}
         <div ref={bottomRef} />
       </div>
+      {messages.length > 1 && (
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          aria-label="Share this conversation"
+          className={'floating-share-btn' + (sharing ? ' floating-share-btn--sharing' : '')}
+          style={{
+            position: 'fixed',
+            right: 12,
+            bottom: 90,
+            width: 52, height: 52,
+            background: 'transparent',
+            border: 'none',
+            cursor: sharing ? 'default' : 'pointer',
+            zIndex: 50,
+          }}
+        >
+          <img
+            src="/icons/rr_clay_share_chat_button_red.png"
+            alt="Share conversation"
+            style={{ width: 52, height: 52, objectFit: 'contain' }}
+          />
+        </button>
+      )}
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '7px 12px', background: 'var(--rr-warm)', borderTop: '1.5px solid rgba(13,42,74,0.08)' }}>
         {QUICK_CHIPS.map(chip => (
@@ -262,7 +286,26 @@ function ChatPageContent() {
         >
           →
         </button>
+    
       </div>
+        <style jsx>{`
+        .floating-share-btn {
+          animation: slideInFromRight 0.4s ease-out;
+        }
+        .floating-share-btn--sharing {
+          opacity: 0.5;
+        }
+        @keyframes slideInFromRight {
+          from {
+            transform: translateX(80px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }
