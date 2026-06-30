@@ -142,7 +142,13 @@ export default function RinkProfilePage() {
       />
 
       <main style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
-        <div style={{ background: 'var(--rr-navy)', padding: '14px 14px 12px' }}>
+        <div style={{ background: 'var(--rr-navy)', padding: '14px 14px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img
+            src={'/rink-thumbnails/rr_arena' + ((Math.abs(rink.id.split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
+            alt={rink.name}
+            style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+          />
+          <div style={{ flex: 1 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 20, color: '#fff', marginBottom: 3 }}>
             {rink.name}
           </div>
@@ -153,6 +159,7 @@ export default function RinkProfilePage() {
             <span className={'tier-chip tier-chip--' + tierKey}>
               {totalReviews} reviews - {tierText}
             </span>
+          </div>
           </div>
         </div>
 
@@ -166,39 +173,43 @@ export default function RinkProfilePage() {
               borderRadius: 10,
               boxShadow: 'var(--rr-shadow-sm)',
               padding: '8px 4px',
-              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
               cursor: hasContactInfo ? 'pointer' : 'default',
               opacity: hasContactInfo ? 1 : 0.4,
             }}
           >
-            <div style={{ fontSize: 18, marginBottom: 3 }}>Contact</div>
+            <img src="/icons/rr_rinkinfo_contact.png" alt="Contact" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>CONTACT</div>
           </button>
           <a
             href={mapsUrl}
-          
             target="_blank"
             rel="noopener noreferrer"
-            style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textAlign: 'center', textDecoration: 'none', display: 'block' }}
+            style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 10, color: 'var(--rr-navy)' }}>Directions</div>
+            <img src="/icons/rr_rinkinfo_directions.png" alt="Directions" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>DIRECTIONS</div>
           </a>
-
           <Link
             href={'/nearby?rink=' + rink.id}
-            style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textAlign: 'center', textDecoration: 'none', display: 'block' }}
+            style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 10, color: 'var(--rr-navy)' }}>Nearby</div>
+            <img src="/icons/rr_rinkinfo_nearby.png" alt="Nearby" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>NEARBY</div>
           </Link>
         </div>
 
-<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
-            <div style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
+            <div style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               <TJ state="idle" size="sm" />
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 2 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)', marginBottom: 2 }}>
                   Ask TJ anything about this rink
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(13,42,74,0.5)' }}>
+                <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
                   Is there a girls locker room? How cold is it?
                 </div>
               </div>
