@@ -72,24 +72,24 @@ export default function HomePage() {
     <PageShell topBar={<TopBar />} tabBar={<TabBar />}>
       <div className="home-grid" >
         <div className="home-main-col">
+        <div
+          style={{
+            background: 'var(--rr-warm)',
+            border: 'var(--rr-outline)',
+            borderRadius: '12px 12px 12px 2px',
+            padding: '9px 13px',
+            fontSize: 12,
+            lineHeight: 1.55,
+            color: 'var(--rr-navy)',
+            boxShadow: 'var(--rr-shadow)',
+            marginBottom: 10,
+            width: '100%',
+          }}
+        >
+          Ask me about any rink in North America - or search by name!
+        </div>
         <div className="tj-intro-row">
           <TJ state="idle" size="xl" crop="full" />
-          <div className="tj-bubble-col">
-            <div
-              style={{
-                background: 'var(--rr-warm)',
-                border: 'var(--rr-outline)',
-                borderRadius: '12px 12px 12px 2px',
-                padding: '9px 13px',
-                fontSize: 12,
-                lineHeight: 1.55,
-                color: 'var(--rr-navy)',
-                boxShadow: 'var(--rr-shadow)',
-              }}
-            >
-              Ask me about any rink in North America - or search by name!
-            </div>
-          </div>
         </div>
         <div
           style={{
@@ -274,17 +274,6 @@ export default function HomePage() {
           gap: 10px;
           margin-bottom: 14px;
         }
-        .tj-bubble-col {
-          width: 100%;
-        }
-        @media (min-width: 480px) {
-          .tj-intro-row {
-            flex-direction: row;
-            align-items: flex-start;
-          }
-          .tj-bubble-col {
-            width: 260px;
-          }
         }
         .rink-grid {
           display: grid;
