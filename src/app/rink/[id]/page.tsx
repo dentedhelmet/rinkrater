@@ -111,22 +111,32 @@ export default function RinkProfilePage() {
         title=""
         rightAction={
           <button
+            onClick={function() {
+              const shareUrl = window.location.origin + '/rink/' + rink.id
+              if (navigator.share) {
+                navigator.share({ title: rink.name + ' on Rink Rater', url: shareUrl })
+              } else {
+                navigator.clipboard.writeText(shareUrl)
+                alert('Link copied to clipboard!')
+              }
+            }}
             aria-label="Share this rink"
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.18)',
+              width: 36,
+              height: 36,
+              background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: '#fff',
-              fontSize: 16,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            {String.fromCharCode(8599)}
+            <img
+              src="/icons/rr_clay_share_button_red.png"
+              alt="Share"
+              style={{ width: 36, height: 36, objectFit: 'contain' }}
+            />
           </button>
         }
       />
