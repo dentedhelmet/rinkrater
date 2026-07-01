@@ -202,7 +202,7 @@ export default function RinkProfilePage() {
           </Link>
         </div>
 
-<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
+<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginTop: 12, marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
             <div style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               <TJ state="idle" size="sm" />
               <div style={{ flex: 1 }}>
@@ -215,7 +215,7 @@ export default function RinkProfilePage() {
               </div>
             </div>
           </Link>
-          <LatestReviewsCarousel reviews={recentReviews} />
+          <div style={{ padding: '0 14px' }}><LatestReviewsCarousel reviews={recentReviews} /></div>
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
           <button
             onClick={function() { setShowCategories(!showCategories) }}
