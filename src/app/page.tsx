@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
 import { PageShell } from '@/components/layout/PageShell'
-import { TabBar } from '@/components/layout/TabBar'
+import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TJ, TJSpeech } from '@/components/tj/TJ'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
@@ -70,7 +70,7 @@ export default function HomePage() {
   }
 
   return (
-    <PageShell topBar={<TopBar />} tabBar={<TabBar />}>
+    <PageShell topBar={<TopBar />} tabBar={<BottomBanner />}>
       <div className="home-grid" >
         <div className="home-main-col">
         <div

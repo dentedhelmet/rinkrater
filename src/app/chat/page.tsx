@@ -141,17 +141,31 @@ function ChatPageContent() {
       />
 
       <div style={{ background: 'var(--rr-navy)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: 'var(--rr-outline)', flexShrink: 0 }}>
-        <TJ state={tjState} size="sm" />
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: '#fff' }}>
+        <img
+          src={'/rink-thumbnails/rr_arena' + ((Math.abs((rinkId || '').split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
+          alt=""
+          style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+        />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20, color: '#fff' }}>
             {rinkName}
           </div>
           {rinkLocation && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
               {rinkLocation}
             </div>
           )}
         </div>
+        <a
+          href={rinkId ? '/review?rink=' + rinkId : '/review'}
+          style={{ display: 'flex', flexShrink: 0, textDecoration: 'none' }}
+        >
+          <img
+            src="/icons/add_review_button.png"
+            alt="Add your review"
+            style={{ width: 150, height: 68, objectFit: 'contain' }}
+          />
+        </a>
       </div>
 
       <div
@@ -219,7 +233,7 @@ function ChatPageContent() {
             position: 'fixed',
             right: 12,
             bottom: 90,
-            width: 52, height: 52,
+            width: 81, height: 81,
             background: 'transparent',
             border: 'none',
             cursor: sharing ? 'default' : 'pointer',
@@ -229,7 +243,7 @@ function ChatPageContent() {
           <img
             src="/icons/rr_clay_share_chat_button_red.png"
             alt="Share conversation"
-            style={{ width: 52, height: 52, objectFit: 'contain' }}
+            style={{ width: 81, height: 81, objectFit: 'contain' }}
           />
         </button>
       )}
@@ -292,6 +306,10 @@ function ChatPageContent() {
         .floating-share-btn {
           animation: slideInFromRight 0.4s ease-out;
         }
+        .floating-share-btn:hover, .floating-share-btn:active {
+          transform: scale(1.12);
+          transition: transform 0.15s ease;
+        }
         .floating-share-btn--sharing {
           opacity: 0.5;
         }
@@ -307,6 +325,7 @@ function ChatPageContent() {
         }
       `}</style>
     </div>
+    
   )
 }
 export default function ChatPage() {

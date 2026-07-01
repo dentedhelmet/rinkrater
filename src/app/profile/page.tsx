@@ -1,7 +1,7 @@
 'use client'
 
 import { TopBar } from '@/components/layout/TopBar'
-import { TabBar } from '@/components/layout/TabBar'
+import { BottomBanner } from '@/components/layout/BottomBanner'
 
 const SAMPLE_USER = {
   alias: 'KMomof3',
@@ -131,7 +131,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <TabBar />
+      <BottomBanner />
     </div>
   )
 }
