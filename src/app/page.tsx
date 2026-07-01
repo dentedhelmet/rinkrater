@@ -79,7 +79,7 @@ export default function HomePage() {
             border: 'var(--rr-outline)',
             borderRadius: '12px 12px 12px 2px',
             padding: '9px 13px',
-            fontSize: 12,
+            fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase',
             lineHeight: 1.55,
             color: 'var(--rr-navy)',
             boxShadow: 'var(--rr-shadow)',
@@ -87,7 +87,7 @@ export default function HomePage() {
             width: '100%',
           }}
         >
-          Ask me about any rink in North America - or search by name!
+          ASK ME ABOUT ANY RINK ANYWHERE IN NORTH AMERICA!
         </div>
         <div className="tj-intro-row">
           <TJ state="idle" size="xl" crop="full" />
@@ -107,12 +107,13 @@ export default function HomePage() {
           }}
         >
           <AnimatedSearchPlaceholder visible={!query} />
-          <span style={{ fontSize: 18, color: 'rgba(13,42,74,0.35)' }} aria-hidden="true">{'\u2315'}</span>
+          <img src="/icons/search-button.png" alt="Search" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
           <input
             type="search"
             placeholder=""
             value={query}
             onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
+            onFocus={function(e) { e.target.setSelectionRange(0, 0) }}
             style={{
               flex: 1,
               border: 'none',
@@ -121,6 +122,7 @@ export default function HomePage() {
               color: 'var(--rr-navy)',
               outline: 'none',
               background: 'transparent',
+              paddingLeft: 0,
             }}
             aria-label="Search for a rink"
           />

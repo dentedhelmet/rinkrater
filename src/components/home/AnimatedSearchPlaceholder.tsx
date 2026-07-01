@@ -37,7 +37,7 @@ export function AnimatedSearchPlaceholder(props: AnimatedSearchPlaceholderProps)
       <style jsx>{`
         .animated-placeholder {
           position: absolute;
-          left: 26px;
+          left: 38px;
           top: 0;
           bottom: 0;
           display: flex;
