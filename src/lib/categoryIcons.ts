@@ -14,7 +14,7 @@ export const CATEGORY_ICON_MAP: Record<string, string> = {
   "REF'S ROOM":                     '/category-icons/rr-refsroom_icon.png',
   'RESTROOMS':                      '/category-icons/rr-bathrooms_icon.png',
   'RINK RAT ACTIVITIES':            '/category-icons/rr-rinkrat_icon.png',
-  'RINK TEMPERATURE':               '/category-icons/rr-ice_icon.png',
+  'RINK TEMPERATURE':               '/category-icons/rr_temp_icon.png',
   'ROLLER HOCKEY':                  '/category-icons/rr-roller_icon.png',
   'SEATING / BEST VIEWING SPOTS':   '/category-icons/rr-seating_icon.png',
   'SEATING AREA / WARMING AREA':    '/category-icons/rr-seating_icon.png',
