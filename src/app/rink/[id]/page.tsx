@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
-import { TabBar } from '@/components/layout/TabBar'
+import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TJ } from '@/components/tj/TJ'
 import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 import { CategorySheet } from '@/components/rink/CategorySheet'
@@ -263,7 +263,7 @@ export default function RinkProfilePage() {
         </div>
       </main>
 
-      <TabBar />
+      <BottomBanner />
       <CategorySheet
         rinkId={rink.id}
         category={selectedCategory}

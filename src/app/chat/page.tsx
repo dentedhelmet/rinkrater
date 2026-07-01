@@ -141,8 +141,12 @@ function ChatPageContent() {
       />
 
       <div style={{ background: 'var(--rr-navy)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: 'var(--rr-outline)', flexShrink: 0 }}>
-        <TJ state={tjState} size="sm" />
-        <div>
+        <img
+          src={'/rink-thumbnails/rr_arena' + ((Math.abs((rinkId || '').split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
+          alt=""
+          style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+        />
+        <div style={{ flex: 1 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: '#fff' }}>
             {rinkName}
           </div>
@@ -152,6 +156,16 @@ function ChatPageContent() {
             </div>
           )}
         </div>
+        <a
+          href={rinkId ? '/review?rink=' + rinkId : '/review'}
+          style={{ display: 'flex', flexShrink: 0, textDecoration: 'none' }}
+        >
+          <img
+            src="/icons/add_review_button.png"
+            alt="Add your review"
+            style={{ width: 80, height: 36, objectFit: 'contain' }}
+          />
+        </a>
       </div>
 
       <div
@@ -307,6 +321,7 @@ function ChatPageContent() {
         }
       `}</style>
     </div>
+    
   )
 }
 export default function ChatPage() {
