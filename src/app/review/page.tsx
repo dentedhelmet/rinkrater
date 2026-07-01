@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
 
@@ -16,15 +16,18 @@ interface ReviewMessage {
   tags?: ExtractedTag[]
 }
 
-const RINK_NAME = 'McKendree Metro Rec Plex'
-const TOTAL_CATS = 7
+const TOTAL_CATS = 10
 
-export default function ReviewPage() {
+function ReviewPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const rinkId = searchParams.get('rink') || ''
+  const [rinkName, setRinkName] = useState('this rink')
+  const [rinkLocation, setRinkLocation] = useState('')
   const [messages, setMessages] = useState<ReviewMessage[]>([
     {
       role: 'tj',
-      text: `Just talk naturally — I'll pick up the details. Start with whatever stands out most. How was the food situation at ${RINK_NAME}?`,
+      text: "Just talk naturally — I'll pick up the details. Start with whatever stands out most!",
     },
   ])
   const [input, setInput] = useState('')
@@ -32,6 +35,22 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
+
+  useEffect(function() {
+    if (!rinkId) return
+    fetch('/api/rink/' + rinkId)
+      .then(function(res) { return res.json() })
+      .then(function(data) {
+        if (data.rink) {
+          setRinkName(data.rink.name)
+          setRinkLocation(data.rink.city + ', ' + data.rink.state)
+          setMessages([{
+            role: 'tj',
+            text: "Just talk naturally — I'll pick up the details. How was the food situation at " + data.rink.name + "?",
+          }])
+        }
+      })
+  }, [rinkId])
 
   function handleVoiceInput() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -43,7 +62,6 @@ export default function ReviewPage() {
     recognition.lang = 'en-US'
     recognition.interimResults = false
     recognition.maxAlternatives = 1
-
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setInput(transcript)
@@ -60,22 +78,19 @@ export default function ReviewPage() {
     setInput('')
     setMessages(prev => [...prev, { role: 'user', text }])
     setLoading(true)
-
     try {
       const res = await fetch('/api/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rinkName: RINK_NAME, rawText: text }),
+        body: JSON.stringify({ rinkName: rinkName, rawText: text }),
       })
       const data = await res.json()
       const tags = flattenTags(data.tags || [])
       const newCats = Math.min(catsCompleted + (tags.length > 0 ? 2 : 1), TOTAL_CATS)
       setCatsCompleted(newCats)
-
       if (tags.length > 0) {
         setMessages(prev => [...prev, { role: 'tj', text: "Got it — look right?", tags }])
       }
-
       const followUp = getFollowUpQuestion(newCats)
       if (followUp) {
         setTimeout(() => {
@@ -102,7 +117,7 @@ export default function ReviewPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rinkId: 'mckendree-il',
+          rinkId: rinkId,
           rawText: messages.filter(m => m.role === 'user').map(m => m.text).join('. '),
         }),
       })
@@ -122,7 +137,7 @@ export default function ReviewPage() {
           <div className="clay-card" style={{ padding: '16px', width: '100%', textAlign: 'center' }}>
             <div className="display-lg" style={{ marginBottom: 4 }}>Review posted! 🎉</div>
             <div className="body-sm" style={{ color: 'rgba(13,42,74,0.6)', marginBottom: 14 }}>
-              You just helped families headed to {RINK_NAME} this weekend.
+              You just helped families headed to {rinkName} this weekend.
             </div>
             <div style={{ background: 'var(--rr-green)', border: 'var(--rr-outline)', borderRadius: 'var(--rr-radius)', padding: '12px', boxShadow: 'var(--rr-shadow)', marginBottom: 12 }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 28, color: '#fff' }}>
@@ -143,20 +158,29 @@ export default function ReviewPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <TopBar showBack backHref="/" title="Add review" />
+      <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="Add review" />
 
-      <div style={{ background: 'var(--rr-navy)', padding: '8px 14px 0', flexShrink: 0 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: '#fff' }}>
-          {RINK_NAME}
-        </div>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>
-          2 reviews so far · your review helps families this weekend
+      <div style={{ background: 'var(--rr-navy)', padding: '8px 14px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <img
+          src={'/rink-thumbnails/rr_arena' + ((Math.abs((rinkId || '').split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
+          alt=""
+          style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 8, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+        />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 20, color: '#fff' }}>
+            {rinkName}
+          </div>
+          {rinkLocation && (
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+              {rinkLocation}
+            </div>
+          )}
         </div>
       </div>
       <div style={{ height: 4, background: '#1a3e60', borderBottom: '1.5px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: 'var(--rr-green)', transition: 'width 0.4s ease' }} />
+        <div style={{ height: '100%', width: pct + '%', background: 'var(--rr-green)', transition: 'width 0.4s ease' }} />
       </div>
-      <div style={{ background: 'var(--rr-navy)', padding: '2px 14px 6px', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textAlign: 'right', fontFamily: 'var(--font-display)', flexShrink: 0 }}>
+      <div style={{ background: 'var(--rr-navy)', padding: '2px 14px 6px', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textAlign: 'right', fontFamily: 'var(--font-display)', flexShrink: 0 }}>
         {catsCompleted} of {TOTAL_CATS} categories
       </div>
 
@@ -192,11 +216,11 @@ export default function ReviewPage() {
                 {msg.tags && msg.tags.length > 0 && (
                   <div className="clay-card-sm" style={{ padding: '10px 12px', marginLeft: 44 }}>
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11, color: 'var(--rr-navy)', marginBottom: 7 }}>
-                      ✦ Got it — look right?
+                      Got it — look right?
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 5 }}>
                       {msg.tags.map((tag, ti) => (
-                        <span key={ti} className={`tag-pill tag-pill--${tag.color}`} style={{ cursor: 'pointer' }}>
+                        <span key={ti} className={'tag-pill tag-pill--' + tag.color} style={{ cursor: 'pointer' }}>
                           {tag.label}
                         </span>
                       ))}
@@ -289,4 +313,12 @@ function flattenTags(rawTags: string[]): ExtractedTag[] {
          : t.toLowerCase().includes('wifi') ? 'blue'
          : 'green',
   }))
+}
+
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 20, textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>Loading...</div>}>
+      <ReviewPageContent />
+    </Suspense>
+  )
 }
