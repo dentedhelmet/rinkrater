@@ -78,36 +78,20 @@ function ReviewPageContent() {
     setInput('')
     setMessages(prev => [...prev, { role: 'user', text }])
     setLoading(true)
-    try {
-      const res = await fetch('/api/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rinkName: rinkName, rawText: text }),
-      })
-      const data = await res.json()
-      const tags = flattenTags(data.tags || [])
-      const newCats = Math.min(catsCompleted + (tags.length > 0 ? 2 : 1), TOTAL_CATS)
-      setCatsCompleted(newCats)
-      if (tags.length > 0) {
-        setMessages(prev => [...prev, { role: 'tj', text: "Got it — look right?", tags }])
-      }
-      const followUp = getFollowUpQuestion(newCats)
+    const newCats = Math.min(catsCompleted + 1, TOTAL_CATS)
+    setCatsCompleted(newCats)
+    const followUp = getFollowUpQuestion(newCats)
+    setTimeout(function() {
       if (followUp) {
-        setTimeout(() => {
-          setMessages(prev => [...prev, { role: 'tj', text: followUp }])
-          setLoading(false)
-        }, 600)
+        setMessages(prev => [...prev, { role: 'tj', text: followUp }])
       } else {
         setMessages(prev => [...prev, {
           role: 'tj',
-          text: "I think we've covered the big ones! Want to save your review?",
+          text: "You're a rockstar! 🏒 That's a ton of great info. Ready to save your review?",
         }])
-        setLoading(false)
       }
-    } catch {
-      setMessages(prev => [...prev, { role: 'tj', text: "That was great info! What else stood out?" }])
       setLoading(false)
-    }
+    }, 600)
   }
 
   async function submitReview() {
@@ -131,7 +115,7 @@ function ReviewPageContent() {
   if (done) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, background: '#EEF4FA' }}>
-        <TopBar showBack backHref="/" title="Review saved!" />
+        <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="Review saved!" />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', gap: 16 }}>
           <TJ state="celebrate" size="xl" />
           <div className="clay-card" style={{ padding: '16px', width: '100%', textAlign: 'center' }}>
@@ -145,7 +129,7 @@ function ReviewPageContent() {
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>added to your total</div>
             </div>
-            <button onClick={() => router.push('/')} className="clay-btn clay-btn-primary" style={{ width: '100%' }}>
+            <button onClick={() => router.push(rinkId ? '/rink/' + rinkId : '/')} className="clay-btn clay-btn-primary" style={{ width: '100%' }}>
               Done
             </button>
           </div>
@@ -213,31 +197,16 @@ function ReviewPageContent() {
                     </div>
                   </div>
                 )}
-                {msg.tags && msg.tags.length > 0 && (
-                  <div className="clay-card-sm" style={{ padding: '10px 12px', marginLeft: 44 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11, color: 'var(--rr-navy)', marginBottom: 7 }}>
-                      Got it — look right?
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 5 }}>
-                      {msg.tags.map((tag, ti) => (
-                        <span key={ti} className={'tag-pill tag-pill--' + tag.color} style={{ cursor: 'pointer' }}>
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="caption">Tap any tag to remove it</div>
-                  </div>
-                )}
               </div>
             )}
           </div>
         ))}
 
-        {catsCompleted >= 3 && !loading && (
+        {catsCompleted >= 2 && !loading && (
           <button
             onClick={submitReview}
-            className="clay-btn clay-btn-primary"
-            style={{ width: '100%', marginTop: 4 }}
+            className="clay-btn"
+            style={{ width: '100%', marginTop: 4, background: 'var(--rr-navy)', color: '#fff', border: 'var(--rr-outline)' }}
           >
             Save review · +{125 + catsCompleted * 25} XP
           </button>
@@ -245,6 +214,31 @@ function ReviewPageContent() {
       </div>
 
       <div style={{ padding: '9px 12px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', flexShrink: 0 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11, color: 'rgba(13,42,74,0.5)', marginBottom: 6 }}>Quick starts:</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+          {['Great rink!', 'Needs work', 'Cold inside', 'Good food', 'Easy parking', 'Clean bathrooms'].map(function(chip) {
+            return (
+              <button
+                key={chip}
+                onClick={function() { setInput(chip) }}
+                style={{
+                  background: 'var(--rr-ice)',
+                  border: 'var(--rr-outline-sm)',
+                  borderRadius: 999,
+                  padding: '5px 11px',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  color: 'var(--rr-navy)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {chip}
+              </button>
+            )
+          })}
+        </div>
         <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
           <input
             value={input}
@@ -298,9 +292,16 @@ function ReviewPageContent() {
 
 function getFollowUpQuestion(catsCompleted: number): string | null {
   const questions = [
-    "Nice! Families always ask — did you notice skate sharpening? And roughly how cold was it?",
-    "Great detail! What was parking like — easy to find a spot?",
-    "Almost there — anything about WiFi or the locker rooms worth mentioning?",
+    "Nice one! 👊 Now — how was the food situation? Snack bar, vending machines, or bring your own?",
+    "Got it! How cold was it in there — full winter coat or just a light sweatshirt?",
+    "Perfect! What about skate sharpening — available on-site, and roughly how much?",
+    "Nice! Was parking easy to find, or a bit of a hunt?",
+    "Awesome! Did you connect to WiFi? If so, feel free to drop the password here for other parents! 😄",
+    "Love it! How were the locker rooms — enough space, clean, separate for girls?",
+    "Solid! Anything about the restrooms worth mentioning? Clean, easy to find?",
+    "Great! Did you catch the game on LiveBarn or any live streaming?",
+    "Almost done! Any Rink Rat activities for the little siblings — arcade, bubble hockey, open space?",
+    "Last one — any first impressions worth sharing for families visiting for the first time?",
   ]
   return questions[catsCompleted - 1] ?? null
 }
