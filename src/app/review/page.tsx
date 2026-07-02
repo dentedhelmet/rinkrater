@@ -117,7 +117,7 @@ function ReviewPageContent() {
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, background: '#EEF4FA' }}>
         <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="Review saved!" />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', gap: 16 }}>
-          <TJ state="celebrate" size="xl" />
+          <img src="/tj/rr_tj_pointing.png" alt="TJ" style={{ width: 160, height: 160, objectFit: 'contain' }} />
           <div className="clay-card" style={{ padding: '16px', width: '100%', textAlign: 'center' }}>
             <div className="display-lg" style={{ marginBottom: 4 }}>Review posted! 🎉</div>
             <div className="body-sm" style={{ color: 'rgba(13,42,74,0.6)', marginBottom: 14 }}>
