@@ -1,89 +1,188 @@
 'use client'
 
-import { TopBar } from '@/components/layout/TopBar'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { BottomBanner } from '@/components/layout/BottomBanner'
+import { TopBar } from '@/components/layout/TopBar'
+import { AuthModal } from '@/components/auth/AuthModal'
+import { useAuth } from '@/context/AuthContext'
+import { getLevelForXP, getNextLevelXP, LEVELS } from '@/lib/levels'
 
-const SAMPLE_USER = {
-  alias: 'KMomof3',
-  initials: 'KM',
-  level: 3,
-  levelTitle: 'Road Warrior',
-  xp: 1284,
-  xpToNext: 2500,
-  streak: 12,
-  totalReviews: 24,
-  familiesHelped: 6,
-  badges: [
-    { id: 'rink_regular',  emoji: '⛸️', label: 'Rink Regular',   earned: true  },
-    { id: 'road_warrior',  emoji: '🏒', label: 'Road Warrior',   earned: true  },
-    { id: 'scout',         emoji: '🔍', label: 'Scout',          earned: true  },
-    { id: 'pioneer',       emoji: '🥅', label: 'Pioneer',        earned: true  },
-    { id: 'temp_reporter', emoji: '❄️', label: 'Temp Reporter',  earned: true  },
-    { id: 'review_50',     emoji: '🏆', label: '50 reviews',     earned: false },
-    { id: 'coast_to_coast',emoji: '🌎', label: '5 states',       earned: false },
-    { id: 'rink_rat_mom',  emoji: '👧', label: 'Rink Rat Mom',   earned: false },
-  ],
-  nextBadge: {
-    emoji: '👧',
-    label: 'Rink Rat Mom',
-    description: "Add kids' activity reviews at 2 more rinks to earn it. +200 XP!",
-  },
-}
+// ─── Static badge definitions ──────────────────────────────────────────────────
+// earned status is derived from the user's real stats
+const BADGE_DEFS = [
+  { id: 'rink_regular',   emoji: '⛸️', label: 'Rink Regular',   earnedIf: (r: number) => r >= 1  },
+  { id: 'road_warrior',   emoji: '🏒', label: 'Road Warrior',   earnedIf: (_: number, xp: number) => xp >= 1000 },
+  { id: 'scout',          emoji: '🔍', label: 'Scout',          earnedIf: (r: number) => r >= 5  },
+  { id: 'pioneer',        emoji: '🥅', label: 'Pioneer',        earnedIf: (r: number) => r >= 10 },
+  { id: 'temp_reporter',  emoji: '❄️', label: 'Temp Reporter',  earnedIf: (r: number) => r >= 3  },
+  { id: 'review_50',      emoji: '🏆', label: '50 reviews',     earnedIf: (r: number) => r >= 50 },
+  { id: 'coast_to_coast', emoji: '🌎', label: '5 states',       earnedIf: () => false            }, // future
+  { id: 'rink_rat_mom',   emoji: '👧', label: 'Rink Rat Mom',   earnedIf: () => false            }, // future
+]
 
 export default function ProfilePage() {
-  const user = SAMPLE_USER
-  const pct = Math.round((user.xp / user.xpToNext) * 100)
+  const router                    = useRouter()
+  const { user, profile, loading, signOut } = useAuth()
+  const [showAuth,   setShowAuth] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <div style={{ fontSize: 32 }}>⛸️</div>
+        <p className="body-sm" style={{ color: 'rgba(13,42,74,0.4)' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  // ── Not logged in ────────────────────────────────────────────────────────────
+  if (!user || !profile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>⛸️</div>
+          <h1 className="display-lg" style={{ marginBottom: 8 }}>Your Profile</h1>
+          <p className="body-md" style={{ color: 'rgba(13,42,74,0.55)', maxWidth: 260, marginBottom: 28, lineHeight: 1.6 }}>
+            Sign in to track your XP, badges, and quiz scores across every rink.
+          </p>
+          <button
+            className="clay-btn clay-btn-primary"
+            style={{ fontSize: 16, padding: '13px 36px', marginBottom: 12 }}
+            onClick={() => setShowAuth(true)}
+          >
+            Sign In
+          </button>
+          <button
+            className="clay-btn clay-btn-secondary"
+            style={{ fontSize: 14, padding: '11px 28px' }}
+            onClick={() => { setShowAuth(true) }}
+          >
+            Create Account
+          </button>
+        </main>
+        <BottomBanner />
+        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      </div>
+    )
+  }
+
+  // ── Logged in ────────────────────────────────────────────────────────────────
+  const xp          = profile.xp
+  const currentLevel = getLevelForXP(xp)
+  const nextXP      = getNextLevelXP(xp)
+  const pct         = Math.round(((xp - currentLevel.xpStart) / (nextXP - currentLevel.xpStart)) * 100)
+  const nextLevel   = LEVELS.find((l) => l.level === currentLevel.level + 1)
+
+  const badges = BADGE_DEFS.map((b) => ({
+    ...b,
+    earned: b.earnedIf(profile.total_reviews, xp),
+  }))
+
+  const nextBadge = badges.find((b) => !b.earned)
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    await signOut()
+    setSigningOut(false)
+    router.push('/')
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+
+      <TopBar showBack={true} backHref="/" title="My Profile" variant="navy" />
+
+      {/* ── Header ── */}
       <div style={{ background: 'var(--rr-red)', flexShrink: 0 }}>
         <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '2px solid rgba(0,0,0,0.1)' }}>
+          {/* Avatar — photo or initials fallback */}
           <div style={{
             width: 50, height: 50, borderRadius: '50%',
-            background: 'var(--rr-yellow)', border: 'var(--rr-outline)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18, color: 'var(--rr-navy)',
+            border: 'var(--rr-outline)',
+            overflow: 'hidden',
             flexShrink: 0,
+            background: 'var(--rr-yellow)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            {user.initials}
+            {profile.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profile.avatar_url}
+                alt={profile.alias}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18, color: 'var(--rr-navy)' }}>
+                {profile.initials}
+              </span>
+            )}
           </div>
+
+          {/* Name + level */}
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 17, color: '#fff' }}>
-              {user.alias}
+              {profile.alias}
             </div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
-              {user.levelTitle} · Level {user.level}
+              {currentLevel.title} · Level {currentLevel.level}
             </div>
           </div>
-          <div style={{
-            background: 'var(--rr-yellow)', border: 'var(--rr-outline-sm)',
-            borderRadius: 999, padding: '4px 10px',
-            fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11,
-            color: 'var(--rr-navy)', boxShadow: 'var(--rr-shadow-sm)',
-            display: 'flex', alignItems: 'center', gap: 3,
-          }}>
-            🔥 {user.streak}
+
+          {/* Streak + sign out */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              background: 'var(--rr-yellow)', border: 'var(--rr-outline-sm)',
+              borderRadius: 999, padding: '4px 10px',
+              fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 11,
+              color: 'var(--rr-navy)', boxShadow: 'var(--rr-shadow-sm)',
+              display: 'flex', alignItems: 'center', gap: 3,
+            }}>
+              🔥 {profile.streak}
+            </div>
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              style={{
+                background: 'rgba(0,0,0,0.2)',
+                border:     '1.5px solid rgba(255,255,255,0.3)',
+                borderRadius: 999,
+                padding:    '4px 10px',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                fontSize:   10,
+                color:      'rgba(255,255,255,0.8)',
+                cursor:     'pointer',
+              }}
+            >
+              {signingOut ? '...' : 'Sign out'}
+            </button>
           </div>
         </div>
 
+        {/* XP bar */}
         <div style={{ padding: '8px 14px 12px', background: 'rgba(0,0,0,0.2)' }}>
           <div style={{ height: 8, background: 'rgba(255,255,255,0.15)', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: 'var(--rr-green)', borderRadius: 999 }} />
+            <div style={{ height: '100%', width: `${pct}%`, background: 'var(--rr-green)', borderRadius: 999, transition: 'width 0.6s ease' }} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-display)' }}>
-            <span>{user.xp.toLocaleString()} XP</span>
-            <span>Team Captain: {user.xpToNext.toLocaleString()}</span>
+            <span>{xp.toLocaleString()} XP</span>
+            <span>{nextLevel ? `${nextLevel.title}: ${nextXP.toLocaleString()}` : 'Max level!'}</span>
           </div>
         </div>
       </div>
 
+      {/* ── Main content ── */}
       <main style={{ flex: 1, overflowY: 'auto', background: '#EEF4FA', padding: 12 }} className="scroll-y">
+
+        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
           {[
-            { num: user.totalReviews,   label: 'Reviews' },
-            { num: user.streak,         label: 'Day streak' },
-            { num: user.familiesHelped, label: 'Families helped' },
-          ].map(s => (
+            { num: profile.total_reviews,   label: 'Reviews'         },
+            { num: profile.streak,          label: 'Day streak'      },
+            { num: profile.families_helped, label: 'Families helped' },
+          ].map((s) => (
             <div key={s.label} className="clay-card-sm" style={{ padding: '10px 8px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, color: 'var(--rr-navy)' }}>
                 {s.num}
@@ -93,11 +192,12 @@ export default function ProfilePage() {
           ))}
         </div>
 
+        {/* Badges */}
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
           Your badges
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-          {user.badges.map(badge => (
+          {badges.map((badge) => (
             <div
               key={badge.id}
               className="clay-card-sm"
@@ -112,23 +212,29 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        <div className="clay-card" style={{ padding: '10px 14px', marginBottom: 12, background: 'var(--rr-ice)' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 12, color: 'var(--rr-navy)', marginBottom: 4 }}>
-            {user.nextBadge.emoji} Next up: {user.nextBadge.label}
+        {/* Next badge */}
+        {nextBadge && (
+          <div className="clay-card" style={{ padding: '10px 14px', marginBottom: 12, background: 'var(--rr-ice)' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 12, color: 'var(--rr-navy)', marginBottom: 4 }}>
+              {nextBadge.emoji} Next up: {nextBadge.label}
+            </div>
+            <div className="body-sm" style={{ color: 'rgba(13,42,74,0.65)' }}>
+              Keep reviewing rinks to unlock this badge and earn bonus XP.
+            </div>
           </div>
-          <div className="body-sm" style={{ color: 'rgba(13,42,74,0.65)' }}>
-            {user.nextBadge.description}
-          </div>
-        </div>
+        )}
 
-        <div className="clay-card" style={{ padding: '10px 14px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 5 }}>
-            You helped {user.familiesHelped} families this week
+        {/* Community impact */}
+        {profile.families_helped > 0 && (
+          <div className="clay-card" style={{ padding: '10px 14px' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 5 }}>
+              You helped {profile.families_helped} {profile.families_helped === 1 ? 'family' : 'families'} this week
+            </div>
+            <div className="body-sm" style={{ color: 'rgba(13,42,74,0.65)' }}>
+              Your reviews are answering real questions for real hockey families. Keep it up.
+            </div>
           </div>
-          <div className="body-sm" style={{ color: 'rgba(13,42,74,0.65)' }}>
-            Your reviews answered questions at Newington, McKendree, and Smithfield. Real families. Real answers.
-          </div>
-        </div>
+        )}
       </main>
 
       <BottomBanner />
