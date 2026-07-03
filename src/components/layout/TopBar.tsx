@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { label: 'About', href: '/about' },
   { label: 'Partners', href: '/partners' },
   { label: 'Shop', href: '/shop' },
-]
+  { label: "What's the Call?", href: '/whats-the-call' },]
 
 export function TopBar(props: TopBarProps) {
   const title = props.title
