@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, openai, anthropic } from '@/lib/supabase'
-
+import { supabase } from '@/lib/supabase'
+import { openai, anthropic } from '@/lib/ai'
 const SYSTEM_PROMPT = `
 You are TJ, the friendly mascot and AI agent for Rink Rater — a community review app for ice hockey families across North America. You help parents and players know what to expect at any rink before they make the drive.
 
