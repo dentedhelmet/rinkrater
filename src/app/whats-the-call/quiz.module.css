@@ -1,0 +1,112 @@
+/* ─── Rink Rater: What's the Call? — Quiz Styles ──────────────────────────── */
+/* Uses CSS custom properties (set via inline style prop in TSX) so that      */
+/* :active and :hover states can reference dynamic shadow colors              */
+/* without needing !important to override inline box-shadow values.          */
+
+/* ── Claymation primary buttons (Start / Next / Retry) ── */
+.btnClay {
+  display: inline-block;
+  box-shadow: var(--btn-shadow);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btnClay:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.btnClay:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow: var(--btn-shadow-active);
+}
+
+/* ── Answer option buttons ── */
+.btnAnswer {
+  box-shadow: var(--answer-shadow);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btnAnswer:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btnAnswer:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ── Progress bar fill ── */
+.progressFill {
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Feedback overlay on the image card ── */
+.feedbackOverlay {
+  pointer-events: none;
+  animation: fadeInOverlay 0.25s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Score counter bump ── */
+.scoreBump {
+  animation: scoreBump 0.3s ease;
+}
+
+@keyframes scoreBump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ── Correct answer shake / bounce ── */
+.correctPop {
+  animation: correctPop 0.35s ease;
+}
+
+@keyframes correctPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.wrongShake {
+  animation: wrongShake 0.4s ease;
+}
+
+@keyframes wrongShake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  40%  { transform: translateX(6px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Results screen accuracy bar fill ── */
+.accuracyFill {
+  animation: growWidth 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes growWidth {
+  from { width: 0%; }
+}
+
+/* ── Reduced motion: disable all animations ── */
+@media (prefers-reduced-motion: reduce) {
+  .btnClay,
+  .btnAnswer,
+  .progressFill,
+  .feedbackOverlay,
+  .scoreBump,
+  .correctPop,
+  .wrongShake,
+  .accuracyFill {
+    animation: none !important;
+    transition: none !important;
+  }
+}
