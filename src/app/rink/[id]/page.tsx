@@ -216,6 +216,15 @@ export default function RinkProfilePage() {
             </div>
           </Link>
           <div style={{ padding: '0 14px' }}><LatestReviewsCarousel reviews={recentReviews} /></div>
+          <p style={{
+  fontSize: 12,
+  color: 'rgba(13,42,74,0.4)',
+  fontFamily: 'var(--font-body)',
+  padding: '6px 16px 8px',
+  lineHeight: 1.5,
+}}>
+  * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
+</p>
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
           <button
             onClick={function() { setShowCategories(!showCategories) }}
