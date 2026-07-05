@@ -46,7 +46,7 @@ function ReviewPageContent() {
           setRinkLocation(data.rink.city + ', ' + data.rink.state)
           setMessages([{
             role: 'tj',
-            text: "Just talk naturally — I'll pick up the details. How was the food situation at " + data.rink.name + "?",
+            text: "Just talk naturally — I'll pick up the details. What was your overall experience at " + data.rink.name + "? Start with whatever stood out most!",
           }])
         }
       })
@@ -292,16 +292,26 @@ function ReviewPageContent() {
 
 function getFollowUpQuestion(catsCompleted: number): string | null {
   const questions = [
-    "Nice one! 👊 Now — how was the food situation? Snack bar, vending machines, or bring your own?",
-    "Got it! How cold was it in there — full winter coat or just a light sweatshirt?",
-    "Perfect! What about skate sharpening — available on-site, and roughly how much?",
-    "Nice! Was parking easy to find, or a bit of a hunt?",
-    "Awesome! Did you connect to WiFi? If so, feel free to drop the password here for other parents! 😄",
-    "Love it! How were the locker rooms — enough space, clean, separate for girls?",
-    "Solid! Anything about the restrooms worth mentioning? Clean, easy to find?",
-    "Great! Did you catch the game on LiveBarn or any live streaming?",
+    // 1 — Temperature (first thing parents notice walking in)
+    "Nice! How cold was it in there — full winter coat or just a light sweatshirt?",
+    // 2 — Locker rooms (critical for teams)
+    "Got it! How were the locker rooms — enough space, clean, and were there separate ones for girls?",
+    // 3 — Parking
+    "Perfect! Was parking easy to find, or a bit of a hunt?",
+    // 4 — Restrooms
+    "Awesome! How were the restrooms — clean, easy to find, enough stalls?",
+    // 5 — Skate sharpening
+    "Nice! What about skate sharpening — available on-site, and roughly how much?",
+    // 6 — Food (moved down from top)
+    "Great! Now — how was the food situation? Snack bar, vending machines, or bring your own?",
+    // 7 — WiFi
+    "Love it! Did you connect to WiFi? If so, feel free to drop the password here for other parents! 😄",
+    // 8 — LiveBarn / streaming
+    "Solid! Did you catch the game on LiveBarn or any live streaming?",
+    // 9 — Rink Rat activities
     "Almost done! Any Rink Rat activities for the little siblings — arcade, bubble hockey, open space?",
-    "Last one — any first impressions worth sharing for families visiting for the first time?",
+    // 10 — First impressions for new families
+    "Last one — any tips for families visiting for the very first time?",
   ]
   return questions[catsCompleted - 1] ?? null
 }

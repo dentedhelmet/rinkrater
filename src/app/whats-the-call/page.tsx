@@ -667,6 +667,11 @@ function QuizScreen({ question, current, total, score, selected, progress, imgEr
           {current + 1 >= total ? 'See My Score →' : 'Next Signal →'}
         </button>
       )}
+
+      {/* ── Thank a Ref! ── */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <ThankARefBanner />
+      </div>
     </section>
   );
 }
@@ -770,6 +775,81 @@ function ResultsScreen({ score, total, onRetry }: { score: number; total: number
           ← Back to Rink Rater
         </Link>
       </div>
+
+      {/* ── Thank a Ref! banner ── */}
+      <ThankARefBanner />
     </section>
   );
+}
+
+// ─── Shared Thank a Ref banner ─────────────────────────────────────────────────
+function ThankARefBanner() {
+  return (
+    <div style={{
+      width:        '100%',
+      maxWidth:     340,
+      marginTop:    40,
+      borderRadius: 'var(--rr-radius)',
+      overflow:     'hidden',
+      border:       'var(--rr-outline)',
+      boxShadow:    'var(--rr-shadow-lg)',
+    }}>
+      {/* Red top stripe */}
+      <div style={{
+        background:     'var(--rr-red)',
+        padding:        '6px 16px',
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'center',
+        gap:            8,
+      }}>
+        <span style={{ fontSize: 14, letterSpacing: 1 }}>🏒</span>
+        <span className="label" style={{ color: 'white', letterSpacing: '1.5px' }}>
+          From All of Us in the Stands
+        </span>
+        <span style={{ fontSize: 14, letterSpacing: 1 }}>🏒</span>
+      </div>
+
+      {/* Main body */}
+      <div style={{
+        background:  'var(--rr-navy)',
+        padding:     '22px 20px 24px',
+        textAlign:   'center',
+      }}>
+        <p className="display-xl" style={{
+          color:        'white',
+          fontSize:     38,
+          lineHeight:   1,
+          marginBottom: 10,
+          letterSpacing: '-0.5px',
+        }}>
+          THANK<br />A REF!
+        </p>
+        <p className="body-sm" style={{
+          color:      'rgba(214,239,250,0.8)',
+          lineHeight: 1.65,
+          maxWidth:   240,
+          margin:     '0 auto 18px',
+        }}>
+          Without officials, there&apos;s no game.
+          Next time you see one on the ice,
+          give them a nod.
+        </p>
+        <div style={{
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:            10,
+          marginBottom:   18,
+        }}>
+          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
+          <span style={{ fontSize: 18 }}>📣</span>
+          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
+        </div>
+        <p className="display-xs" style={{ color: 'rgba(214,239,250,0.5)', letterSpacing: '1px' }}>
+          RINKRATER.COM
+        </p>
+      </div>
+    </div>
+  )
 }
