@@ -18,7 +18,7 @@ export function AnimatedSearchPlaceholder(props: AnimatedSearchPlaceholderProps)
     const interval = setInterval(function() {
       setIndex(function(prev) { return (prev + 1) % ROTATING_WORDS.length })
       setAnimKey(function(prev) { return prev + 1 })
-    }, 4000)
+    }, 2500)
 
     return function() { clearInterval(interval) }
   }, [props.visible])
