@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useAuth } from '@/context/AuthContext'
 import { getLevelForXP, getNextLevelXP, LEVELS } from '@/lib/levels'
+import Link from 'next/link'
 
 // ─── Static badge definitions ──────────────────────────────────────────────────
 // earned status is derived from the user's real stats
@@ -191,6 +192,25 @@ export default function ProfilePage() {
             </div>
           ))}
         </div>
+
+        {/* Game Tracker link */}
+<Link
+  href="/game-tracker"
+  style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}
+>
+  <div className="clay-card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ fontSize: 28 }}>📊</div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)' }}>
+        Game Tracker
+      </div>
+      <div className="body-xs" style={{ color: 'rgba(13,42,74,0.5)', marginTop: 2 }}>
+        Track stats, shots & save percentage
+      </div>
+    </div>
+    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'rgba(13,42,74,0.25)' }}>›</div>
+  </div>
+</Link>
 
         {/* Badges */}
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
