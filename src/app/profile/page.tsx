@@ -12,14 +12,14 @@ import Link from 'next/link'
 // ─── Static badge definitions ──────────────────────────────────────────────────
 // earned status is derived from the user's real stats
 const BADGE_DEFS = [
-  { id: 'rink_regular',   emoji: '⛸️', label: 'Rink Regular',   earnedIf: (r: number) => r >= 1  },
-  { id: 'road_warrior',   emoji: '🏒', label: 'Road Warrior',   earnedIf: (_: number, xp: number) => xp >= 1000 },
-  { id: 'scout',          emoji: '🔍', label: 'Scout',          earnedIf: (r: number) => r >= 5  },
-  { id: 'pioneer',        emoji: '🥅', label: 'Pioneer',        earnedIf: (r: number) => r >= 10 },
-  { id: 'temp_reporter',  emoji: '❄️', label: 'Temp Reporter',  earnedIf: (r: number) => r >= 3  },
-  { id: 'review_50',      emoji: '🏆', label: '50 reviews',     earnedIf: (r: number) => r >= 50 },
-  { id: 'coast_to_coast', emoji: '🌎', label: '5 states',       earnedIf: () => false            }, // future
-  { id: 'rink_rat_mom',   emoji: '👧', label: 'Rink Rat Mom',   earnedIf: () => false            }, // future
+  { id: 'rink_regular',   icon: '/badges/badges-rink-regular.png',    label: 'Rink Regular',   earnedIf: (r: number) => r >= 1  },
+  { id: 'road_warrior',   icon: '/badges/badges-road-warrior.png',    label: 'Road Warrior',   earnedIf: (_: number, xp: number) => xp >= 1000 },
+  { id: 'scout',          icon: '/badges/badges-scout.png',           label: 'Scout',          earnedIf: (r: number) => r >= 5  },
+  { id: 'pioneer',        icon: '/badges/badges-pioneer.png',         label: 'Pioneer',        earnedIf: (r: number) => r >= 10 },
+  { id: 'temp_reporter',  icon: '/badges/badges-temp-reporter.png',   label: 'Temp Reporter',  earnedIf: (r: number) => r >= 3  },
+  { id: 'review_50',      icon: '/badges/badges-fifty-reviews.png',   label: '50 reviews',     earnedIf: (r: number) => r >= 50 },
+  { id: 'coast_to_coast', icon: '/badges/badges-five-states.png',     label: '5 states',       earnedIf: () => false            },
+  { id: 'rink_rat_mom',   icon: '/badges/badges-rink-rat-mom.png',    label: 'Rink Rat Mom',   earnedIf: () => false            },
 ]
 
 export default function ProfilePage() {
@@ -221,13 +221,11 @@ export default function ProfilePage() {
             <div
               key={badge.id}
               className="clay-card-sm"
-              style={{ padding: '8px 4px', textAlign: 'center', opacity: badge.earned ? 1 : 0.3 }}
+              style={{ padding: '8px 4px', textAlign: 'center' }}
               title={badge.label}
             >
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{badge.emoji}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: 'var(--rr-navy)', lineHeight: 1.2 }}>
-                {badge.label}
-              </div>
+              <img src={badge.icon} alt={badge.label} style={{ width: 52, height: 52, objectFit: 'contain', marginBottom: 4, opacity: badge.earned ? 1 : 0.3 }} />
+              
             </div>
           ))}
         </div>
@@ -236,7 +234,8 @@ export default function ProfilePage() {
         {nextBadge && (
           <div className="clay-card" style={{ padding: '10px 14px', marginBottom: 12, background: 'var(--rr-ice)' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 12, color: 'var(--rr-navy)', marginBottom: 4 }}>
-              {nextBadge.emoji} Next up: {nextBadge.label}
+              <img src={nextBadge.icon} alt={nextBadge.label} style={{ width: 20, height: 20, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} />
+Next up: {nextBadge.label}
             </div>
             <div className="body-sm" style={{ color: 'rgba(13,42,74,0.65)' }}>
               Keep reviewing rinks to unlock this badge and earn bonus XP.
