@@ -199,7 +199,7 @@ export default function ProfilePage() {
   style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}
 >
   <div className="clay-card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-    <div style={{ fontSize: 28 }}>📊</div>
+    <img src="/icons/rr_shottracker_icon.png" style={{ width: 65, height: 65, objectFit: 'contain' }} />
     <div style={{ flex: 1 }}>
       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)' }}>
         Game Tracker
@@ -216,7 +216,7 @@ export default function ProfilePage() {
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 10 }}>
           Your badges
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 12 }}>
           {badges.map((badge) => (
   <div key={badge.id} style={{ textAlign: 'center' }} title={badge.label}>
     <img
