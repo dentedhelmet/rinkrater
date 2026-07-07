@@ -218,16 +218,14 @@ export default function ProfilePage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
           {badges.map((badge) => (
-            <div
-              key={badge.id}
-              className="clay-card-sm"
-              style={{ padding: '8px 4px', textAlign: 'center' }}
-              title={badge.label}
-            >
-              <img src={badge.icon} alt={badge.label} style={{ width: 52, height: 52, objectFit: 'contain', marginBottom: 4, opacity: badge.earned ? 1 : 0.3 }} />
-              
-            </div>
-          ))}
+  <div key={badge.id} style={{ textAlign: 'center' }} title={badge.label}>
+    <img
+      src={badge.icon}
+      alt={badge.label}
+      style={{ width: '100%', aspectRatio: '1', objectFit: 'contain', opacity: badge.earned ? 1 : 0.25 }}
+    />
+  </div>
+))}
         </div>
 
         {/* Next badge */}
