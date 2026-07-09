@@ -164,8 +164,10 @@ function NearbyPageContent() {
 
   // Fetch nearby when coords are ready
   useEffect(() => {
-    const useLat = lat ?? rinkLat
-    const useLng = lng ?? rinkLng
+    // Wait for user to grant or deny before falling back to rink coords
+    const userDecided = status === 'granted' || status === 'denied' || status === 'unsupported'
+    const useLat = status === 'granted' ? lat : userDecided ? rinkLat : null
+    const useLng = status === 'granted' ? lng : userDecided ? rinkLng : null
     if (!useLat || !useLng) return
 
     setLoadingPlaces(true)
