@@ -178,7 +178,8 @@ function NearbyPageContent() {
       .finally(() => setLoadingPlaces(false))
   }, [lat, lng, rinkLat, rinkLng])
 
-  const hasCoords = !!(lat && lng) || !!(rinkLat && rinkLng)
+  const userDecided = status === 'granted' || status === 'denied' || status === 'unsupported'
+const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
