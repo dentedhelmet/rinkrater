@@ -296,6 +296,7 @@ export default function HomePage() {
           }
         }
       `}</style>
+      <Footer />
     </PageShell>
   )
 }
@@ -332,7 +333,7 @@ function RinkCard({ rink }: { rink: RinkResult }) {
           style={{ width: 48, height: 48, borderRadius: 8, border: 'var(--rr-outline-sm)', objectFit: 'cover', flexShrink: 0 }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
+          <div style={{ display: 'flex', justifyContent:'space-between', alignItems: 'flex-start', gap: 6 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {name}
             </div>
@@ -344,7 +345,6 @@ function RinkCard({ rink }: { rink: RinkResult }) {
             {rink.city}, {rink.state} - {reviewCount} reviews
           </div>
         </div>
-        <Footer />
       </div>
     </Link>
   )
