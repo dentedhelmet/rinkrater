@@ -9,6 +9,7 @@ import { TJ, TJSpeech } from '@/components/tj/TJ'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
 import { AnimatedSearchPlaceholder } from '@/components/home/AnimatedSearchPlaceholder'
+import { Footer } from '@/components/layout/Footer'
 
 interface RinkResult {
   rink_id?: string
@@ -343,6 +344,7 @@ function RinkCard({ rink }: { rink: RinkResult }) {
             {rink.city}, {rink.state} - {reviewCount} reviews
           </div>
         </div>
+        <Footer />
       </div>
     </Link>
   )
