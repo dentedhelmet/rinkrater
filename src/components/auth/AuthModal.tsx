@@ -12,6 +12,8 @@ interface AuthModalProps {
   defaultTab?: Tab
   /** Optional message shown above the form, e.g. "Sign in to save your score" */
   prompt?:     string
+  /** True when this modal was opened from the onboarding carousel's "Create Account" button */
+  cameFromOnboarding?: boolean
 }
 
 // ─── Shared input style ────────────────────────────────────────────────────────
@@ -32,7 +34,12 @@ const INPUT_STYLE: React.CSSProperties = {
 const AVATARS = Array.from({ length: 27 }, (_, i) => `/characters/profile_photo${i + 1}.png`)
 
 // ─── Component ─────────────────────────────────────────────────────────────────
-export function AuthModal({ onClose, defaultTab = 'signin', prompt }: AuthModalProps) {
+export function AuthModal({
+  onClose,
+  defaultTab = 'signin',
+  prompt,
+  cameFromOnboarding = false,
+}: AuthModalProps) {
   const [tab,            setTab]            = useState<Tab>(defaultTab)
   const [email,          setEmail]          = useState('')
   const [password,       setPassword]       = useState('')
@@ -110,17 +117,18 @@ export function AuthModal({ onClose, defaultTab = 'signin', prompt }: AuthModalP
       const initials     = trimmedAlias.substring(0, 2).toUpperCase()
 
       const { error: profileError } = await supabase.from('profiles').insert({
-        id:              data.user.id,
-        alias:           trimmedAlias,
+        id:                  data.user.id,
+        alias:               trimmedAlias,
         initials,
-        avatar_url:      selectedAvatar,
-        level:           1,
-        level_title:     'Rookie',
-        xp:              0,
-        xp_to_next:      500,
-        streak:          0,
-        total_reviews:   0,
-        families_helped: 0,
+        avatar_url:          selectedAvatar,
+        level:               1,
+        level_title:         'Rookie',
+        xp:                  0,
+        xp_to_next:          500,
+        streak:              0,
+        total_reviews:       0,
+        families_helped:     0,
+        has_seen_onboarding: cameFromOnboarding,
       })
 
       if (profileError) {
