@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
+import { useAuth } from '@/context/AuthContext'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 interface ExtractedTag {
   label: string
@@ -22,7 +24,9 @@ function ReviewPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
-  const [rinkName, setRinkName] = useState('this rink')
+  const { user, profile } = useAuth()
+  const [showAuth,     setShowAuth]     = useState(false)
+  const [rinkName,     setRinkName]     = useState('this rink')
   const [rinkLocation, setRinkLocation] = useState('')
   const [messages, setMessages] = useState<ReviewMessage[]>([
     {
@@ -30,11 +34,11 @@ function ReviewPageContent() {
       text: "Just talk naturally — I'll pick up the details. Start with whatever stands out most!",
     },
   ])
-  const [input, setInput] = useState('')
-  const [catsCompleted, setCatsCompleted] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
-  const [xpEarned, setXpEarned] = useState(0)
+  const [input,          setInput]          = useState('')
+  const [catsCompleted,  setCatsCompleted]  = useState(0)
+  const [loading,        setLoading]        = useState(false)
+  const [done,           setDone]           = useState(false)
+  const [xpEarned,       setXpEarned]       = useState(0)
 
   useEffect(function() {
     if (!rinkId) return
@@ -95,17 +99,22 @@ function ReviewPageContent() {
   }
 
   async function submitReview() {
+    if (!user) { setShowAuth(true); return }
     setLoading(true)
     try {
-      await fetch('/api/review', {
-        method: 'POST',
+      const res = await fetch('/api/review', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rinkId: rinkId,
-          rawText: messages.filter(m => m.role === 'user').map(m => m.text).join('. '),
+          rinkId,
+          rawText:   messages.filter(m => m.role === 'user').map(m => m.text).join('. '),
+          userId:    user.id,
+          userAlias: profile?.alias || 'Rink Rater reviewer',
         }),
       })
-      setXpEarned(125 + catsCompleted * 25)
+      const data = await res.json()
+      // XP is awarded by the API — use categories found for accurate calculation
+      setXpEarned(data.categoriesFound ? 125 + data.categoriesFound * 25 : 125)
       setDone(true)
     } finally {
       setLoading(false)
@@ -139,6 +148,42 @@ function ReviewPageContent() {
   }
 
   const pct = Math.round((catsCompleted / TOTAL_CATS) * 100)
+
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  if (!user) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="Add review" />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>✍️</div>
+          <h2 className="display-lg" style={{ marginBottom: 8 }}>Sign in to leave a review</h2>
+          <p className="body-md" style={{ color: 'rgba(13,42,74,0.55)', maxWidth: 260, marginBottom: 28, lineHeight: 1.6 }}>
+            Create a free account to share your experience and earn XP for every review.
+          </p>
+          <button
+            className="clay-btn clay-btn-primary"
+            style={{ fontSize: 16, padding: '13px 36px', marginBottom: 12 }}
+            onClick={() => setShowAuth(true)}
+          >
+            Sign In / Join Up
+          </button>
+          <button
+            className="clay-btn clay-btn-secondary"
+            style={{ fontSize: 14 }}
+            onClick={() => router.back()}
+          >
+            ← Go Back
+          </button>
+        </div>
+        {showAuth && (
+          <AuthModal
+            onClose={() => setShowAuth(false)}
+            prompt="Sign in to leave a review and earn XP"
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
