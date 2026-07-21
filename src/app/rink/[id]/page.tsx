@@ -142,51 +142,52 @@ export default function RinkProfilePage() {
       />
 
       <main style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
+
         <div style={{ position: 'relative', width: '100%' }}>
-  <img
-    src="/hero/header-rink-info-hockeymom.jpg"
-    alt=""
-    style={{ width: '100%', height: 'auto', display: 'block' }}
-  />
-  <div
-    style={{
-      position: 'absolute',
-      top: '10%',
-      left: '4%',
-      maxWidth: '52%',
-      background: 'rgba(13,42,74,0.92)',
-      borderRadius: 12,
-      padding: '12px 14px',
-      boxShadow: 'var(--rr-shadow)',
-    }}
-  >
-    <div
-      style={{
-        fontFamily: 'var(--font-display)',
-        fontWeight: 900,
-        fontSize: 'clamp(13px, 4.2vw, 20px)',
-        color: '#fff',
-        marginBottom: 6,
-        lineHeight: 1.15,
-      }}
-    >
-      {rink.name}
-    </div>
-    <div
-      style={{
-        fontSize: 'clamp(9px, 2.4vw, 11px)',
-        color: 'rgba(255,255,255,0.65)',
-        marginBottom: 8,
-        lineHeight: 1.4,
-      }}
-    >
-      {rink.address ? rink.address + ' - ' : ''}{rink.city}, {rink.state}{rink.sheets ? ' - ' + rink.sheets + ' sheets' : ''}
-    </div>
-    <span className={'tier-chip tier-chip--' + tierKey} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
-      {totalReviews} reviews - {tierText}
-    </span>
-  </div>
-</div>
+          <img
+            src="/hero/header-rink-info-hockeymom.jpg"
+            alt=""
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '10%',
+              left: '4%',
+              maxWidth: '52%',
+              background: 'rgba(13,42,74,0.92)',
+              borderRadius: 12,
+              padding: '12px 14px',
+              boxShadow: 'var(--rr-shadow)',
+            }}
+          >
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 900,
+                fontSize: 'clamp(13px, 4.2vw, 20px)',
+                color: '#fff',
+                marginBottom: 6,
+                lineHeight: 1.15,
+              }}
+            >
+              {rink.name}
+            </div>
+            <div
+              style={{
+                fontSize: 'clamp(9px, 2.4vw, 11px)',
+                color: 'rgba(255,255,255,0.65)',
+                marginBottom: 8,
+                lineHeight: 1.4,
+              }}
+            >
+              {rink.address ? rink.address + ' - ' : ''}{rink.city}, {rink.state}{rink.sheets ? ' - ' + rink.sheets + ' sheets' : ''}
+            </div>
+            <span className={'tier-chip tier-chip--' + tierKey} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+              {totalReviews} reviews - {tierText}
+            </span>
+          </div>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '10px 12px', background: 'var(--rr-warm)', borderBottom: 'var(--rr-outline)' }}>
           <button
@@ -209,7 +210,7 @@ export default function RinkProfilePage() {
             <img src="/icons/rr_rinkinfo_contact.png" alt="Contact" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>CONTACT</div>
           </button>
-          <a
+          
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -227,29 +228,32 @@ export default function RinkProfilePage() {
           </Link>
         </div>
 
-<Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginTop: 12, marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
-            <div style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <TJ state="idle" size="sm" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)', marginBottom: 2 }}>
-                  Ask TJ anything about this rink
-                </div>
-                <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
-                  Is there a girls locker room? How cold is it?
-                </div>
+        <Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginTop: 12, marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
+          <div style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+            <TJ state="idle" size="sm" />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)', marginBottom: 2 }}>
+                Ask TJ anything about this rink
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
+                Is there a girls locker room? How cold is it?
               </div>
             </div>
-          </Link>
-          <div style={{ padding: '0 14px' }}><LatestReviewsCarousel reviews={recentReviews} /></div>
-          <p style={{
-  fontSize: 12,
-  color: 'rgba(13,42,74,0.4)',
-  fontFamily: 'var(--font-body)',
-  padding: '6px 16px 8px',
-  lineHeight: 1.5,
-}}>
-  * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
-</p>
+          </div>
+        </Link>
+
+        <div style={{ padding: '0 14px' }}><LatestReviewsCarousel reviews={recentReviews} /></div>
+
+        <p style={{
+          fontSize: 12,
+          color: 'rgba(13,42,74,0.4)',
+          fontFamily: 'var(--font-body)',
+          padding: '6px 16px 8px',
+          lineHeight: 1.5,
+        }}>
+          * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
+        </p>
+
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
           <button
             onClick={function() { setShowCategories(!showCategories) }}
@@ -275,29 +279,29 @@ export default function RinkProfilePage() {
           </button>
           {showCategories && (
             categories.length === 0 ? (
-            <div className="clay-card" style={{ padding: '14px', textAlign: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
-                No reviews yet for this rink. Be the first!
+              <div className="clay-card" style={{ padding: '14px', textAlign: 'center', marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
+                  No reviews yet for this rink. Be the first!
+                </div>
               </div>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-              {categories.map(function(entry) {
-                var cat = entry[0]
-                var count = entry[1]
-                return (
-                  <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px', cursor: 'pointer' }} onClick={function() { setSelectedCategory(cat) }}>
-                    <div className="label" style={{ marginBottom: 4, color: 'rgba(13,42,74,0.5)' }}>
-                      {cat}
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+                {categories.map(function(entry) {
+                  var cat = entry[0]
+                  var count = entry[1]
+                  return (
+                    <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px', cursor: 'pointer' }} onClick={function() { setSelectedCategory(cat) }}>
+                      <div className="label" style={{ marginBottom: 4, color: 'rgba(13,42,74,0.5)' }}>
+                        {cat}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18 }}>
+                        {count} {count !== 1 ? 'reviews' : 'review'}
+                      </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18 }}>
-                      {count} {count !== 1 ? 'reviews' : 'review'}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )
+                  )
+                })}
+              </div>
+            )
           )}
 
           <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
@@ -344,10 +348,8 @@ export default function RinkProfilePage() {
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16, color: 'var(--rr-navy)', marginBottom: 14, textAlign: 'center' }}>
               Contact {rink.name}
             </div>
-
             {rink.phone && (
               
-          <a
                 href={'tel:+1' + rink.phone.replace(/[^0-9]/g, '')}
                 style={{
                   display: 'flex',
@@ -367,9 +369,7 @@ export default function RinkProfilePage() {
                 </div>
               </a>
             )}
-
             {rink.website && (
-                <a
               
                 href={rink.website}
                 target="_blank"
@@ -392,13 +392,11 @@ export default function RinkProfilePage() {
                 </div>
               </a>
             )}
-
             {!hasContactInfo && (
               <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)', textAlign: 'center', padding: 10 }}>
                 No contact info available for this rink yet.
               </div>
             )}
-
             <button
               onClick={function() { setShowContactModal(false) }}
               className="clay-btn clay-btn-secondary"
