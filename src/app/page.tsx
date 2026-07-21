@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { TopBar } from '@/components/layout/TopBar'
+import Image from 'next/image'
+import { SiteHeader } from '@/components/redesign/SiteHeader'
+import { AuthModal } from '@/components/auth/AuthModal'
 import { PageShell } from '@/components/layout/PageShell'
 import { BottomBanner } from '@/components/layout/BottomBanner'
-import { TJ, TJSpeech } from '@/components/tj/TJ'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
-import { AnimatedSearchPlaceholder } from '@/components/home/AnimatedSearchPlaceholder'
 import { Footer } from '@/components/layout/Footer'
 
 interface RinkResult {
@@ -41,11 +41,66 @@ function thumbnailForRink(id: string) {
   return '/rink-thumbnails/rr_arena' + num + '.png'
 }
 
+const HERO_BACKGROUND = '/hero/hero-main.jpg'
+const HERO_BACKGROUND_MOBILE = '/hero/hero-mobile.jpg'
+
+// Ad rotation: each entry is one ad. Add more entries here later and they
+// automatically join the rotation — no other code changes needed.
+const ADS = [
+  {
+    id: 'heated-jacket-1',
+    desktop: '/ads/heated-jacket-desktop.png',
+    mobile: '/ads/heated-jacket-mobile.png',
+    // TODO: replace with the real Amazon affiliate/product link before launch
+    link: 'https://www.amazon.com/',
+    alt: 'Amazon: heated jackets for every rink — 5 heating zones, all-day warmth, rechargeable power. Shop Now.',
+    aspectDesktop: '650 / 548',
+    aspectMobile: '750 / 290',
+  },
+  {
+    id: 'bubble-hockey-1',
+    desktop: '/ads/bubble-hockey-desktop.png',
+    mobile: '/ads/bubble-hockey-mobile.png',
+    // TODO: replace with the real destination link before launch
+    link: 'https://www.amazon.com/',
+    // TODO: update this description once the actual ad copy/offer is confirmed
+    alt: 'Advertisement: bubble hockey table. Shop Now.',
+    // TODO: these aspect ratios are copied from the heated-jacket ad as a
+    // starting guess — check against the actual PNG dimensions and adjust
+    // if the bubble hockey creative has a different shape. object-fit:
+    // contain means a wrong guess won't distort the image, just add extra
+    // padding on two sides, so this is safe to leave until confirmed.
+    aspectDesktop: '650 / 548',
+    aspectMobile: '750 / 290',
+  },
+]
+
+const AD_ROTATION_KEY = 'rinkrater_ad_rotation_index'
+
 export default function HomePage() {
   const [query, setQuery] = useState('')
   const [rinks, setRinks] = useState<RinkResult[]>([])
   const [loading, setLoading] = useState(true)
   const [showRinkList, setShowRinkList] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [adIndex, setAdIndex] = useState(0)
+
+  useEffect(function() {
+    const mq = window.matchMedia('(min-width: 768px)')
+    setIsDesktop(mq.matches)
+    function handleChange(e: MediaQueryListEvent) { setIsDesktop(e.matches) }
+    mq.addEventListener('change', handleChange)
+    return function() { mq.removeEventListener('change', handleChange) }
+  }, [])
+
+  useEffect(function() {
+    if (ADS.length <= 1) return
+    const stored = parseInt(localStorage.getItem(AD_ROTATION_KEY) || '0', 10)
+    const current = stored % ADS.length
+    setAdIndex(current)
+    localStorage.setItem(AD_ROTATION_KEY, String((current + 1) % ADS.length))
+  }, [])
 
   useEffect(function() {
     const timer = setTimeout(function() {
@@ -71,81 +126,122 @@ export default function HomePage() {
   }
 
   return (
-    <PageShell topBar={<TopBar />} tabBar={<BottomBanner />}>
+    <PageShell topBar={<SiteHeader onSignIn={() => setShowAuth(true)} />} tabBar={<BottomBanner />}>
       <div className="home-grid" >
         <div className="home-main-col">
-        <div
-          style={{
-            background: 'var(--rr-warm)',
-            border: 'var(--rr-outline)',
-            borderRadius: '12px 12px 12px 2px',
-            padding: '9px 13px',
-            fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-display)', textTransform: 'uppercase',
-            lineHeight: 1.55,
-            color: 'var(--rr-navy)',
-            boxShadow: 'var(--rr-shadow)',
-            marginBottom: 10,
-            width: '100%',
-          }}
-        >
-          ASK ME ABOUT ANY RINK ANYWHERE IN NORTH AMERICA!
-        </div>
-        <div className="tj-intro-row">
-          <TJ state="idle" size="xl" crop="full" />
-        </div>
-        <div
-          style={{
-            background: 'var(--rr-warm)',
-            border: 'var(--rr-outline)',
-            borderRadius: 'var(--rr-radius)',
-            boxShadow: 'var(--rr-shadow)',
-            padding: '10px 12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            marginBottom: 14,
-            position: 'relative',
-          }}
-        >
-          <AnimatedSearchPlaceholder visible={!query} />
-          <img src="/icons/search-button.png" alt="Search" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
-          <input
-            type="search"
-            placeholder=""
-            value={query}
-            onChange={function(e) { setQuery(e.target.value); setShowRinkList(true) }}
-            onFocus={function(e) { e.target.setSelectionRange(0, 0) }}
-            style={{
-              flex: 1,
-              border: 'none',
-              fontSize: 13,
-              fontFamily: 'var(--font-body)',
-              color: 'var(--rr-navy)',
-              outline: 'none',
-              background: 'transparent',
-              paddingLeft: 0,
-            }}
-            aria-label="Search for a rink"
-          />
-          <button
-            aria-label="Voice search"
-            style={{
-              width: 32, height: 32,
-              borderRadius: '50%',
-              background: 'var(--rr-red)',
-              border: 'var(--rr-outline-sm)',
-              boxShadow: 'var(--rr-shadow-sm)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-              color: '#fff', fontSize: 15,
-            }}
-          >
-            {'\u{1F3A4}'}
-          </button>
+
+        {/* ── Hero ──────────────────────────────────────────────────────────
+             hero-outer has NO fixed height of its own — its height comes
+             entirely from hero-photo, which is the only normal-flow child.
+             hero-photo carries the aspect-ratio, so next/image's `fill`
+             always has a predictable box to fill (this is what was broken
+             before — the box was growing to fit the text, stretching the
+             photo along with it).
+             The callout+search overlay is absolutely positioned at every
+             breakpoint. The sidebar (Partners/Trending) is a normal block
+             below the photo on mobile, then switches to absolute — floating
+             over the photo — at desktop widths. Same DOM node either way,
+             so nothing is duplicated or double-fetched. */}
+        <div className="hero-outer">
+          <div className="hero-photo">
+            <Image
+              src={isDesktop ? HERO_BACKGROUND : HERO_BACKGROUND_MOBILE}
+              alt=""
+              fill
+              priority
+              sizes={isDesktop ? '66vw' : '100vw'}
+              className="hero-photo-img"
+            />
+          </div>
+
+          <div className="hero-overlay-left">
+            <div className="hero-callout">
+              <h1 className="hero-headline">
+                <span className="hero-line-sm">ASK ME ABOUT</span>
+                <span className="hero-line-lg">ANY RINK</span>
+                <span className="hero-line-lg hero-accent">ANYWHERE</span>
+                <span className="hero-line-md">IN NORTH AMERICA!</span>
+              </h1>
+            </div>
+          </div>
+
+          {/* Search bar spans (nearly) the full width of the photo, anchored
+              to the bottom, at every breakpoint — so results dropped beneath
+              it have room to show full rink names without truncating */}
+          <div className="hero-search-wrap hero-search-wrap--bottom">
+            <div className="hero-search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: 'var(--rr-navy)', opacity: 0.5 }}>
+                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                <path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <input
+                type="search"
+                placeholder="Search for a rink..."
+                value={query}
+                onChange={function(e) { setQuery(e.target.value) }}
+                onKeyDown={function(e) { if (e.key === 'Enter') { fetchRinks(query) } }}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  fontSize: 13,
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--rr-navy)',
+                  outline: 'none',
+                  background: 'transparent',
+                  paddingLeft: 0,
+                  minWidth: 0,
+                  width: '100%',
+                }}
+                aria-label="Search for a rink by name, city, or state"
+              />
+              <button
+                type="button"
+                onClick={function() { fetchRinks(query) }}
+                aria-label="Search"
+                style={{
+                  width: 30, height: 30,
+                  borderRadius: '50%',
+                  background: 'var(--rr-red)',
+                  border: 'var(--rr-outline-sm)',
+                  boxShadow: 'var(--rr-shadow-sm)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', flexShrink: 0,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2.2" />
+                  <path d="M21 21l-4.3-4.3" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            {query.trim() !== '' && (
+              <div className="hero-search-results">
+                {loading && (
+                  <div className="hero-search-status">Searching...</div>
+                )}
+                {!loading && rinks.length === 0 && (
+                  <div className="hero-search-status">
+                    No rinks found for "{query}".
+                  </div>
+                )}
+                {!loading && rinks.length > 0 && (
+                  <div className="hero-search-results-list">
+                    {rinks.map(function(rink) {
+                      return <RinkCard key={rink.rink_id || rink.id} rink={rink} />
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
 
-
+        <div className="rink-list-row">
+          <div className="rink-list-col">
           <button
+            type="button"
             onClick={function() { setShowRinkList(!showRinkList) }}
             style={{
               width: '100%',
@@ -211,6 +307,37 @@ export default function HomePage() {
               </div>
             </div>
           )}
+          </div>
+
+          <div className="rink-ad-col">
+            {(function() {
+              const ad = ADS[adIndex]
+              return (
+                <a
+                  href={ad.link}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  className="ad-link"
+                  aria-label={'Advertisement: ' + ad.alt}
+                >
+                  <div
+                    className="ad-image-wrap"
+                    style={{ aspectRatio: isDesktop ? ad.aspectDesktop : ad.aspectMobile }}
+                  >
+                    <Image
+                      src={isDesktop ? ad.desktop : ad.mobile}
+                      alt={ad.alt}
+                      fill
+                      sizes={isDesktop ? '240px' : '100vw'}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
+                </a>
+              )
+            })()}
+          </div>
+        </div>
+
         </div>
 
         <div className="home-side-col">
@@ -273,19 +400,160 @@ export default function HomePage() {
           gap: 14px;
           padding-bottom: 16px;
         }
-        .tj-intro-row {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 14px;
-        }
-        }
         .rink-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 8px;
         }
+
+        /* Rink list + ad card: stacked on mobile, side-by-side on desktop */
+        .rink-list-row {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .rink-list-col {
+          flex: 1;
+          min-width: 0;
+        }
+
+        /* ── Hero outer ──────────────────────────────────────────────────
+             Mobile: hero-photo and hero-overlay-left are both normal-flow
+             children, stacked vertically — photo on top, callout+search
+             below. No overlap is possible because nothing is absolutely
+             positioned over the image at this breakpoint.
+             Desktop: hero-overlay-left switches to position:absolute and
+             floats over the photo instead (see media query below). ── */
+        .hero-outer {
+          position: relative;
+          margin-bottom: 14px;
+        }
+
+        .hero-photo {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 4 / 3;
+          border-radius: 20px 20px 20px 4px;
+          overflow: hidden;
+          box-shadow: var(--rr-shadow);
+        }
+        .hero-photo-img {
+          object-fit: cover;
+          object-position: center top;
+        }
+
+        .hero-overlay-left {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          max-width: 220px;
+        }
+
+        .hero-callout {
+          background: var(--rr-warm);
+          border: var(--rr-outline);
+          border-radius: 14px 14px 14px 3px;
+          box-shadow: var(--rr-shadow-lg);
+          padding: 10px 12px;
+        }
+        .hero-headline {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          font-family: var(--font-display);
+          text-transform: uppercase;
+          line-height: 1.15;
+        }
+        .hero-line-sm {
+          font-size: 12px;
+          font-weight: 800;
+          color: var(--rr-navy);
+        }
+        .hero-line-lg {
+          font-size: 19px;
+          font-weight: 900;
+          color: var(--rr-navy);
+        }
+        .hero-line-md {
+          font-size: 11px;
+          font-weight: 800;
+          color: var(--rr-navy);
+          margin-top: 2px;
+        }
+        .hero-accent {
+          color: var(--rr-red);
+        }
+
+        .hero-search-wrap {
+          position: relative;
+        }
+        .hero-search-wrap--bottom {
+          position: absolute;
+          bottom: 14px;
+          left: 14px;
+          right: 14px;
+          z-index: 2;
+        }
+        .hero-search {
+          background: var(--rr-warm);
+          border: var(--rr-outline);
+          border-radius: var(--rr-radius);
+          box-shadow: var(--rr-shadow-lg);
+          padding: 8px 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .hero-search-results {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          right: 0;
+          background: var(--rr-warm);
+          border: var(--rr-outline);
+          border-radius: var(--rr-radius);
+          box-shadow: var(--rr-shadow-lg);
+          max-height: 320px;
+          overflow-y: auto;
+          z-index: 20;
+          padding: 8px;
+        }
+        .hero-search-status {
+          padding: 16px;
+          text-align: center;
+          font-size: 12px;
+          font-family: var(--font-body);
+          color: rgba(13, 42, 74, 0.5);
+        }
+        .hero-search-results-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        /* Ad card, next to Most Reviewed Rinks — stacked below on mobile,
+           beside it on desktop */
+        .rink-ad-col {
+          width: 100%;
+        }
+        .ad-link {
+          display: block;
+        }
+        .ad-image-wrap {
+          position: relative;
+          width: 100%;
+          border-radius: var(--rr-radius);
+          overflow: hidden;
+        }
+        .ad-link:focus-visible .ad-image-wrap {
+          outline: 3px solid var(--rr-navy);
+          outline-offset: 2px;
+        }
+
         @media (min-width: 768px) {
           .home-grid {
             grid-template-columns: 2fr 1fr;
@@ -294,9 +562,55 @@ export default function HomePage() {
           .rink-grid {
             grid-template-columns: 1fr 1fr;
           }
+          .hero-photo {
+            aspect-ratio: 16 / 9;
+          }
+          .hero-photo-img {
+            object-position: center 25%;
+          }
+          .hero-overlay-left {
+            top: 28px;
+            left: 28px;
+            max-width: 400px;
+            gap: 14px;
+          }
+          .hero-callout {
+            padding: 18px 22px;
+          }
+          .hero-line-sm {
+            font-size: 18px;
+          }
+          .hero-line-lg {
+            font-size: 36px;
+          }
+          .hero-line-md {
+            font-size: 18px;
+          }
+          .hero-search {
+            padding: 10px 14px;
+          }
+          .hero-search-wrap--bottom {
+            bottom: 24px;
+            left: 28px;
+            right: 28px;
+          }
+          .hero-search-results {
+            max-height: 380px;
+          }
+
+          /* Desktop: rink list and ad card sit side by side */
+          .rink-list-row {
+            flex-direction: row;
+            align-items: flex-start;
+          }
+          .rink-ad-col {
+            width: 240px;
+            flex-shrink: 0;
+          }
         }
       `}</style>
       <Footer />
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </PageShell>
   )
 }

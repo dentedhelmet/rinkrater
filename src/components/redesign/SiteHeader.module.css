@@ -1,0 +1,281 @@
+/* ─── Skip link ──────────────────────────────────────────────────────────── */
+.skipLink {
+  position: absolute;
+  top: -100px;
+  left: 12px;
+  z-index: 500;
+  background: #fff;
+  color: var(--rr-navy);
+  padding: 10px 16px;
+  border-radius: var(--rr-radius-sm);
+  font-weight: 800;
+  font-family: var(--font-display, inherit);
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skipLink:focus {
+  top: 12px;
+}
+
+/* ─── Header shell ───────────────────────────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, var(--rr-red) 0%, #a30d24 100%);
+  position: relative;
+  z-index: 100;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+}
+
+/* ─── Logo ───────────────────────────────────────────────────────────────── */
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logoImg {
+  width: 145px;
+  height: 100px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── Desktop nav ────────────────────────────────────────────────────────── */
+.desktopNav {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  color: #fff;
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 6px 2px;
+  border-radius: 4px;
+}
+
+.navLink:hover {
+  opacity: 0.85;
+}
+
+/* ─── Sign In (desktop pill button) ──────────────────────────────────────── */
+.signInBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  background: transparent;
+  border: 2px solid #fff;
+  border-radius: var(--rr-radius-pill);
+  padding: 9px 20px;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.signInBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Signed-in state (desktop) ──────────────────────────────────────────── */
+.desktopAuthArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatarPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 14px 6px 6px;
+  border: 2px solid #fff;
+  border-radius: var(--rr-radius-pill);
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.avatarPill:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.avatarImg {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitials {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.avatarAlias {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOutBtn {
+  color: rgba(255, 255, 255, 0.75);
+  background: none;
+  border: none;
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+.signOutBtn:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ─── Mobile avatar icon ─────────────────────────────────────────────────── */
+.mobileAvatarImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.mobileAvatarInitials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: var(--font-display, inherit);
+}
+
+/* ─── Mobile controls ────────────────────────────────────────────────────── */
+.mobileControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Mobile dropdown panel ──────────────────────────────────────────────── */
+.mobilePanel {
+  background: var(--rr-warm);
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: var(--rr-shadow-lg);
+}
+
+.mobileNavList {
+  list-style: none;
+  margin: 0;
+  padding: 8px 20px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileNavLink {
+  display: block;
+  color: var(--rr-navy);
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 16px;
+  text-decoration: none;
+  padding: 14px 4px;
+  border-bottom: 1px solid rgba(13, 42, 74, 0.1);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── Responsive breakpoint ──────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .desktopNav {
+    display: block;
+  }
+  .desktopOnly {
+    display: flex;
+  }
+  .mobileControls {
+    display: none;
+  }
+}
+
+/* ─── Focus visibility (WCAG 2.4.7) ──────────────────────────────────────── */
+.navLink:focus-visible,
+.signInBtn:focus-visible,
+.iconBtn:focus-visible,
+.mobileNavLink:focus-visible,
+.logoLink:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .skipLink {
+    transition: none;
+  }
+}
