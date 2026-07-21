@@ -142,26 +142,51 @@ export default function RinkProfilePage() {
       />
 
       <main style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
-        <div style={{ background: 'var(--rr-navy)', padding: '14px 14px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img
-            src={'/rink-thumbnails/rr_arena' + ((Math.abs(rink.id.split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
-            alt={rink.name}
-            style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
-          />
-          <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 20, color: '#fff', marginBottom: 3 }}>
-            {rink.name}
-          </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 10 }}>
-            {rink.address ? rink.address + ' - ' : ''}{rink.city}, {rink.state}{rink.sheets ? ' - ' + rink.sheets + ' sheets' : ''}
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <span className={'tier-chip tier-chip--' + tierKey}>
-              {totalReviews} reviews - {tierText}
-            </span>
-          </div>
-          </div>
-        </div>
+        <div style={{ position: 'relative', width: '100%' }}>
+  <img
+    src="/hero/header-rink-info-hockeymom.jpg"
+    alt=""
+    style={{ width: '100%', height: 'auto', display: 'block' }}
+  />
+  <div
+    style={{
+      position: 'absolute',
+      top: '10%',
+      left: '4%',
+      maxWidth: '52%',
+      background: 'rgba(13,42,74,0.92)',
+      borderRadius: 12,
+      padding: '12px 14px',
+      boxShadow: 'var(--rr-shadow)',
+    }}
+  >
+    <div
+      style={{
+        fontFamily: 'var(--font-display)',
+        fontWeight: 900,
+        fontSize: 'clamp(13px, 4.2vw, 20px)',
+        color: '#fff',
+        marginBottom: 6,
+        lineHeight: 1.15,
+      }}
+    >
+      {rink.name}
+    </div>
+    <div
+      style={{
+        fontSize: 'clamp(9px, 2.4vw, 11px)',
+        color: 'rgba(255,255,255,0.65)',
+        marginBottom: 8,
+        lineHeight: 1.4,
+      }}
+    >
+      {rink.address ? rink.address + ' - ' : ''}{rink.city}, {rink.state}{rink.sheets ? ' - ' + rink.sheets + ' sheets' : ''}
+    </div>
+    <span className={'tier-chip tier-chip--' + tierKey} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+      {totalReviews} reviews - {tierText}
+    </span>
+  </div>
+</div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '10px 12px', background: 'var(--rr-warm)', borderBottom: 'var(--rr-outline)' }}>
           <button
