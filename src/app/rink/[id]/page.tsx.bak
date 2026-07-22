@@ -370,7 +370,7 @@ export default function RinkProfilePage() {
               </a>
             )}
             {rink.website && (
-              <a
+              
                 href={rink.website}
                 target="_blank"
                 rel="noopener noreferrer"
