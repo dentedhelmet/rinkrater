@@ -16,7 +16,7 @@ interface TJProps {
   state?: TJState
   size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
-  crop?: 'full' | 'face'
+  crop?: 'full' | 'face' | 'half'
 }
 
 const SIZE_MAP = {
@@ -58,11 +58,14 @@ export function TJ(props: TJProps) {
 function TJImage(props: {
   width: number
   height: number
-  crop: 'full' | 'face'
+  crop: 'full' | 'face' | 'half'
   className: string
   state: TJState
 }) {
-  const src = props.crop === 'face' ? '/tj/tj-face.png' : '/tj/tj-fullpose.png'
+  const src =
+    props.crop === 'face' ? '/tj/tj-face.png' :
+    props.crop === 'half' ? '/tj/tj-half-pose.png' :
+    '/tj/tj-fullpose.png'
 
   return (
     <div

@@ -10,15 +10,29 @@ interface Message {
   role: 'user' | 'agent'
   text: string
   source?: string
+  time?: string
 }
 
-const QUICK_CHIPS = [
-  'How cold is it?',
-  'Girls locker room?',
-  'Parking?',
-  'WiFi password?',
-  'Skate sharpening cost?',
+const QUICK_CHIPS_SETS = [
+  [
+    'How cold is it?',
+    'Girls locker room?',
+    'Parking?',
+    'WiFi password?',
+    'Skate sharpening cost?',
+  ],
+  [
+    'Are there concessions?',
+    "How's the ice?",
+    'Is there a pro shop?',
+    "How's the seating?",
+    'Is there a sled hockey program?',
+  ],
 ]
+
+function nowTime() {
+  return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+}
 
 function ChatPageContent() {
   const searchParams = useSearchParams()
@@ -26,13 +40,16 @@ function ChatPageContent() {
 
   const [rinkName, setRinkName] = useState('this rink')
   const [rinkLocation, setRinkLocation] = useState('')
+  const [totalReviews, setTotalReviews] = useState(0)
+  const [tier, setTier] = useState<string | null>(null) // TODO: confirm actual field name on rink record
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'agent', text: "Hey! Ask me anything — I'll check the reviews for you." },
+    { role: 'agent', text: "Hey! Ask me anything — I'll check the reviews for you.", time: nowTime() },
   ])
   const [input, setInput] = useState('')
   const [tjState, setTjState] = useState<TJState>('idle')
   const [loading, setLoading] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [chipSetIndex, setChipSetIndex] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,19 +64,29 @@ function ChatPageContent() {
         if (data.rink) {
           setRinkName(data.rink.name)
           setRinkLocation(`${data.rink.city}, ${data.rink.state}`)
+          setTotalReviews(data.stats?.total_reviews || 0)
+          setTier(data.rink.tier || null)
           setMessages([{
             role: 'agent',
             text: `Hey! Ask me anything about ${data.rink.name} — I've got ${data.stats?.total_reviews || 0} reviews to work with.`,
+            time: nowTime(),
           }])
         }
       })
       .catch(() => {})
   }, [rinkId])
 
+  const thumbnailSrc =
+    '/rink-thumbnails/rr_arena' +
+    ((Math.abs((rinkId || '').split('').reduce(function (acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) +
+    '.png'
+
+  const activeChips = QUICK_CHIPS_SETS[chipSetIndex]
+
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', text }])
+    setMessages(prev => [...prev, { role: 'user', text, time: nowTime() }])
     setLoading(true)
     setTjState('thinking')
 
@@ -75,14 +102,16 @@ function ChatPageContent() {
         role: 'agent',
         text: data.answer ?? 'Sorry, I had trouble finding that information.',
         source: data.reviewsUsed ? `Based on ${data.reviewsUsed} reviews` : undefined,
+        time: nowTime(),
       }])
     } catch {
-      setMessages(prev => [...prev, { role: 'agent', text: "Hmm, I couldn't reach the rink data right now. Try again?" }])
+      setMessages(prev => [...prev, { role: 'agent', text: "Hmm, I couldn't reach the rink data right now. Try again?", time: nowTime() }])
     } finally {
       setLoading(false)
       setTjState('idle')
     }
   }
+
   async function handleShare() {
     if (sharing) return
     setSharing(true)
@@ -114,7 +143,7 @@ function ChatPageContent() {
       <TopBar
         showBack
         backHref={rinkId ? `/rink/${rinkId}` : '/'}
-        title="Ask TJ"
+        title="ASK TJ ANYTHING"
         rightAction={
           <button
             onClick={handleShare}
@@ -140,32 +169,89 @@ function ChatPageContent() {
         }
       />
 
-      <div style={{ background: 'var(--rr-navy)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: 'var(--rr-outline)', flexShrink: 0 }}>
+      {/* HERO: static banner (TJ + scoreboard baked into the image) + rink info overlay box */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '2.79 / 1',
+          maxHeight: 300,
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
+      >
         <img
-          src={'/rink-thumbnails/rr_arena' + ((Math.abs((rinkId || '').split('').reduce(function(acc, c) { return acc + c.charCodeAt(0) }, 0)) % 14) + 1) + '.png'}
+          src="/hero/header-ask-tj-anything1.jpg"
           alt=""
-          style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center 12%',
+            display: 'block',
+          }}
         />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20, color: '#fff' }}>
-            {rinkName}
-          </div>
-          {rinkLocation && (
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-              {rinkLocation}
-            </div>
-          )}
-        </div>
-        <a
-          href={rinkId ? '/review?rink=' + rinkId : '/review'}
-          style={{ display: 'flex', flexShrink: 0, textDecoration: 'none' }}
+
+        <div
+          style={{
+            position: 'absolute',
+            left: '4%',
+            bottom: '6%',
+            maxWidth: '60%',
+            background: 'rgba(255,255,255,0.96)',
+            borderRadius: 14,
+            padding: '10px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            boxShadow: 'var(--rr-shadow)',
+            border: 'var(--rr-outline)',
+          }}
         >
           <img
-            src="/icons/add_review_button.png"
-            alt="Add your review"
-            style={{ width: 150, height: 68, objectFit: 'contain' }}
+            src={thumbnailSrc}
+            alt=""
+            style={{
+              width: 'clamp(48px, 9vw, 72px)',
+              height: 'clamp(48px, 9vw, 72px)',
+              objectFit: 'cover',
+              borderRadius: 8,
+              flexShrink: 0,
+              border: '2px solid rgba(13,42,74,0.15)',
+            }}
           />
-        </a>
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontFamily: 'var(--font-display)', fontWeight: 800,
+              fontSize: 'clamp(14px, 2.4vw, 20px)', color: 'var(--rr-navy)', lineHeight: 1.15,
+            }}>
+              {rinkName}
+            </div>
+            {rinkLocation && (
+              <div style={{ fontSize: 'clamp(10px, 1.6vw, 13px)', color: 'rgba(13,42,74,0.55)', fontWeight: 600, marginTop: 1 }}>
+                {rinkLocation}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
+              {totalReviews > 0 && (
+                <span style={{
+                  background: '#3EAE5A', color: '#fff', fontSize: 'clamp(9px,1.4vw,11px)',
+                  fontWeight: 800, padding: '3px 9px', borderRadius: 999, fontFamily: 'var(--font-display)',
+                }}>
+                  {totalReviews} REVIEWS
+                </span>
+              )}
+              {tier && (
+                <span style={{
+                  background: '#2F6FE0', color: '#fff', fontSize: 'clamp(9px,1.4vw,11px)',
+                  fontWeight: 800, padding: '3px 9px', borderRadius: 999, fontFamily: 'var(--font-display)',
+                }}>
+                  {tier.toUpperCase()}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -178,41 +264,74 @@ function ChatPageContent() {
               <div style={{ alignSelf: 'flex-end', maxWidth: '80%', marginLeft: 'auto' }}>
                 <div style={{
                   background: 'var(--rr-red)', color: '#fff',
-                  border: 'var(--rr-outline)', borderRadius: '12px 12px 2px 12px',
-                  padding: '9px 13px', fontSize: 14, lineHeight: 1.55,
+                  border: 'var(--rr-outline)', borderRadius: '14px 14px 3px 14px',
+                  padding: '10px 14px', fontSize: 14, lineHeight: 1.55,
                   boxShadow: 'var(--rr-shadow)',
                 }}>
                   {msg.text}
                 </div>
+                {msg.time && (
+                  <div style={{ textAlign: 'right', fontSize: 10, color: 'rgba(13,42,74,0.4)', marginTop: 3, paddingRight: 4 }}>
+                    {msg.time} <span style={{ color: 'var(--rr-red)' }}>✓✓</span>
+                  </div>
+                )}
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 7, maxWidth: '90%' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '92%' }}>
                 <TJ state={i === messages.length - 1 ? tjState : 'idle'} size="sm" />
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    background: 'var(--rr-warm)', border: 'var(--rr-outline)',
-                    borderRadius: '12px 12px 12px 2px', padding: '9px 13px',
+                    background: '#fff', border: 'var(--rr-outline)',
+                    borderRadius: '4px 16px 16px 16px', padding: '12px 14px',
                     fontSize: 14, lineHeight: 1.6, color: 'var(--rr-navy)',
                     boxShadow: 'var(--rr-shadow)', whiteSpace: 'pre-wrap',
                   }}>
                     {msg.text}
                   </div>
-                  {msg.source && (
-                    <div className="caption" style={{ marginTop: 3, paddingLeft: 4 }}>
-                      {msg.source}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 5, paddingLeft: 4, gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {msg.source && (
+                        <span className="caption" style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          ⭐ {msg.source}
+                        </span>
+                      )}
+                      {msg.time && (
+                        <span style={{ fontSize: 10, color: 'rgba(13,42,74,0.35)' }}>{msg.time}</span>
+                      )}
                     </div>
-                  )}
+                    {msg.source && (
+                      <a
+                        href={rinkId ? '/review?rink=' + rinkId : '/review'}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          border: '1.5px solid var(--rr-red)', borderRadius: 999,
+                          padding: '3px 4px 3px 10px', textDecoration: 'none',
+                          fontFamily: 'var(--font-display)', fontWeight: 700,
+                          fontSize: 10, color: 'var(--rr-red)', whiteSpace: 'nowrap',
+                          background: '#fff',
+                        }}
+                      >
+                        Know more?
+                        <span style={{
+                          background: 'var(--rr-red)', color: '#fff', borderRadius: 999,
+                          padding: '4px 9px', fontWeight: 800, letterSpacing: 0.2,
+                        }}>
+                          LEAVE A REVIEW +125 XP
+                        </span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
         {loading && (
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 7 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             <TJ state="thinking" size="sm" />
             <div style={{
-              background: 'var(--rr-warm)', border: 'var(--rr-outline)',
-              borderRadius: '12px 12px 12px 2px', padding: '10px 14px',
+              background: '#fff', border: 'var(--rr-outline)',
+              borderRadius: '4px 16px 16px 16px', padding: '10px 14px',
               boxShadow: 'var(--rr-shadow)', display: 'flex', gap: 5, alignItems: 'center',
             }}>
               {[0, 1, 2].map(i => (
@@ -223,6 +342,7 @@ function ChatPageContent() {
         )}
         <div ref={bottomRef} />
       </div>
+
       {messages.length > 1 && (
         <button
           onClick={handleShare}
@@ -248,8 +368,8 @@ function ChatPageContent() {
         </button>
       )}
 
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '7px 12px', background: 'var(--rr-warm)', borderTop: '1.5px solid rgba(13,42,74,0.08)' }}>
-        {QUICK_CHIPS.map(chip => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '7px 12px', background: 'var(--rr-warm)', borderTop: '1.5px solid rgba(13,42,74,0.08)' }}>
+        {activeChips.map(chip => (
           <button
             key={chip}
             onClick={() => sendMessage(chip)}
@@ -262,25 +382,35 @@ function ChatPageContent() {
             {chip}
           </button>
         ))}
+        <button
+          onClick={() => setChipSetIndex(i => (i + 1) % QUICK_CHIPS_SETS.length)}
+          style={{
+            marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800,
+            fontFamily: 'var(--font-display)', color: 'var(--rr-navy)', whiteSpace: 'nowrap',
+          }}
+        >
+          🔄 MORE QUESTIONS
+        </button>
       </div>
 
       <div style={{ padding: '9px 12px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
         <button
-          aria-label="Voice input"
+          aria-label="Ask a question"
           style={{
-            width: 32, height: 32, borderRadius: '50%', background: 'var(--rr-red)',
-            border: 'var(--rr-outline-sm)', boxShadow: 'var(--rr-shadow-sm)',
+            width: 34, height: 34, borderRadius: '50%', background: 'var(--rr-red)',
+            border: '2px solid #fff', boxShadow: 'var(--rr-shadow-sm)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0, color: '#fff', fontSize: 15,
           }}
         >
-          🎤
+          ✏️
         </button>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
-          placeholder="Ask anything about this rink..."
+          placeholder={`Ask anything about ${rinkName}...`}
           style={{
             flex: 1, background: '#fff', border: 'var(--rr-outline)', borderRadius: '999px',
             padding: '8px 13px', fontSize: 12, fontFamily: 'var(--font-body)',
@@ -292,7 +422,8 @@ function ChatPageContent() {
           disabled={loading || !input.trim()}
           aria-label="Send message"
           style={{
-            width: 32, height: 32, borderRadius: '50%', background: 'var(--rr-navy)', border: 'none',
+            width: 34, height: 34, borderRadius: '50%', background: 'var(--rr-red)',
+            border: '2px solid #fff', boxShadow: 'var(--rr-shadow-sm)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, color: '#fff', fontSize: 16,
             opacity: loading || !input.trim() ? 0.5 : 1,
@@ -300,9 +431,8 @@ function ChatPageContent() {
         >
           →
         </button>
-    
       </div>
-        <style jsx>{`
+      <style jsx>{`
         .floating-share-btn {
           animation: slideInFromRight 0.4s ease-out;
         }
@@ -325,9 +455,9 @@ function ChatPageContent() {
         }
       `}</style>
     </div>
-    
   )
 }
+
 export default function ChatPage() {
   return (
     <Suspense fallback={<div style={{ padding: 20, textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>Loading...</div>}>

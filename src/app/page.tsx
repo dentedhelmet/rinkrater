@@ -176,14 +176,14 @@ export default function HomePage() {
               </svg>
               <input
                 type="search"
-                placeholder="Search for a rink..."
+                placeholder="SEARCH FOR A RINK..."
                 value={query}
                 onChange={function(e) { setQuery(e.target.value) }}
                 onKeyDown={function(e) { if (e.key === 'Enter') { fetchRinks(query) } }}
                 style={{
                   flex: 1,
                   border: 'none',
-                  fontSize: 13,
+                  fontSize: 15,
                   fontFamily: 'var(--font-body)',
                   color: 'var(--rr-navy)',
                   outline: 'none',
@@ -395,16 +395,15 @@ export default function HomePage() {
 
       <style jsx>{`
         .home-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-          padding-bottom: 16px;
-        }
-        .rink-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 8px;
-        }
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding-bottom: 16px;
+}
+.home-main-col,
+.home-side-col {
+  min-width: 0;
+}
 
         /* Rink list + ad card: stacked on mobile, side-by-side on desktop */
         .rink-list-row {

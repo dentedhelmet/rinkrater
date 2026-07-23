@@ -35,7 +35,7 @@ export default function RinkProfilePage() {
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [recentReviews, setRecentReviews] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [showCategories, setShowCategories] = useState(false)
+  const [showCategories, setShowCategories] = useState(true)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
@@ -108,7 +108,7 @@ export default function RinkProfilePage() {
       <TopBar
         showBack={true}
         backHref="/"
-        title=""
+        title="RINK INFO"
         rightAction={
           <button
             onClick={function() {
@@ -150,17 +150,24 @@ export default function RinkProfilePage() {
             style={{ width: '100%', height: 'auto', display: 'block' }}
           />
           <div
-            style={{
-              position: 'absolute',
-              top: '10%',
-              left: '4%',
-              maxWidth: '52%',
-              background: 'rgba(13,42,74,0.92)',
-              borderRadius: 12,
-              padding: '12px 14px',
-              boxShadow: 'var(--rr-shadow)',
-            }}
-          >
+  className="hero-overlay-card"
+  style={{
+    position: 'absolute',
+    top: '10%',
+    left: '4%',
+    right: '46%',
+    bottom: '8%',
+    background: 'rgba(13,42,74,0.92)',
+    borderRadius: 12,
+    padding: '12px 14px',
+    boxShadow: 'var(--rr-shadow)',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  }}
+>
             <div
               style={{
                 fontFamily: 'var(--font-display)',
@@ -189,7 +196,7 @@ export default function RinkProfilePage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '10px 12px', background: 'var(--rr-warm)', borderBottom: 'var(--rr-outline)' }}>
+        <div className="rink-actions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '10px 12px', background: 'var(--rr-warm)', borderBottom: 'var(--rr-outline)' }}>
           <button
             onClick={function() { setShowContactModal(true) }}
             disabled={!hasContactInfo}
@@ -208,36 +215,131 @@ export default function RinkProfilePage() {
             }}
           >
             <img src="/icons/rr_rinkinfo_contact.png" alt="Contact" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>CONTACT</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)' }}>CONTACT</div>
           </button>
 
-          <a
-            href={mapsUrl}
-            target="_blank"            rel="noopener noreferrer"
+          
+            <a
+            href={mapsUrl}            target="_blank"
+            rel="noopener noreferrer"
             style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
             <img src="/icons/rr_rinkinfo_directions.png" alt="Directions" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>DIRECTIONS</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)' }}>DIRECTIONS</div>
           </a>
           <Link
             href={'/nearby?rink=' + rink.id}
             style={{ background: 'var(--rr-warm)', border: 'var(--rr-outline)', borderRadius: 10, boxShadow: 'var(--rr-shadow-sm)', padding: '8px 4px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
             <img src="/icons/rr_rinkinfo_nearby.png" alt="Nearby" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'var(--rr-navy)' }}>NEARBY</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)' }}>NEARBY</div>
           </Link>
         </div>
 
         <Link href={'/chat?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginTop: 12, marginBottom: 12, marginLeft: 25, marginRight: 25 }}>
-          <div style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <TJ state="idle" size="sm" />
+          <div className="tj-ask-card" style={{ background: 'var(--rr-warm)', border: '2px solid var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+            <TJ state="idle" size="lg" crop="half" />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)', marginBottom: 2 }}>
                 Ask TJ anything about this rink
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(13,42,74,0.5)' }}>
-                Is there a girls locker room? How cold is it?
+              <div style={{ fontSize: 14, color: 'rgba(13,42,74,0.5)', lineHeight: 1.4 }}>
+                Is there a girls locker room? How cold is it?<br />
+                Get answers from real Hockey Parents and TJ!
               </div>
+            </div>
+            <div className="tj-glow-wrap" style={{ flexShrink: 0 }}>
+              <div
+                style={{
+                  background: 'var(--rr-red)',
+                  color: '#fff',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  padding: '10px 14px',
+                  borderRadius: 999,
+                  whiteSpace: 'nowrap',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                ASK TJ ANYTHING
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        <style jsx>{`
+          .tj-glow-wrap {
+            position: relative;
+            display: inline-block;
+            border-radius: 999px;
+          }
+          .tj-glow-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: inherit;
+            border: 2px solid var(--rr-red);
+            opacity: 0;
+          }
+          @media (prefers-reduced-motion: no-preference) {
+            .tj-glow-wrap::before {
+              animation: tj-pulse 2s ease-in-out infinite;
+            }
+          }
+          @keyframes tj-pulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.04); }
+          }
+
+          @media (max-width: 700px) {
+            .tj-ask-card {
+              flex-direction: column !important;
+              text-align: center;
+            }
+            .tj-ask-card > :first-child {
+              align-self: center;
+              margin-bottom: 4px;
+            }
+            .tj-ask-card .tj-glow-wrap {
+              margin-top: 8px;
+            }
+          }
+
+          @media (max-width: 650px) {
+            .rink-actions-grid > * > div {
+              font-size: 11px !important;
+            }
+            .rink-actions-grid > * img {
+              width: 28px !important;
+              height: 28px !important;
+            }
+          }
+
+         @media (min-width: 701px) {
+  .hero-overlay-card {
+    right: auto !important;
+    bottom: auto !important;
+    width: 340px !important;
+    max-height: 140px !important;
+  }
+} 
+
+          @media (max-width: 400px) {
+            .hero-overlay-card {
+              padding: 8px 10px !important;
+            }
+          }
+        `}</style>
+
+        <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12, marginLeft: 14, marginRight: 14 }}>
+          <div style={{ background: 'var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '12px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: '#fff' }}>
+              LEAVE A REVIEW - PLUS 125 XP
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>
+              Share your experience and help other hockey families!
             </div>
           </div>
         </Link>
@@ -290,13 +392,14 @@ export default function RinkProfilePage() {
                   var cat = entry[0]
                   var count = entry[1]
                   return (
-                    <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px', cursor: 'pointer' }} onClick={function() { setSelectedCategory(cat) }}>
+                    <div key={cat} className="clay-card-sm" style={{ padding: '10px 10px 8px', cursor: 'pointer', position: 'relative' }} onClick={function() { setSelectedCategory(cat) }}>
                       <div className="label" style={{ marginBottom: 4, color: 'rgba(13,42,74,0.5)' }}>
                         {cat}
                       </div>
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18 }}>
                         {count} {count !== 1 ? 'reviews' : 'review'}
                       </div>
+                      <span style={{ position: 'absolute', top: 12, right: 10, color: 'var(--rr-navy)', fontSize: 14 }}>{'\u25B6'}</span>
                     </div>
                   )
                 })}

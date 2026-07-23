@@ -45,3 +45,4 @@ next-env.d.ts
 
 # reference/mockup images not used by the app
 rr_claymation_laptop_shot1.jpg
+*.bak

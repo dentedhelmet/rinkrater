@@ -5,14 +5,6 @@ import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
 
-interface TopBarProps {
-  title?:       string
-  showBack?:    boolean
-  backHref?:    string
-  rightAction?: React.ReactNode
-  variant?:     'red' | 'navy' | 'transparent'
-}
-
 const NAV_LINKS = [
   { label: 'About',            href: '/about'          },
   { label: 'Partners',         href: '/partners'        },
@@ -20,15 +12,11 @@ const NAV_LINKS = [
   { label: "What's the Call?", href: '/whats-the-call'  },
 ]
 
-export function TopBar(props: TopBarProps) {
-  const { title, showBack = false, backHref = '/', rightAction, variant = 'red' } = props
+export function GlobalHeader() {
   const { user, profile, signOut } = useAuth()
-  const [menuOpen,  setMenuOpen]  = useState(false)
-  const [showAuth,  setShowAuth]  = useState(false)
+  const [menuOpen,   setMenuOpen]   = useState(false)
+  const [showAuth,   setShowAuth]   = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-
-  const bg    = variant === 'red' ? 'var(--rr-red)' : variant === 'navy' ? 'var(--rr-navy)' : 'transparent'
-  const color = variant === 'transparent' ? 'var(--rr-navy)' : '#fff'
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -37,7 +25,6 @@ export function TopBar(props: TopBarProps) {
     setSigningOut(false)
   }
 
-  // Shared auth button — shows avatar+alias if signed in, Sign In if not
   function AuthButton({ onClick }: { onClick?: () => void }) {
     if (user && profile) {
       return (
@@ -101,77 +88,53 @@ export function TopBar(props: TopBarProps) {
     <>
       <header
         style={{
-          background: bg,
+          background: 'var(--rr-red)',
           padding: '10px 14px',
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          borderBottom: variant !== 'transparent' ? 'var(--rr-outline)' : 'none',
+          borderBottom: 'var(--rr-outline)',
           zIndex: 100,
           position: 'relative',
         }}
       >
-        {showBack ? (
-          <Link
-            href={backHref}
-            aria-label="Go back"
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textDecoration: 'none', flexShrink: 0 }}
-          >
-            <img src="/icons/rr_clay_back_button_red.png" alt="" style={{ width: 45, height: 45, objectFit: 'contain' }} />
-          </Link>
-        ) : (
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-            <img src="/logo/rinkrater-logo.png" alt="Rink Rater logo" style={{ width: 280, height: 80, objectFit: 'contain' }} />
-          </Link>
-        )}
-
-        {title && showBack && (
-  <span style={{ color, fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 16, flex: 1, textAlign: 'center' }}>
-    {title}
-  </span>
-)}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo/rinkrater-logo.png" alt="Rink Rater logo" style={{ width: 280, height: 80, objectFit: 'contain' }} />
+        </Link>
 
         {/* Desktop nav */}
-        {!showBack && (
-          <nav className="topbar-desktop-nav" style={{ marginLeft: 'auto', display: 'none', alignItems: 'center', gap: 24 }}>
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <AuthButton />
-          </nav>
-        )}
+        <nav className="topbar-desktop-nav" style={{ marginLeft: 'auto', display: 'none', alignItems: 'center', gap: 24 }}>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <AuthButton />
+        </nav>
 
         {/* Hamburger */}
-        {!showBack && (
-          <button
-            className="topbar-hamburger"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Open menu"
-            style={{
-              marginLeft: 'auto',
-              background: 'rgba(255,255,255,0.18)',
-              border: 'none',
-              borderRadius: 8,
-              width: 45, height: 45,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#fff',
-              fontSize: 18,
-            }}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
-        )}
-
-        {rightAction && (
-          <div style={{ marginLeft: showBack ? 'auto' : 0 }}>{rightAction}</div>
-        )}
+        <button
+          className="topbar-hamburger"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Open menu"
+          style={{
+            marginLeft: 'auto',
+            background: 'rgba(255,255,255,0.18)',
+            border: 'none',
+            borderRadius: 8,
+            width: 45, height: 45,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#fff',
+            fontSize: 18,
+          }}
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
 
         {/* Mobile menu */}
         {menuOpen && (

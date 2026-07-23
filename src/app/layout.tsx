@@ -3,6 +3,8 @@ import { Nunito } from 'next/font/google'
 import { AuthProvider } from '@/context/AuthContext'
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 import '../styles/globals.css'
+import { GlobalHeader } from '@/components/layout/GlobalHeader'
+
 const nunito = Nunito({
   subsets:  ['latin'],
   weight:   ['400', '600', '700', '800', '900'],
@@ -36,9 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={nunito.className}>
         <div id="app-shell">
           <AuthProvider>
-            {children}
-            <OnboardingFlow />
-          </AuthProvider>
+  <GlobalHeader />
+  {children}
+  <OnboardingFlow />
+</AuthProvider>
         </div>
       </body>
     </html>
