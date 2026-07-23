@@ -44,6 +44,13 @@ Respond ONLY with valid JSON, entries in the same order as above, and nothing el
 // ─── Route ─────────────────────────────────────────────────────────────────────
 // Body shape:
 //   { rinkId, entries: [{ category, rawText }], userId, userAlias, isFirstSave }
+//
+// NOTE on total_reviews semantics: this increments the profile's total_reviews
+// by the number of PUBLISHED CATEGORY ENTRIES saved in this call — every call,
+// every session. A user who answers 3 categories across 2 checkpoints in one
+// sitting gets +3 to total_reviews, same as if they'd done it across 2 separate
+// sessions. This is a deliberate choice: "review" == individual category entry,
+// not "review session for a rink."
 export async function POST(req: NextRequest) {
   try {
     const { rinkId, entries, userId, userAlias, isFirstSave } = await req.json()
@@ -158,17 +165,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Award XP (also as the authenticated user) ────────────────────────────
+    // ── Award XP + increment review count (also as the authenticated user) ──
     const publishedCount = resultEntries.filter((e) => e.status === 'published').length
 
     let xpToAdd = 0
     if (userId && publishedCount > 0) {
+      // XP keeps the "125 base once per session, +25/category" structure.
       xpToAdd = (isFirstSave ? 125 : 0) + publishedCount * 25
 
+      // total_reviews increments by the number of published categories in
+      // THIS call, every time — not gated by isFirstSave.
       const { error: xpError } = await supabaseAsUser.rpc('increment_profile_stats', {
         p_user_id: userId,
         p_xp:      xpToAdd,
-        p_reviews: isFirstSave ? 1 : 0,
+        p_reviews: publishedCount,
       })
 
       if (xpError) {

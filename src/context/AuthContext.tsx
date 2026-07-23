@@ -58,7 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single()
-    if (!error && data) setProfile(data as Profile)
+    if (error) {
+      console.error('fetchProfile failed:', error)
+      return
+    }
+    if (data) setProfile(data as Profile)
   }, [])
 
   useEffect(() => {
