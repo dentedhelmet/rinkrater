@@ -43,7 +43,23 @@ export function GlobalHeader() {
               border: '2px solid var(--rr-navy)',
             }}
           >
-            <span style={{ fontWeight: 900 }}>{profile.initials}</span>
+            <span style={{
+              width: 22, height: 22, borderRadius: '50%', overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--rr-navy)', color: '#fff', fontSize: 10, fontWeight: 900,
+              flexShrink: 0,
+            }}>
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profile.avatar_url}
+                  alt=""
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                profile.initials
+              )}
+            </span>
             {profile.alias}
           </Link>
           <button
@@ -120,7 +136,7 @@ export function GlobalHeader() {
         <button
           className="topbar-hamburger"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Open menu"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           style={{
             marginLeft: 'auto',
             background: 'rgba(255,255,255,0.18)',
