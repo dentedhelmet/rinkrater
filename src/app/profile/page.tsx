@@ -184,7 +184,7 @@ export default function ProfilePage() {
                 padding:    '4px 10px',
                 fontFamily: 'var(--font-display)',
                 fontWeight: 700,
-                fontSize:   10,
+                fontSize:   12,
                 color:      'rgba(255,255,255,0.8)',
                 cursor:     'pointer',
               }}
@@ -238,6 +238,23 @@ export default function ProfilePage() {
       </div>
       <div className="body-xs" style={{ color: 'rgba(13,42,74,0.5)', marginTop: 2 }}>
         Track stats, shots & save percentage
+      </div>
+    </div>
+    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'rgba(13,42,74,0.25)' }}>›</div>
+  </div>
+</Link>
+<Link
+  href="/profile/my-reviews"
+  style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}
+>
+  <div className="clay-card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ fontSize: 32, flexShrink: 0 }}>📝</div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)' }}>
+        My Reviews
+      </div>
+      <div className="body-xs" style={{ color: 'rgba(13,42,74,0.5)', marginTop: 2 }}>
+        View and edit the reviews you've left
       </div>
     </div>
     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'rgba(13,42,74,0.25)' }}>›</div>
