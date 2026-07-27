@@ -11,9 +11,6 @@ interface Entry {
 }
 
 // ─── Claude prompt ─────────────────────────────────────────────────────────────
-// The category is chosen by the user in the UI before they type, so Claude's
-// job is NOT to guess categories — it's just to clean up wording and moderate
-// each already-tagged entry.
 function buildPrompt(entries: Entry[], rinkName: string, city: string, state: string) {
   const list = entries
     .map((e, i) => `${i + 1}. Category: ${e.category}\n   Reviewer wrote: "${e.rawText}"`)
@@ -41,16 +38,24 @@ Respond ONLY with valid JSON, entries in the same order as above, and nothing el
 }`.trim()
 }
 
+// ─── Streak helper ───────────────────────────────────────────────────────────────
+// "Day streak" = consecutive CALENDAR DAYS with at least one published review.
+// - same day as last review          -> streak unchanged (don't inflate on
+//                                        repeat Save & Continue calls same day)
+// - exactly one day after last review -> streak + 1
+// - any bigger gap, or no prior date  -> streak resets to 1
+function computeNewStreak(currentStreak: number, lastReviewDate: string | null, today: string): number {
+  if (lastReviewDate === today) return currentStreak || 1
+
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  if (lastReviewDate === yesterday) return (currentStreak || 0) + 1
+
+  return 1
+}
+
 // ─── Route ─────────────────────────────────────────────────────────────────────
 // Body shape:
 //   { rinkId, entries: [{ category, rawText }], userId, userAlias, isFirstSave }
-//
-// NOTE on total_reviews semantics: this increments the profile's total_reviews
-// by the number of PUBLISHED CATEGORY ENTRIES saved in this call — every call,
-// every session. A user who answers 3 categories across 2 checkpoints in one
-// sitting gets +3 to total_reviews, same as if they'd done it across 2 separate
-// sessions. This is a deliberate choice: "review" == individual category entry,
-// not "review session for a rink."
 export async function POST(req: NextRequest) {
   try {
     const { rinkId, entries, userId, userAlias, isFirstSave } = await req.json()
@@ -165,20 +170,33 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Award XP + increment review count (also as the authenticated user) ──
+    // ── Award XP, increment review count, and update streak ─────────────────
     const publishedCount = resultEntries.filter((e) => e.status === 'published').length
 
     let xpToAdd = 0
     if (userId && publishedCount > 0) {
-      // XP keeps the "125 base once per session, +25/category" structure.
       xpToAdd = (isFirstSave ? 125 : 0) + publishedCount * 25
 
-      // total_reviews increments by the number of published categories in
-      // THIS call, every time — not gated by isFirstSave.
+      // Need the current streak/last_review_date to compute the new streak —
+      // this is a read, then a write, not a single atomic increment like XP.
+      const { data: profileRow } = await supabaseAsUser
+        .from('profiles')
+        .select('streak, last_review_date')
+        .eq('id', userId)
+        .single()
+
+      const newStreak = computeNewStreak(
+        profileRow?.streak ?? 0,
+        profileRow?.last_review_date ?? null,
+        today
+      )
+
       const { error: xpError } = await supabaseAsUser.rpc('increment_profile_stats', {
-        p_user_id: userId,
-        p_xp:      xpToAdd,
-        p_reviews: publishedCount,
+        p_user_id:          userId,
+        p_xp:               xpToAdd,
+        p_reviews:          publishedCount,
+        p_streak:           newStreak,
+        p_last_review_date: today,
       })
 
       if (xpError) {

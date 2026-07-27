@@ -8,6 +8,8 @@ import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TJ } from '@/components/tj/TJ'
 import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 import { CategorySheet } from '@/components/rink/CategorySheet'
+import { useAuth } from '@/context/AuthContext'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 interface RinkData {
   id: string
@@ -29,6 +31,7 @@ interface StatsData {
 export default function RinkProfilePage() {
   const params = useParams()
   const id = params?.id as string
+  const { user } = useAuth()
 
   const [rink, setRink] = useState<RinkData | null>(null)
   const [stats, setStats] = useState<StatsData | null>(null)
@@ -39,6 +42,17 @@ export default function RinkProfilePage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+
+  // Intercept "Leave a Review" clicks — if not signed in, open the auth
+  // modal directly instead of navigating to /review at all. Avoids the
+  // wasted trip of landing on the review page just to get sent back.
+  function handleReviewClick(e: React.MouseEvent) {
+    if (!user) {
+      e.preventDefault()
+      setShowAuth(true)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
@@ -109,36 +123,17 @@ export default function RinkProfilePage() {
         showBack={true}
         backHref="/"
         title="RINK INFO"
-        rightAction={
-          <button
-            onClick={function() {
-              const shareUrl = window.location.origin + '/rink/' + rink.id
-              if (navigator.share) {
-                navigator.share({ title: rink.name + ' on Rink Rater', url: shareUrl })
-              } else {
-                navigator.clipboard.writeText(shareUrl)
-                alert('Link copied to clipboard!')
-              }
-            }}
-            aria-label="Share this rink"
-            style={{
-              width: 36,
-              height: 36,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <img
-              src="/icons/rr_clay_share_button_red.png"
-              alt="Share"
-              style={{ width: 52, height: 52, objectFit: 'contain' }}
-            />
-          </button>
-        }
+        shareIcon="dots"
+        onShare={function() {
+          const shareUrl = window.location.origin + '/rink/' + rink.id
+          if (navigator.share) {
+            navigator.share({ title: rink.name + ' on Rink Rater', url: shareUrl })
+          } else {
+            navigator.clipboard.writeText(shareUrl)
+            alert('Link copied to clipboard!')
+          }
+        }}
+        shareAriaLabel="Share this rink"
       />
 
       <main style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
@@ -333,7 +328,7 @@ export default function RinkProfilePage() {
           }
         `}</style>
 
-        <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 12, marginLeft: 14, marginRight: 14 }}>
+        <Link href={'/review?rink=' + rink.id} onClick={handleReviewClick} style={{ textDecoration: 'none', display: 'block', marginBottom: 12, marginLeft: 14, marginRight: 14 }}>
           <div style={{ background: 'var(--rr-red)', borderRadius: 'var(--rr-radius)', boxShadow: 'var(--rr-shadow)', padding: '12px 16px', textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: '#fff' }}>
               LEAVE A REVIEW - PLUS 125 XP
@@ -407,7 +402,7 @@ export default function RinkProfilePage() {
             )
           )}
 
-          <Link href={'/review?rink=' + rink.id} style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
+          <Link href={'/review?rink=' + rink.id} onClick={handleReviewClick} style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
             <div className="clay-btn clay-btn-primary" style={{ width: '100%', padding: '13px', borderRadius: 'var(--rr-radius)', fontSize: 14 }}>
               Add your review - plus 125 XP
             </div>
@@ -509,6 +504,13 @@ export default function RinkProfilePage() {
             </button>
           </div>
         </div>
+      )}
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          prompt="Sign in to leave a review and earn XP."
+        />
       )}
     </div>
   )

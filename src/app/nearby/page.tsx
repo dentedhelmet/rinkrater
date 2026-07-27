@@ -146,6 +146,7 @@ function NearbyPageContent() {
   const [rinkLat,       setRinkLat]       = useState<number | null>(null)
   const [rinkLng,       setRinkLng]       = useState<number | null>(null)
   const [rinkName,      setRinkName]      = useState('')
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   // Pull rink coords as fallback
   useEffect(() => {
@@ -173,24 +174,33 @@ function NearbyPageContent() {
     setLoadingPlaces(true)
     fetch(`/api/nearby?lat=${useLat}&lng=${useLng}`)
       .then((r) => r.json())
-      .then((data) => setSections(data.sections || []))
+      .then((data) => {
+        setSections(data.sections || [])
+        setActiveCategory(null) // start collapsed on a fresh fetch
+      })
       .catch(() => setSections([]))
       .finally(() => setLoadingPlaces(false))
   }, [lat, lng, rinkLat, rinkLng])
 
   const userDecided = status === 'granted' || status === 'denied' || status === 'unsupported'
-const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
+  const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
+
+  function selectCategory(key: string) {
+    setActiveCategory((prev) => (prev === key ? null : key))
+  }
+
+  const activeSection = sections.find((s) => s.key === activeCategory) || null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar showBack backHref={rinkId ? `/rink/${rinkId}` : '/'} title="What's nearby" />
 
-      <main style={{ flex: 1, overflowY: 'auto', background: '#EEF4FA', padding: '12px 12px 0' }}
+      <main style={{ flex: 1, overflowY: 'auto', background: '#EEF4FA', padding: '0 12px' }}
         className="scroll-y">
 
         {/* ── Location prompt ── */}
         {!hasCoords && status === 'idle' && (
-          <div className="clay-card" style={{ padding: 16, marginBottom: 14, textAlign: 'center' }}>
+          <div className="clay-card" style={{ padding: 16, margin: '12px 0 14px', textAlign: 'center' }}>
             <TJ state="idle" size="lg" />
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, color: 'var(--rr-navy)', margin: '10px 0 6px' }}>
               Find food, coffee & more nearby
@@ -214,7 +224,7 @@ const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
         )}
 
         {status === 'denied' && error && (
-          <div className="clay-card" style={{ padding: 14, marginBottom: 14, background: 'var(--rr-ice)' }}>
+          <div className="clay-card" style={{ padding: 14, margin: '12px 0 14px', background: 'var(--rr-ice)' }}>
             <div style={{ fontSize: 12, color: 'var(--rr-navy)', lineHeight: 1.5 }}>
               {error} Showing nearby spots based on the rink's location instead.
             </div>
@@ -233,24 +243,66 @@ const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
           </div>
         )}
 
-        {/* ── Sections ── */}
-        {sections.map((section) => (
-          <div key={section.key} style={{ marginBottom: 20 }}>
-            {/* Category header */}
+        {/* ── Sticky quick-select tabs ── */}
+        {!loadingPlaces && sections.length > 0 && (
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 5,
+            background: '#EEF4FA',
+            paddingTop: 12,
+            paddingBottom: 10,
+          }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {sections.map((section) => {
+                const active = section.key === activeCategory
+                return (
+                  <button
+                    key={section.key}
+                    onClick={() => selectCategory(section.key)}
+                    aria-pressed={active}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      background: active ? 'var(--rr-navy)' : '#fff',
+                      color: active ? '#fff' : 'var(--rr-navy)',
+                      border: 'var(--rr-outline-sm)', borderRadius: 999,
+                      padding: '6px 12px', fontFamily: 'var(--font-display)',
+                      fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                      boxShadow: active ? 'none' : 'var(--rr-shadow-sm)',
+                    }}
+                  >
+                    {section.emoji} {section.displayName}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Prompt when nothing selected yet ── */}
+        {!loadingPlaces && sections.length > 0 && !activeSection && (
+          <div style={{ textAlign: 'center', padding: '20px 10px 30px', color: 'rgba(13,42,74,0.45)', fontSize: 12 }}>
+            Pick a category above to see what's nearby.
+          </div>
+        )}
+
+        {/* ── Open category ── */}
+        {activeSection && (
+          <div style={{ paddingBottom: 20 }}>
             <div style={{
               display:      'flex',
               alignItems:   'center',
               gap:          6,
               marginBottom: 8,
             }}>
-              <span style={{ fontSize: 16 }}>{section.emoji}</span>
+              <span style={{ fontSize: 16 }}>{activeSection.emoji}</span>
               <span style={{
                 fontFamily: 'var(--font-display)',
                 fontWeight: 900,
                 fontSize:   14,
                 color:      'var(--rr-navy)',
               }}>
-                {section.displayName}
+                {activeSection.displayName}
               </span>
               <span style={{
                 fontFamily: 'var(--font-display)',
@@ -258,18 +310,17 @@ const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
                 fontSize:   10,
                 color:      'rgba(13,42,74,0.35)',
               }}>
-                {section.places.length} nearby
+                {activeSection.places.length} nearby
               </span>
             </div>
 
-            {/* Place cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {section.places.map((place, i) => (
-                <PlaceCard key={i} place={place} emoji={section.emoji} />
+              {activeSection.places.map((place, i) => (
+                <PlaceCard key={i} place={place} emoji={activeSection.emoji} />
               ))}
             </div>
           </div>
-        ))}
+        )}
 
         <div style={{ height: 24 }} />
       </main>

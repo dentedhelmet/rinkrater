@@ -49,7 +49,7 @@ export function PageShell(props: PageShellProps) {
         .page-scroll-area {
           flex: 1;
           overflow-y: auto;
-          padding: 115px 12px 70px;
+          padding: 90px 12px 70px;
           background-image: url('/background/rr-background.jpg');
           background-size: cover;
           background-position: center;

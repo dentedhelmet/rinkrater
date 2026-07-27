@@ -23,11 +23,14 @@ interface RinkResult {
   confidence_tier?: string
 }
 
-const TRENDING_QUESTIONS = [
-  'Are there Concessions?',
-  'Is there Skate Sharpening?',
-  "Are there Girl's Locker Rooms?",
+// Fallback shown immediately on load, before real counts arrive (or if the
+// fetch fails) — same questions, just without a number yet.
+const TRENDING_QUESTIONS_FALLBACK = [
   'How cold is the rink?',
+  'Do they have skate sharpening?',
+  'Are the bathrooms clean?',
+  'Are there concessions?',
+  'Is there good seating?',
 ]
 
 const THUMBNAIL_COUNT = 14
@@ -43,6 +46,11 @@ function thumbnailForRink(id: string) {
 
 const HERO_BACKGROUND = '/hero/hero-main.jpg'
 const HERO_BACKGROUND_MOBILE = '/hero/hero-mobile.jpg'
+
+// What's the Call — static example labels only (no dynamic quiz data wired
+// in yet). This whole card is a placeholder pending a real revenue-driven
+// replacement, so kept intentionally simple.
+const CALL_EXAMPLES = ['High-Sticking', 'Cross-Checking', 'Checking from Behind', 'Holding the Face Mask']
 
 // Ad rotation: each entry is one ad. Add more entries here later and they
 // automatically join the rotation — no other code changes needed.
@@ -77,6 +85,28 @@ const ADS = [
 
 const AD_ROTATION_KEY = 'rinkrater_ad_rotation_index'
 
+// Small reusable rivet-dot detail for the four corners of a card — same
+// visual language as the TopBar plaque treatment. Scoped to whatever card
+// wraps it (card needs position: relative), not a global style change.
+function RivetCorners() {
+  const dotStyle: React.CSSProperties = {
+    position: 'absolute',
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle at 35% 30%, #8a8378, #4a453e)',
+    boxShadow: '0 1px 1px rgba(255,255,255,0.4)',
+  }
+  return (
+    <>
+      <span style={{ ...dotStyle, top: 6, left: 6 }} />
+      <span style={{ ...dotStyle, top: 6, right: 6 }} />
+      <span style={{ ...dotStyle, bottom: 6, left: 6 }} />
+      <span style={{ ...dotStyle, bottom: 6, right: 6 }} />
+    </>
+  )
+}
+
 export default function HomePage() {
   const [query, setQuery] = useState('')
   const [rinks, setRinks] = useState<RinkResult[]>([])
@@ -85,6 +115,7 @@ export default function HomePage() {
   const [showAuth, setShowAuth] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const [adIndex, setAdIndex] = useState(0)
+  const [trendingQuestions, setTrendingQuestions] = useState<string[]>(TRENDING_QUESTIONS_FALLBACK)
 
   useEffect(function() {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -108,6 +139,23 @@ export default function HomePage() {
     }, 300)
     return function() { clearTimeout(timer) }
   }, [query])
+
+  // Real published-review counts per trending category — falls back to the
+  // plain questions (no number) if this fails, so the section never breaks.
+  useEffect(function() {
+    fetch('/api/trending-questions')
+      .then(function(res) { return res.json() })
+      .then(function(data) {
+        if (data.trending && data.trending.length > 0) {
+          setTrendingQuestions(
+            data.trending.map(function(t: { question: string; count: number }) {
+              return t.question + ' \u00B7 ' + t.count.toLocaleString()
+            })
+          )
+        }
+      })
+      .catch(function() { /* keep fallback */ })
+  }, [])
 
   async function fetchRinks(searchQuery: string) {
     setLoading(true)
@@ -198,17 +246,9 @@ export default function HomePage() {
                 type="button"
                 onClick={function() { fetchRinks(query) }}
                 aria-label="Search"
-                style={{
-                  width: 30, height: 30,
-                  borderRadius: '50%',
-                  background: 'var(--rr-red)',
-                  border: 'var(--rr-outline-sm)',
-                  boxShadow: 'var(--rr-shadow-sm)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', flexShrink: 0,
-                }}
+                className="hero-search-submit"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <svg className="hero-search-submit-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2.2" />
                   <path d="M21 21l-4.3-4.3" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
                 </svg>
@@ -257,8 +297,8 @@ export default function HomePage() {
               marginBottom: showRinkList ? 8 : 14,
             }}
           >
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)' }}>
-              {query ? 'Search results' : 'Most reviewed rinks'}
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: 'var(--rr-navy)', textTransform: 'uppercase' }}>
+              {query ? 'Search Results' : 'Most Reviewed Rinks'}
             </span>
             <span style={{ fontSize: 14, color: 'var(--rr-navy)', transform: showRinkList ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
               {'\u25BC'}
@@ -342,52 +382,60 @@ export default function HomePage() {
 
         <div className="home-side-col">
           <FeaturedPartners />
-          <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+
+          {/* Trending Questions — riveted card */}
+          <div className="clay-card" style={{ padding: '14px', marginBottom: 14, position: 'relative' }}>
+            <RivetCorners />
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase' }}>
               <span>{'\u{1F525}'}</span> Trending Questions
             </div>
-            <RotatingQuestions questions={TRENDING_QUESTIONS} />
+            <RotatingQuestions questions={trendingQuestions} />
           </div>
+
+          {/* What's the Call — placeholder widget, replacing the disabled
+              "Find a Rink Near You" map card. Static example labels only;
+              no dynamic quiz data wired in. Meant to be swapped for a real
+              revenue/ad spot later, so kept simple. */}
           <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10 }}>
-              Find a Rink Near You
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/ref-signals/rr-highstick-half-ref.jpg"
+                alt=""
+                style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: 'var(--rr-outline-sm)' }}
+              />
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 4, textTransform: 'uppercase' }}>
+                  What's the Call?
+                </div>
+                <div style={{ fontSize: 11.5, color: 'rgba(13,42,74,0.6)', lineHeight: 1.4 }}>
+                  Test your hockey knowledge and make the call!
+                </div>
+              </div>
             </div>
-            <div
-              style={{
-                width: '100%',
-                height: 140,
-                background: 'var(--rr-ice)',
-                border: 'var(--rr-outline-sm)',
-                borderRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 10,
-                color: 'rgba(13,42,74,0.3)',
-                fontSize: 12,
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-              }}
-            >
-              Map coming soon
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+              {CALL_EXAMPLES.map(function(label) {
+                return (
+                  <div key={label} style={{
+                    background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 8,
+                    padding: '7px 6px', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
+                    color: 'var(--rr-navy)', textAlign: 'center', lineHeight: 1.3,
+                  }}>
+                    {label}
+                  </div>
+                )
+              })}
             </div>
-            <button
-              disabled
-              style={{
-                width: '100%',
-                background: 'var(--rr-warm)',
-                border: 'var(--rr-outline-sm)',
-                borderRadius: 999,
-                padding: '8px 12px',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
-                fontSize: 11,
-                color: 'rgba(13,42,74,0.4)',
-                cursor: 'default',
-              }}
-            >
-              View map
-            </button>
+            <Link href="/whats-the-call" style={{ textDecoration: 'none', display: 'block' }}>
+              <div style={{
+                width: '100%', background: 'var(--rr-red)', color: '#fff',
+                border: 'var(--rr-outline-sm)', borderRadius: 999, padding: '10px 12px',
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 12,
+                textAlign: 'center', boxShadow: 'var(--rr-shadow-sm)',
+              }}>
+                TAKE THE QUIZ
+              </div>
+            </Link>
           </div>
         </div>
 
@@ -534,6 +582,34 @@ export default function HomePage() {
           gap: 6px;
         }
 
+        /* Search submit button — deliberately bigger than the search bar
+           itself and pulled up/down with negative margins so it visually
+           spills over the top and bottom edges of the pill, like the
+           reference mockup. .hero-search has no overflow:hidden, so this
+           is safe to overflow without getting clipped. */
+        .hero-search-submit {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--rr-red);
+  border: var(--rr-outline-sm);
+  box-shadow: var(--rr-shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: -16px;
+  margin-bottom: -16px;
+  margin-left: auto;
+  margin-right: -30px;
+  position: relative;
+}
+.hero-search-submit-icon {
+  width: 35px;
+  height: 35px;
+}
+
         /* Ad card, next to Most Reviewed Rinks — stacked below on mobile,
            beside it on desktop */
         .rink-ad-col {
@@ -596,6 +672,17 @@ export default function HomePage() {
           .hero-search-results {
             max-height: 380px;
           }
+          .hero-search-submit {
+  width: 70px;
+  height: 70px;
+  margin-top: -22px;
+  margin-bottom: -22px;
+  margin-right: -34px;
+}
+.hero-search-submit-icon {
+  width: 31px;
+  height: 31px;
+}
 
           /* Desktop: rink list and ad card sit side by side */
           .rink-list-row {

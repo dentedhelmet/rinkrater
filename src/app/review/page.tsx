@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
 import { useAuth } from '@/context/AuthContext'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 interface ReviewMessage {
   role: 'tj' | 'user'
@@ -55,7 +56,8 @@ function pickAck(nextDef: typeof CATEGORY_DEFS[number] | null) {
 function ReviewPageContent() {
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
-  const { user, profile, session, refreshProfile } = useAuth()
+  const { user, profile, session, refreshProfile, loading: authLoading } = useAuth()
+  const [showAuth, setShowAuth] = useState(false)
 
   const [rinkName, setRinkName] = useState('this rink')
   const [rinkLocation, setRinkLocation] = useState('')
@@ -75,10 +77,6 @@ function ReviewPageContent() {
   const [xpEarned, setXpEarned] = useState(0)
   const [savedToast, setSavedToast] = useState<{ visible: boolean; gained: number }>({ visible: false, gained: 0 })
   const [selectedCategory, setSelectedCategory] = useState<string | null>(CATEGORY_DEFS[0].key)
-  // Pointer into CATEGORY_DEFS for the NEXT suggestion — always advances
-  // forward each turn regardless of what the user actually picks, so a
-  // skipped suggestion doesn't get re-offered indefinitely. Starts at 1
-  // since index 0 (Rink Temp) is already the initial suggestion.
   const [suggestionIndex, setSuggestionIndex] = useState(1)
   const [showCategorySheet, setShowCategorySheet] = useState(false)
   const [completedCategories, setCompletedCategories] = useState<Set<string>>(new Set())
@@ -123,10 +121,6 @@ function ReviewPageContent() {
     setMessages(prev => [...prev, { role: 'user', text, category }])
     setLoading(true)
 
-    // Figure out what to suggest next. Walk FORWARD from suggestionIndex
-    // (not from the top of the list) so a category that's been skipped
-    // once doesn't just get re-offered every single turn — it only comes
-    // back around after everything else still open has had a turn.
     const answeredSoFar = new Set<string>([
       ...completedCategories,
       ...userMessages.map((m) => m.category as string),
@@ -157,16 +151,7 @@ function ReviewPageContent() {
 
   async function saveCheckpoint() {
     if (saving || !hasUnsavedAnswers) return
-
-    if (!user || !session?.access_token) {
-      alert('Please sign in to save your review and earn XP.')
-      return
-    }
-
-    if (!profile) {
-      alert("Just a second — still loading your profile. Try again in a moment.")
-      return
-    }
+    if (!user || !session?.access_token || !profile) return // gated upfront now, shouldn't hit this
 
     const newMessages = userMessages.slice(lastSavedUserMsgCount)
     const entries = newMessages
@@ -229,6 +214,56 @@ function ReviewPageContent() {
 
   const pct = Math.round((completedCategories.size / TOTAL_CATS) * 100)
   const isComplete = completedCategories.size >= TOTAL_CATS
+
+  // ── Auth gate: block the whole review flow until signed in ──────────────────
+  // Previously this only surfaced "Sign in to save" after someone had already
+  // typed real answers. Gating upfront (same pattern as Ask TJ) avoids wasting
+  // their effort before telling them an account is required.
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <p className="body-sm" style={{ color: 'rgba(13,42,74,0.4)' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="LEAVE A REVIEW" />
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '32px 24px', textAlign: 'center', gap: 16,
+        }}>
+          <div style={{ fontSize: 56 }}>✍️</div>
+          <h1 className="display-lg" style={{ marginBottom: 4 }}>Leave a Review</h1>
+          <p className="body-md" style={{ color: 'rgba(13,42,74,0.55)', maxWidth: 280, lineHeight: 1.6 }}>
+            Create a free account to leave a review and start earning XP — it only takes a minute.
+          </p>
+          <button
+            className="clay-btn clay-btn-primary"
+            style={{ fontSize: 16, padding: '13px 36px' }}
+            onClick={() => setShowAuth(true)}
+          >
+            Create Account
+          </button>
+          <button
+            className="clay-btn clay-btn-secondary"
+            style={{ fontSize: 14, padding: '11px 28px' }}
+            onClick={() => setShowAuth(true)}
+          >
+            Sign In
+          </button>
+        </div>
+        {showAuth && (
+          <AuthModal
+            onClose={() => setShowAuth(false)}
+            prompt="Sign in to leave a review and earn XP."
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -461,7 +496,7 @@ function ReviewPageContent() {
             textAlign: 'center', fontSize: 12, color: 'rgba(13,42,74,0.55)',
             fontFamily: 'var(--font-display)', fontWeight: 600, padding: '6px 4px',
           }}>
-            {user ? 'Loading your profile...' : 'Sign in to save your review and earn XP.'}
+            Loading your profile...
           </div>
         )}
 

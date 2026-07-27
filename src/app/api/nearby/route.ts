@@ -11,20 +11,25 @@ interface CategoryConfig {
   emoji:         string
 }
 
+// Radius: ~10mi (16000m) across every category.
+// Max results per category: 6 — dialed back from an earlier 15, which
+// worked but roughly quadrupled outbound photo-fetch calls (one per
+// place returned) and meaningfully increased both load time and Google
+// API cost for marginal value. 6 lands in the 5-8 range that felt right.
 const CATEGORIES: Record<string, CategoryConfig> = {
-  food:          { includedTypes: ['restaurant'],                          radius: 1500, max: 5, displayName: 'Food',              emoji: '🍽️' },
-  pizza:         { includedTypes: ['pizza_restaurant'],                    radius: 2000, max: 4, displayName: 'Pizza',             emoji: '🍕' },
-  fastfood:      { includedTypes: ['fast_food_restaurant'],                radius: 1500, max: 4, displayName: 'Fast Food',         emoji: '🍟' },
-  coffee:        { includedTypes: ['cafe'],                                radius: 1200, max: 3, displayName: 'Coffee',            emoji: '☕' },
-  bars:          { includedTypes: ['bar'],                                 radius: 2000, max: 4, displayName: 'Bars & Breweries',  emoji: '🍺' },
-  dessert:       { includedTypes: ['dessert_shop', 'ice_cream_shop'],      radius: 1500, max: 3, displayName: 'Dessert & Ice Cream', emoji: '🍦' },
-  grocery:       { includedTypes: ['grocery_store', 'supermarket'],        radius: 2000, max: 3, displayName: 'Grocery',           emoji: '🛒' },
-  sporting:      { includedTypes: ['sporting_goods_store'],                radius: 3000, max: 3, displayName: 'Sporting Goods',    emoji: '🏒' },
-  pharmacy:      { includedTypes: ['pharmacy', 'drugstore'],               radius: 2000, max: 3, displayName: 'Pharmacy',          emoji: '💊' },
-  gas:           { includedTypes: ['gas_station', 'convenience_store'],    radius: 2000, max: 3, displayName: 'Gas & Convenience', emoji: '⛽' },
-  attractions:   { includedTypes: ['tourist_attraction', 'museum', 'amusement_park'], radius: 5000, max: 4, displayName: 'Attractions', emoji: '🎯' },
-  entertainment: { includedTypes: ['amusement_center', 'bowling_alley', 'movie_theater'], radius: 3000, max: 3, displayName: 'Entertainment', emoji: '🎮' },
-  hotels:        { includedTypes: ['lodging'],                             radius: 5000, max: 4, displayName: 'Hotels',            emoji: '🏨' },
+  food:          { includedTypes: ['restaurant'],                          radius: 16000, max: 6, displayName: 'Food',              emoji: '🍽️' },
+  pizza:         { includedTypes: ['pizza_restaurant'],                    radius: 16000, max: 6, displayName: 'Pizza',             emoji: '🍕' },
+  fastfood:      { includedTypes: ['fast_food_restaurant'],                radius: 16000, max: 6, displayName: 'Fast Food',         emoji: '🍟' },
+  coffee:        { includedTypes: ['cafe'],                                radius: 16000, max: 6, displayName: 'Coffee',            emoji: '☕' },
+  bars:          { includedTypes: ['bar'],                                 radius: 16000, max: 6, displayName: 'Bars & Breweries',  emoji: '🍺' },
+  dessert:       { includedTypes: ['dessert_shop', 'ice_cream_shop'],      radius: 16000, max: 6, displayName: 'Dessert & Ice Cream', emoji: '🍦' },
+  grocery:       { includedTypes: ['grocery_store', 'supermarket'],        radius: 16000, max: 6, displayName: 'Grocery',           emoji: '🛒' },
+  sporting:      { includedTypes: ['sporting_goods_store'],                radius: 16000, max: 6, displayName: 'Sporting Goods',    emoji: '🏒' },
+  pharmacy:      { includedTypes: ['pharmacy', 'drugstore'],               radius: 16000, max: 6, displayName: 'Pharmacy',          emoji: '💊' },
+  gas:           { includedTypes: ['gas_station', 'convenience_store'],    radius: 16000, max: 6, displayName: 'Gas & Convenience', emoji: '⛽' },
+  attractions:   { includedTypes: ['tourist_attraction', 'museum', 'amusement_park'], radius: 16000, max: 6, displayName: 'Attractions', emoji: '🎯' },
+  entertainment: { includedTypes: ['amusement_center', 'bowling_alley', 'movie_theater'], radius: 16000, max: 6, displayName: 'Entertainment', emoji: '🎮' },
+  hotels:        { includedTypes: ['lodging'],                             radius: 16000, max: 6, displayName: 'Hotels',            emoji: '🏨' },
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────

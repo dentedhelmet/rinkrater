@@ -20,7 +20,7 @@ export async function GET(
   // Pull a sample of reviews grouped by category for quick display
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('category, comment, source, review_date')
+    .select('category, comment, source, review_date, user_alias')
     .eq('rink_id', rinkId)
     .order('review_date', { ascending: false })
     .limit(50)

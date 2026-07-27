@@ -17,7 +17,7 @@ export function FeaturedPartners() {
   return (
     <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10 }}>
-        Featured Partners
+        FEATURED PARTNERS
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {PARTNERS.map(function(partner) {

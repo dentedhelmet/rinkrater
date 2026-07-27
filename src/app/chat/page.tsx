@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
 import type { TJState } from '@/components/tj/TJ'
+import { useAuth } from '@/context/AuthContext'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 interface Message {
   role: 'user' | 'agent'
@@ -37,6 +39,8 @@ function nowTime() {
 function ChatPageContent() {
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
+  const { user, loading: authLoading } = useAuth()
+  const [showAuth, setShowAuth] = useState(false)
 
   const [rinkName, setRinkName] = useState('this rink')
   const [rinkLocation, setRinkLocation] = useState('')
@@ -138,35 +142,64 @@ function ChatPageContent() {
     }
   }
 
+  // ── Auth gate: block the whole chat UI until signed in ──────────────────────
+  // TJ questions hit the Anthropic API on every message, so this is gated
+  // up front rather than partially (unlike the Review page's Save-only gate).
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <p className="body-sm" style={{ color: 'rgba(13,42,74,0.4)' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <TopBar showBack backHref={rinkId ? `/rink/${rinkId}` : '/'} title="ASK TJ ANYTHING" />
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '32px 24px', textAlign: 'center', gap: 16,
+        }}>
+          <div style={{ fontSize: 56 }}>🏒</div>
+          <h1 className="display-lg" style={{ marginBottom: 4 }}>Ask TJ Anything</h1>
+          <p className="body-md" style={{ color: 'rgba(13,42,74,0.55)', maxWidth: 280, lineHeight: 1.6 }}>
+            Create a free account to start asking TJ about any rink — it only takes a minute.
+          </p>
+          <button
+            className="clay-btn clay-btn-primary"
+            style={{ fontSize: 16, padding: '13px 36px' }}
+            onClick={() => setShowAuth(true)}
+          >
+            Create Account
+          </button>
+          <button
+            className="clay-btn clay-btn-secondary"
+            style={{ fontSize: 14, padding: '11px 28px' }}
+            onClick={() => setShowAuth(true)}
+          >
+            Sign In
+          </button>
+        </div>
+        {showAuth && (
+          <AuthModal
+            onClose={() => setShowAuth(false)}
+            prompt="Sign in to ask TJ anything about this rink."
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar
         showBack
         backHref={rinkId ? `/rink/${rinkId}` : '/'}
         title="ASK TJ ANYTHING"
-        rightAction={
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            aria-label="Share this conversation"
-            style={{
-              width: 52, height: 52,
-              background: 'transparent',
-              border: 'none',
-              cursor: sharing ? 'default' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: sharing ? 0.5 : 1,
-            }}
-          >
-            <img
-              src="/icons/rr_clay_share_chat_button_red.png"
-              alt="Share conversation"
-              style={{ width: 52, height: 52, objectFit: 'contain' }}
-            />
-          </button>
-        }
+        shareIcon="chat"
+        onShare={handleShare}
+        shareAriaLabel="Share this chat"
       />
 
       {/* HERO: static banner (TJ + scoreboard baked into the image) + rink info overlay box */}
@@ -394,44 +427,37 @@ function ChatPageContent() {
         </button>
       </div>
 
-      <div style={{ padding: '9px 12px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
-        <button
-          aria-label="Ask a question"
-          style={{
-            width: 34, height: 34, borderRadius: '50%', background: 'var(--rr-red)',
-            border: '2px solid #fff', boxShadow: 'var(--rr-shadow-sm)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0, color: '#fff', fontSize: 15,
-          }}
-        >
-          ✏️
-        </button>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
-          placeholder={`Ask anything about ${rinkName}...`}
-          style={{
-            flex: 1, background: '#fff', border: 'var(--rr-outline)', borderRadius: '999px',
-            padding: '8px 13px', fontSize: 12, fontFamily: 'var(--font-body)',
-            color: 'var(--rr-navy)', outline: 'none',
-          }}
-        />
-        <button
-          onClick={() => sendMessage(input)}
-          disabled={loading || !input.trim()}
-          aria-label="Send message"
-          style={{
-            width: 34, height: 34, borderRadius: '50%', background: 'var(--rr-red)',
-            border: '2px solid #fff', boxShadow: 'var(--rr-shadow-sm)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, color: '#fff', fontSize: 16,
-            opacity: loading || !input.trim() ? 0.5 : 1,
-          }}
-        >
-          →
-        </button>
-      </div>
+      <div style={{ padding: '9px 12px 22px', borderTop: 'var(--rr-outline)', background: 'var(--rr-warm)', flexShrink: 0 }}>
+  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <input
+      value={input}
+      onChange={e => setInput(e.target.value)}
+      onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
+      placeholder={`Ask anything about ${rinkName}...`}
+      style={{
+        width: '100%', background: '#fff', border: 'var(--rr-outline)', borderRadius: '999px',
+        padding: '15px 62px 15px 18px', fontSize: 14, fontFamily: 'var(--font-body)',
+        color: 'var(--rr-navy)', outline: 'none', boxSizing: 'border-box',
+      }}
+    />
+    <button
+  onClick={() => sendMessage(input)}
+  disabled={loading || !input.trim()}
+  aria-label="Send message"
+  style={{
+    position: 'absolute', top: '40%', right: -8, transform: 'translateY(-50%)',
+    width: 52, height: 52, borderRadius: '50%', background: 'var(--rr-red)',
+    border: '2px solid #fff', boxShadow: 'var(--rr-shadow-lg)',
+    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0, color: '#fff',
+  }}
+>
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12h14M13 5l7 7-7 7" />
+  </svg>
+</button>
+  </div>
+</div>
       <style jsx>{`
         .floating-share-btn {
           animation: slideInFromRight 0.4s ease-out;

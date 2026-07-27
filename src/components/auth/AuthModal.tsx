@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
-type Tab = 'signin' | 'signup'
+type Tab = 'signin' | 'signup' | 'forgot'
 
 interface AuthModalProps {
   onClose:     () => void
@@ -73,6 +73,25 @@ export function AuthModal({
         : error.message)
     } else {
       onClose()
+    }
+    setLoading(false)
+  }
+
+  // ── Forgot Password ──────────────────────────────────────────────────────────
+  async function handleForgotPassword() {
+    if (!email) {
+      setError('Enter your email first.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (error) {
+      setError(error.message)
+    } else {
+      setSuccess("Check your email for a password reset link.")
     }
     setLoading(false)
   }
@@ -185,7 +204,7 @@ export function AuthModal({
         </div>
 
         {/* Optional prompt */}
-        {prompt && (
+        {prompt && tab !== 'forgot' && (
           <p
             className="body-sm"
             style={{ textAlign: 'center', color: 'rgba(13,42,74,0.55)', marginBottom: 16 }}
@@ -194,39 +213,51 @@ export function AuthModal({
           </p>
         )}
 
-        {/* Tabs */}
-        <div style={{
-          display:       'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap:           6,
-          marginBottom:  20,
-          background:    'var(--rr-ice)',
-          border:        'var(--rr-outline-sm)',
-          borderRadius:  'var(--rr-radius-pill)',
-          padding:       4,
-        }}>
-          {(['signin', 'signup'] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => switchTab(t)}
-              style={{
-                fontFamily:   'var(--font-display)',
-                fontWeight:   800,
-                fontSize:     13,
-                padding:      '8px',
-                borderRadius: 'var(--rr-radius-pill)',
-                border:       tab === t ? 'var(--rr-outline-sm)' : 'none',
-                background:   tab === t ? 'var(--rr-warm)' : 'transparent',
-                color:        'var(--rr-navy)',
-                boxShadow:    tab === t ? 'var(--rr-shadow-sm)' : 'none',
-                cursor:       'pointer',
-                transition:   'all 0.15s',
-              }}
-            >
-              {t === 'signin' ? 'Sign In' : 'Join Up'}
-            </button>
-          ))}
-        </div>
+        {/* Tabs — hidden while in forgot-password mode */}
+        {tab !== 'forgot' && (
+          <div style={{
+            display:       'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap:           6,
+            marginBottom:  20,
+            background:    'var(--rr-ice)',
+            border:        'var(--rr-outline-sm)',
+            borderRadius:  'var(--rr-radius-pill)',
+            padding:       4,
+          }}>
+            {(['signin', 'signup'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => switchTab(t)}
+                style={{
+                  fontFamily:   'var(--font-display)',
+                  fontWeight:   800,
+                  fontSize:     13,
+                  padding:      '8px',
+                  borderRadius: 'var(--rr-radius-pill)',
+                  border:       tab === t ? 'var(--rr-outline-sm)' : 'none',
+                  background:   tab === t ? 'var(--rr-warm)' : 'transparent',
+                  color:        'var(--rr-navy)',
+                  boxShadow:    tab === t ? 'var(--rr-shadow-sm)' : 'none',
+                  cursor:       'pointer',
+                  transition:   'all 0.15s',
+                }}
+              >
+                {t === 'signin' ? 'Sign In' : 'Join Up'}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Forgot-password header */}
+        {tab === 'forgot' && !success && (
+          <div style={{ marginBottom: 16, textAlign: 'center' }}>
+            <div className="display-lg" style={{ marginBottom: 4 }}>Reset your password</div>
+            <p className="body-sm" style={{ color: 'rgba(13,42,74,0.55)' }}>
+              Enter your email and we'll send you a reset link.
+            </p>
+          </div>
+        )}
 
         {/* Success state */}
         {success ? (
@@ -360,29 +391,45 @@ export function AuthModal({
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && tab === 'forgot' && handleForgotPassword()}
                 style={INPUT_STYLE}
                 autoComplete="email"
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <label
-                className="label"
-                style={{ display: 'block', marginBottom: 5, color: 'rgba(13,42,74,0.6)' }}
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder={tab === 'signup' ? 'Min. 6 characters' : '••••••••'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (tab === 'signin' ? handleSignIn() : handleSignUp())}
-                style={INPUT_STYLE}
-                autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
-              />
-            </div>
+            {/* Password — hidden in forgot-password mode */}
+            {tab !== 'forgot' && (
+              <div>
+                <label
+                  className="label"
+                  style={{ display: 'block', marginBottom: 5, color: 'rgba(13,42,74,0.6)' }}
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder={tab === 'signup' ? 'Min. 6 characters' : '••••••••'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (tab === 'signin' ? handleSignIn() : handleSignUp())}
+                  style={INPUT_STYLE}
+                  autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+                />
+                {tab === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => switchTab('forgot')}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--rr-red)', fontWeight: 700, fontSize: 11,
+                      fontFamily: 'var(--font-display)', padding: 0, marginTop: 6,
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Error */}
             {error && (
@@ -402,7 +449,7 @@ export function AuthModal({
 
             {/* CTA */}
             <button
-              onClick={tab === 'signin' ? handleSignIn : handleSignUp}
+              onClick={tab === 'signin' ? handleSignIn : tab === 'forgot' ? handleForgotPassword : handleSignUp}
               disabled={loading}
               className="clay-btn clay-btn-primary"
               style={{ width: '100%', fontSize: 16, padding: '13px', opacity: loading ? 0.6 : 1 }}
@@ -411,17 +458,25 @@ export function AuthModal({
                 ? 'One moment...'
                 : tab === 'signin'
                 ? 'Sign In'
+                : tab === 'forgot'
+                ? 'Send Reset Link'
                 : 'Create Account'}
             </button>
 
             {/* Switch tab hint */}
-            <p className="body-xs" style={{ textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>
-              {tab === 'signin' ? (
-                <>No account? <button onClick={() => switchTab('signup')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>Join up →</button></>
-              ) : (
-                <>Already have one? <button onClick={() => switchTab('signin')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>Sign in →</button></>
-              )}
-            </p>
+            {tab === 'forgot' ? (
+              <p className="body-xs" style={{ textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>
+                <button onClick={() => switchTab('signin')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>← Back to sign in</button>
+              </p>
+            ) : (
+              <p className="body-xs" style={{ textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>
+                {tab === 'signin' ? (
+                  <>No account? <button onClick={() => switchTab('signup')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>Join up →</button></>
+                ) : (
+                  <>Already have one? <button onClick={() => switchTab('signin')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>Sign in →</button></>
+                )}
+              </p>
+            )}
           </div>
         )}
       </div>

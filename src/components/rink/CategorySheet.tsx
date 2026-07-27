@@ -10,9 +10,31 @@ interface CategorySheetProps {
 }
 
 interface CategoryReview {
-  comment: string
-  source: string
-  review_date: string
+  comment:      string
+  source:       string
+  review_date:  string
+  user_alias?:  string
+}
+
+// Relative date, not raw timestamps — some rows are old legacy imports and a
+// bare date on those reads oddly out of context; "X years ago" is honest
+// either way.
+function formatRelativeDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  const then = new Date(dateStr)
+  if (isNaN(then.getTime())) return ''
+
+  const days = Math.floor((Date.now() - then.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (days <= 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 30) return days + ' days ago'
+
+  const months = Math.floor(days / 30)
+  if (months < 12) return months + (months === 1 ? ' month ago' : ' months ago')
+
+  const years = Math.floor(months / 12)
+  return years + (years === 1 ? ' year ago' : ' years ago')
 }
 
 export function CategorySheet(props: CategorySheetProps) {
@@ -80,7 +102,8 @@ export function CategorySheet(props: CategorySheetProps) {
           )}
 
           {!loading && reviews.map(function(r, i) {
-            const attribution = r.source === 'ftloh' ? 'FTLOH' : 'Rink Rater reviewer'
+            const attribution = r.source === 'ftloh' ? 'FTLOH' : (r.user_alias || 'Rink Rater reviewer')
+            const dateLabel = formatRelativeDate(r.review_date)
             return (
               <div key={i} className="clay-card-sm" style={{ padding: '12px 14px', marginBottom: 8 }}>
                 <div style={{ fontSize: 14, color: 'rgba(13,42,74,0.8)', lineHeight: 1.5, marginBottom: 6 }}>
@@ -89,6 +112,11 @@ export function CategorySheet(props: CategorySheetProps) {
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(13,42,74,0.45)' }}>
                   {attribution}
                 </div>
+                {dateLabel && (
+                  <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(13,42,74,0.35)', marginTop: 2 }}>
+                    {dateLabel}
+                  </div>
+                )}
               </div>
             )
           })}
