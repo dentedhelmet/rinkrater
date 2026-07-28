@@ -41,7 +41,7 @@ export function RotatingQuestions(props: RotatingQuestionsProps) {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 13px;
+          font-size: 15px;
           color: var(--rr-navy);
           min-height: 20px;
         }

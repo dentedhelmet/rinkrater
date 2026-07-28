@@ -134,8 +134,21 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 17, color: '#fff' }}>
-              {profile.alias}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 17, color: '#fff' }}>
+                {profile.alias}
+              </div>
+              <Link href="/profile/edit" aria-label="Edit profile" style={{ display: 'flex', alignItems: 'center' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.75 }}>
+                  <path
+                    d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
             </div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
               {currentLevel.title} · Level {currentLevel.level}

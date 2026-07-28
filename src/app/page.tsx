@@ -50,8 +50,12 @@ const HERO_BACKGROUND_MOBILE = '/hero/hero-mobile.jpg'
 // What's the Call — static example labels only (no dynamic quiz data wired
 // in yet). This whole card is a placeholder pending a real revenue-driven
 // replacement, so kept intentionally simple.
-const CALL_EXAMPLES = ['High-Sticking', 'Cross-Checking', 'Checking from Behind', 'Holding the Face Mask']
-
+const CALL_EXAMPLES = [
+  { label: 'High-Sticking', correct: true },
+  { label: 'Cross-Checking', correct: false },
+  { label: 'Checking from Behind', correct: false },
+  { label: 'Holding the Face Mask', correct: false },
+]
 // Ad rotation: each entry is one ad. Add more entries here later and they
 // automatically join the rotation — no other code changes needed.
 const ADS = [
@@ -116,6 +120,7 @@ export default function HomePage() {
   const [isDesktop, setIsDesktop] = useState(false)
   const [adIndex, setAdIndex] = useState(0)
   const [trendingQuestions, setTrendingQuestions] = useState<string[]>(TRENDING_QUESTIONS_FALLBACK)
+  const [callAnswer, setCallAnswer] = useState<string | null>(null)
 
   useEffect(function() {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -124,6 +129,12 @@ export default function HomePage() {
     mq.addEventListener('change', handleChange)
     return function() { mq.removeEventListener('change', handleChange) }
   }, [])
+
+  useEffect(function() {
+  if (callAnswer === null) return
+  const timer = setTimeout(function() { setCallAnswer(null) }, 5000)
+  return function() { clearTimeout(timer) }
+}, [callAnswer])
 
   useEffect(function() {
     if (ADS.length <= 1) return
@@ -413,18 +424,46 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
-              {CALL_EXAMPLES.map(function(label) {
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10, position: 'relative' }}>
+              {CALL_EXAMPLES.map(function(ex) {
+                const isPicked = callAnswer === ex.label
                 return (
-                  <div key={label} style={{
-                    background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 8,
-                    padding: '7px 6px', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
-                    color: 'var(--rr-navy)', textAlign: 'center', lineHeight: 1.3,
-                  }}>
-                    {label}
-                  </div>
+                  <button
+                    key={ex.label}
+                    type="button"
+                    disabled={callAnswer !== null}
+                    onClick={function() { setCallAnswer(ex.label) }}
+                    style={{
+                      background: isPicked ? (ex.correct ? 'var(--rr-green)' : 'var(--rr-red)') : 'var(--rr-ice)',
+                      border: 'var(--rr-outline-sm)', borderRadius: 8,
+                      padding: '7px 6px', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-display)',
+                      color: isPicked ? '#fff' : 'var(--rr-navy)', textAlign: 'center', lineHeight: 1.3,
+                      cursor: callAnswer === null ? 'pointer' : 'default',
+                    }}
+                  >
+                    {ex.label}
+                  </button>
                 )
               })}
+
+              {callAnswer !== null && (function() {
+                const gotItRight = CALL_EXAMPLES.find(function(e) { return e.label === callAnswer })?.correct
+                return (
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.97)',
+                    border: 'var(--rr-outline-sm)', borderRadius: 10,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    textAlign: 'center', padding: 10, gap: 4, zIndex: 5,
+                  }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)' }}>
+                      {gotItRight ? 'Great Job!' : 'So Close!'}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(13,42,74,0.6)' }}>
+                      {gotItRight ? 'Think you know all the hand signals?' : 'See how much you know!'}
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
             <Link href="/whats-the-call" style={{ textDecoration: 'none', display: 'block' }}>
               <div style={{

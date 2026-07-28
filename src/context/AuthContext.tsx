@@ -12,18 +12,25 @@ import { supabase } from '@/lib/supabase'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 export interface Profile {
-  id:              string
-  alias:           string
-  initials:        string
-  avatar_url:      string | null
-  level:           number
-  level_title:     string
-  xp:              number
-  xp_to_next:      number
-  streak:          number
-  total_reviews:   number
-  families_helped: number
-  created_at:      string
+  id:                 string
+  alias:              string
+  initials:           string
+  avatar_url:         string | null
+  full_name:          string | null
+  country:            'US' | 'CA' | 'OTHER' | null
+  state:              string | null
+  player_type:        'parent' | 'player' | 'coach' | 'other' | null
+  player_type_other:  string | null
+  favorite_skates:    string | null
+  current_stick:      string | null
+  level:              number
+  level_title:        string
+  xp:                 number
+  xp_to_next:         number
+  streak:             number
+  total_reviews:      number
+  families_helped:    number
+  created_at:         string
 }
 
 interface AuthContextType {
