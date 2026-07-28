@@ -101,6 +101,8 @@ export default function ProfileEditPage() {
   }
 
   async function handleSave() {
+    if (!user) return
+
     setSaving(true)
     setError(null)
     setSaved(false)
