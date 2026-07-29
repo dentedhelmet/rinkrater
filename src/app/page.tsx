@@ -10,6 +10,7 @@ import { BottomBanner } from '@/components/layout/BottomBanner'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
 import { Footer } from '@/components/layout/Footer'
+import { FeedbackModal } from '@/components/home/FeedbackModal'
 
 interface RinkResult {
   rink_id?: string
@@ -30,7 +31,7 @@ const TRENDING_QUESTIONS_FALLBACK = [
   'Do they have skate sharpening?',
   'Are the bathrooms clean?',
   'Are there concessions?',
-  'Is there good seating?',
+  'How is the seating?',
 ]
 
 const THUMBNAIL_COUNT = 14
@@ -121,6 +122,7 @@ export default function HomePage() {
   const [adIndex, setAdIndex] = useState(0)
   const [trendingQuestions, setTrendingQuestions] = useState<string[]>(TRENDING_QUESTIONS_FALLBACK)
   const [callAnswer, setCallAnswer] = useState<string | null>(null)
+  const [showFeedback, setShowFeedback] = useState(false)
 
   useEffect(function() {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -476,6 +478,33 @@ export default function HomePage() {
               </div>
             </Link>
           </div>
+
+          <button
+            type="button"
+            onClick={function() { setShowFeedback(true) }}
+            className="clay-card"
+            style={{
+              width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center',
+              gap: 10, background: '#fff', cursor: 'pointer', border: '2px solid var(--rr-red)',
+            }}
+          >
+            <span style={{
+              flexShrink: 0, width: 32, height: 32,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/feedback-bubble.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </span>
+            
+            <div style={{ textAlign: 'left', flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)' }}>
+                Help Us Make Rink Rater Better!
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--rr-red)', fontWeight: 700 }}>
+                We value your feedback!
+              </div>
+            </div>
+          </button>
         </div>
 
       </div>
@@ -736,7 +765,7 @@ export default function HomePage() {
       `}</style>
       <Footer />
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-    </PageShell>
+{showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}    </PageShell>
   )
 }
 

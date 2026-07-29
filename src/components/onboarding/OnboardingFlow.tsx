@@ -61,6 +61,20 @@ export function OnboardingFlow() {
     router.push('/')
   }
 
+  async function markSeenAndGoToProfile() {
+    localStorage.setItem(ONBOARDING_KEY, 'true')
+
+    if (userId) {
+      await supabase
+        .from('profiles')
+        .update({ has_seen_onboarding: true })
+        .eq('id', userId)
+    }
+
+    setOnboardingOpen(false)
+    router.push('/profile/edit')
+  }
+
   function handleCreateAccount() {
     setOnboardingOpen(false)
     setShowAuth(true)
@@ -77,6 +91,8 @@ export function OnboardingFlow() {
         isOpen={onboardingOpen}
         onDismiss={markSeenAndClose}
         onCreateAccount={handleCreateAccount}
+        isLoggedIn={!!userId}
+        onGoToProfile={markSeenAndGoToProfile}
       />
       {showAuth && (
         <AuthModal

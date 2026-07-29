@@ -18,9 +18,14 @@ interface OnboardingModalProps {
   onDismiss: () => void
   /** Slide 5 "Create Account" — opens AuthModal with cameFromOnboarding=true */
   onCreateAccount: () => void
+  /** True when the viewer already has an active session — changes slide 5's CTAs */
+  isLoggedIn?: boolean
+  /** Slide 5 CTA for logged-in users — routes to /profile/edit */
+  onGoToProfile?: () => void
 }
 
-export function OnboardingModal({ isOpen, onDismiss, onCreateAccount }: OnboardingModalProps) {
+export function OnboardingModal({ isOpen, onDismiss, onCreateAccount, isLoggedIn = false, onGoToProfile }: OnboardingModalProps) {
+
   const [step, setStep] = useState(0)
   const [mounted, setMounted] = useState(false)
 
@@ -142,6 +147,14 @@ export function OnboardingModal({ isOpen, onDismiss, onCreateAccount }: Onboardi
                 Skip
               </button>
             </>
+          ) : isLoggedIn ? (
+            <button
+              onClick={onGoToProfile}
+              className="clay-btn clay-btn-primary"
+              style={{ width: '100%', fontSize: 16, padding: '13px' }}
+            >
+              Complete Your Profile →
+            </button>
           ) : (
             <>
               <button

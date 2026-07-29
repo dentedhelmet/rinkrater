@@ -122,8 +122,25 @@ export function AuthModal({
       return
     }
 
-    // Create auth user
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    // Create auth user — profile row is created server-side by a DB trigger
+    // (handle_new_user) reading this metadata, so it works even before the
+    // user has a session (i.e. while email confirmation is still pending).
+    const trimmedAlias = alias.trim()
+    const initials     = trimmedAlias.substring(0, 2).toUpperCase()
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          alias:               trimmedAlias,
+          display_name:        trimmedAlias,
+          initials,
+          avatar_url:          selectedAvatar,
+          has_seen_onboarding: cameFromOnboarding,
+        },
+      },
+    })
 
     if (signUpError) {
       setError(signUpError.message)
@@ -132,29 +149,7 @@ export function AuthModal({
     }
 
     if (data.user) {
-      const trimmedAlias = alias.trim()
-      const initials     = trimmedAlias.substring(0, 2).toUpperCase()
-
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id:                  data.user.id,
-        alias:               trimmedAlias,
-        initials,
-        avatar_url:          selectedAvatar,
-        level:               1,
-        level_title:         'Rookie',
-        xp:                  0,
-        xp_to_next:          500,
-        streak:              0,
-        total_reviews:       0,
-        families_helped:     0,
-        has_seen_onboarding: cameFromOnboarding,
-      })
-
-      if (profileError) {
-        setError('Account created but profile setup failed. Please sign in.')
-      } else {
-        setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
-      }
+      setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
     }
 
     setLoading(false)

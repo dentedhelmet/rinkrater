@@ -19,7 +19,7 @@ export interface Profile {
   full_name:          string | null
   country:            'US' | 'CA' | 'OTHER' | null
   state:              string | null
-  player_type:        'parent' | 'player' | 'coach' | 'other' | null
+player_type:        ('parent' | 'player' | 'coach' | 'other')[] | null
   player_type_other:  string | null
   favorite_skates:    string | null
   current_stick:      string | null

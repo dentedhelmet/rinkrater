@@ -65,7 +65,7 @@ export default function ProfileEditPage() {
   const [fullName, setFullName]               = useState('')
   const [country, setCountry]                 = useState('US')
   const [state, setState]                     = useState('')
-  const [playerType, setPlayerType]           = useState<string | null>(null)
+const [playerType, setPlayerType]           = useState<string[]>([])
   const [playerTypeOther, setPlayerTypeOther] = useState('')
   const [favoriteSkates, setFavoriteSkates]   = useState('')
   const [currentStick, setCurrentStick]       = useState('')
@@ -80,7 +80,7 @@ export default function ProfileEditPage() {
     setFullName(profile.full_name || '')
     setCountry(profile.country || 'US')
     setState(profile.state || '')
-    setPlayerType(profile.player_type || null)
+setPlayerType(profile.player_type || [])
     setPlayerTypeOther(profile.player_type_other || '')
     setFavoriteSkates(profile.favorite_skates || '')
     setCurrentStick(profile.current_stick || '')
@@ -111,8 +111,8 @@ export default function ProfileEditPage() {
       full_name: fullName.trim() || null,
       country: country,
       state: state || null,
-      player_type: playerType,
-      player_type_other: playerType === 'other' ? (playerTypeOther.trim() || null) : null,
+      player_type: playerType.length > 0 ? playerType : null,
+      player_type_other: playerType.includes('other') ? (playerTypeOther.trim() || null) : null,
       favorite_skates: favoriteSkates.trim() || null,
       current_stick: currentStick.trim() || null,
     }
@@ -196,14 +196,20 @@ export default function ProfileEditPage() {
 
         <div className="clay-card" style={{ padding: 16, marginBottom: 14 }}>
           <label style={labelStyle()}>I'm a...</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: playerType === 'other' ? 10 : 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: playerType.includes('other') ? 10 : 0 }}>
             {PLAYER_TYPE_OPTIONS.map(function(opt) {
-              const isSelected = playerType === opt.value
+              const isSelected = playerType.includes(opt.value)
               return (
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={function() { setPlayerType(opt.value) }}
+                  onClick={function() {
+                    setPlayerType(function(prev) {
+                      return prev.includes(opt.value)
+                        ? prev.filter(function(v) { return v !== opt.value })
+                        : [...prev, opt.value]
+                    })
+                  }}
                   style={{
                     background: isSelected ? 'var(--rr-red)' : 'var(--rr-ice)',
                     color: isSelected ? '#fff' : 'var(--rr-navy)',
@@ -222,7 +228,7 @@ export default function ProfileEditPage() {
             })}
           </div>
 
-          {playerType === 'other' && (
+          {playerType.includes('other') && (
             <input
               type="text"
               value={playerTypeOther}
