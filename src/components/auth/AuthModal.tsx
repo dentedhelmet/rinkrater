@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
+import { AVATARS } from '@/lib/avatars'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type Tab = 'signin' | 'signup' | 'forgot'
@@ -30,9 +31,6 @@ const INPUT_STYLE: React.CSSProperties = {
   boxSizing:    'border-box',
 }
 
-// ─── Avatar options ────────────────────────────────────────────────────────────
-const AVATARS = Array.from({ length: 27 }, (_, i) => `/characters/profile_photo${i + 1}.png`)
-
 // ─── Component ─────────────────────────────────────────────────────────────────
 export function AuthModal({
   onClose,
@@ -58,7 +56,6 @@ export function AuthModal({
     setSuccess(null)
   }
 
-  // ── Sign In ──────────────────────────────────────────────────────────────────
   async function handleSignIn() {
     if (!email || !password) {
       setError('Please fill in all fields.')
@@ -77,7 +74,6 @@ export function AuthModal({
     setLoading(false)
   }
 
-  // ── Forgot Password ──────────────────────────────────────────────────────────
   async function handleForgotPassword() {
     if (!email) {
       setError('Enter your email first.')
@@ -96,7 +92,6 @@ export function AuthModal({
     setLoading(false)
   }
 
-  // ── Sign Up ──────────────────────────────────────────────────────────────────
   async function handleSignUp() {
     setError(null)
 
@@ -109,7 +104,6 @@ export function AuthModal({
 
     setLoading(true)
 
-    // Check alias availability
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
@@ -122,25 +116,7 @@ export function AuthModal({
       return
     }
 
-    // Create auth user — profile row is created server-side by a DB trigger
-    // (handle_new_user) reading this metadata, so it works even before the
-    // user has a session (i.e. while email confirmation is still pending).
-    const trimmedAlias = alias.trim()
-    const initials     = trimmedAlias.substring(0, 2).toUpperCase()
-
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          alias:               trimmedAlias,
-          display_name:        trimmedAlias,
-          initials,
-          avatar_url:          selectedAvatar,
-          has_seen_onboarding: cameFromOnboarding,
-        },
-      },
-    })
+    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
     if (signUpError) {
       setError(signUpError.message)
@@ -149,17 +125,37 @@ export function AuthModal({
     }
 
     if (data.user) {
-      setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
+      const trimmedAlias = alias.trim()
+      const initials     = trimmedAlias.substring(0, 2).toUpperCase()
+
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id:                  data.user.id,
+        alias:               trimmedAlias,
+        initials,
+        avatar_url:          selectedAvatar,
+        level:               1,
+        level_title:         'Rookie',
+        xp:                  0,
+        xp_to_next:          500,
+        streak:              0,
+        total_reviews:       0,
+        families_helped:     0,
+        has_seen_onboarding: cameFromOnboarding,
+      })
+
+      if (profileError) {
+        setError('Account created but profile setup failed. Please sign in.')
+      } else {
+        setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
+      }
     }
 
     setLoading(false)
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   if (!mounted) return null
 
   return createPortal(
-    /* Backdrop */
     <div
       onClick={onClose}
       style={{
@@ -173,7 +169,6 @@ export function AuthModal({
         padding:        '16px',
       }}
     >
-      {/* Modal card */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -188,7 +183,6 @@ export function AuthModal({
           padding:      '20px 20px 32px',
         }}
       >
-        {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -198,7 +192,6 @@ export function AuthModal({
           />
         </div>
 
-        {/* Optional prompt */}
         {prompt && tab !== 'forgot' && (
           <p
             className="body-sm"
@@ -208,7 +201,6 @@ export function AuthModal({
           </p>
         )}
 
-        {/* Tabs — hidden while in forgot-password mode */}
         {tab !== 'forgot' && (
           <div style={{
             display:       'grid',
@@ -244,7 +236,6 @@ export function AuthModal({
           </div>
         )}
 
-        {/* Forgot-password header */}
         {tab === 'forgot' && !success && (
           <div style={{ marginBottom: 16, textAlign: 'center' }}>
             <div className="display-lg" style={{ marginBottom: 4 }}>Reset your password</div>
@@ -254,7 +245,6 @@ export function AuthModal({
           </div>
         )}
 
-        {/* Success state */}
         {success ? (
           <div style={{
             background:   'var(--rr-tier-trusted)',
@@ -270,7 +260,6 @@ export function AuthModal({
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-            {/* Alias field (sign up only) */}
             {tab === 'signup' && (
               <div>
                 <label
@@ -294,7 +283,6 @@ export function AuthModal({
               </div>
             )}
 
-            {/* Avatar picker (sign up only) */}
             {tab === 'signup' && (
               <div>
                 <label
@@ -373,7 +361,6 @@ export function AuthModal({
               </div>
             )}
 
-            {/* Email */}
             <div>
               <label
                 className="label"
@@ -392,7 +379,6 @@ export function AuthModal({
               />
             </div>
 
-            {/* Password — hidden in forgot-password mode */}
             {tab !== 'forgot' && (
               <div>
                 <label
@@ -426,7 +412,6 @@ export function AuthModal({
               </div>
             )}
 
-            {/* Error */}
             {error && (
               <div style={{
                 background:   '#FFD6D6',
@@ -442,7 +427,6 @@ export function AuthModal({
               </div>
             )}
 
-            {/* CTA */}
             <button
               onClick={tab === 'signin' ? handleSignIn : tab === 'forgot' ? handleForgotPassword : handleSignUp}
               disabled={loading}
@@ -458,7 +442,6 @@ export function AuthModal({
                 : 'Create Account'}
             </button>
 
-            {/* Switch tab hint */}
             {tab === 'forgot' ? (
               <p className="body-xs" style={{ textAlign: 'center', color: 'rgba(13,42,74,0.4)' }}>
                 <button onClick={() => switchTab('signin')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--rr-red)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-display)', padding: 0 }}>← Back to sign in</button>

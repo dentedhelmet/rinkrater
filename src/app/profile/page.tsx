@@ -31,8 +31,8 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-        <div style={{ fontSize: 32 }}>⛸️</div>
-        <p className="body-sm" style={{ color: 'rgba(13,42,74,0.4)' }}>Loading...</p>
+<img src="/icons/not-logged-in-skate-web.png" alt="" style={{ width: 60, height: 60, objectFit: 'contain' }} />
+<p className="body-sm" style={{ color: 'rgba(13,42,74,0.4)' }}>Loading...</p>
       </div>
     )
   }
@@ -41,8 +41,8 @@ export default function ProfilePage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>⛸️</div>
-          <h1 className="display-lg" style={{ marginBottom: 8 }}>Your Profile</h1>
+<img src="/icons/not-logged-in-skate-web.png" alt="" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: 16 }} />
+<h1 className="display-lg" style={{ marginBottom: 8 }}>Your Profile</h1>
           <p className="body-md" style={{ color: 'rgba(13,42,74,0.55)', maxWidth: 260, marginBottom: 28, lineHeight: 1.6 }}>
             Sign in to track your XP, badges, and quiz scores across every rink.
           </p>

@@ -19,7 +19,7 @@ export interface Profile {
   full_name:          string | null
   country:            'US' | 'CA' | 'OTHER' | null
   state:              string | null
-player_type:        ('parent' | 'player' | 'coach' | 'other')[] | null
+  player_type:        ('parent' | 'player' | 'coach' | 'other')[] | null
   player_type_other:  string | null
   favorite_skates:    string | null
   current_stick:      string | null
@@ -73,34 +73,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    // Hydrate from existing session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      setLoading(false)
-    })
+    let settled = false
 
-    // Keep in sync with Supabase auth events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    // Hard safety net: no matter what happens below — getSession() hangs,
+    // throws, or the network is just slow — loading is FORCED to false
+    // after 8s so the UI can never spin forever.
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        console.error('Auth getSession() timed out after 8s — forcing loading=false')
+        setLoading(false)
+      }
+    }, 8000)
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
         setSession(session)
         setUser(session?.user ?? null)
         if (session?.user) {
-          await fetchProfile(session.user.id)
-        } else {
-          setProfile(null)
+          return fetchProfile(session.user.id)
         }
+      })
+      .catch((err) => {
+        // Previously missing entirely — if getSession() ever rejected,
+        // setLoading(false) below never ran, leaving the app stuck loading
+        // forever with no way to recover.
+        console.error('getSession() failed:', err)
+      })
+      .finally(() => {
+        settled = true
+        clearTimeout(timeout)
         setLoading(false)
+      })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        try {
+          setSession(session)
+          setUser(session?.user ?? null)
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+          } else {
+            setProfile(null)
+          }
+        } catch (err) {
+          console.error('onAuthStateChange handler failed:', err)
+        } finally {
+          setLoading(false)
+        }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [fetchProfile])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
-    setProfile(null)
+    try {
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error('signOut failed:', err)
+    } finally {
+      // Clear local state regardless of whether the network call itself
+      // succeeded. Someone clicking "Sign Out" should never see nothing
+      // happen just because that request was slow or briefly failed.
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+    }
   }, [])
 
   const refreshProfile = useCallback(async () => {

@@ -54,9 +54,9 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="clay-card"
+        className="clay-card feedback-modal-card"
         style={{
-          padding: 24, maxWidth: 480, width: '100%', background: 'var(--rr-warm)',
+          maxWidth: 480, width: '100%', background: 'var(--rr-warm)',
           maxHeight: '90vh', overflowY: 'auto', position: 'relative',
         }}
         onClick={function(e) { e.stopPropagation() }}
@@ -74,21 +74,21 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
           ✕
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, color: 'var(--rr-navy)', marginBottom: 8 }}>
+        <div className="feedback-modal-intro" style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div className="feedback-modal-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, color: 'var(--rr-navy)', marginBottom: 8 }}>
             We Want Your Feedback!
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(13,42,74,0.6)', lineHeight: 1.5 }}>
+          <div className="feedback-modal-subtitle" style={{ fontSize: 13, color: 'rgba(13,42,74,0.6)', lineHeight: 1.5 }}>
             Help us make Rink Rater better for you and hockey parents everywhere.
           </div>
         </div>
 
         {/* Question 1 — rating */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 12 }}>
+        <div className="feedback-modal-section" style={{ marginBottom: 20 }}>
+          <div className="feedback-modal-question" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 12 }}>
             <RequiredMark />1. How would you rate your overall experience with Rink Rater?
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
             {RATING_ICONS.map(function(opt, i) {
               const value = i + 1
               const isActive = value === (hoverRating || rating)
@@ -101,8 +101,8 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
                   onMouseLeave={function() { setHoverRating(0) }}
                   aria-label={opt.label}
                   style={{
-                    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 3,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                     borderRadius: 10,
                     outline: value === rating ? '2px solid var(--rr-red)' : 'none',
                     outlineOffset: 3,
@@ -112,11 +112,11 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={opt.src} alt="" style={{ width: 46, height: 46, display: 'block' }} />
+                  <img src={opt.src} alt="" className="feedback-modal-face" style={{ width: 46, height: 46, display: 'block' }} />
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 12, color: 'var(--rr-navy)' }}>
                     {value}
                   </div>
-                  <div style={{ fontSize: 10, color: 'rgba(13,42,74,0.5)' }}>
+                  <div className="feedback-modal-face-label" style={{ fontSize: 10, color: 'rgba(13,42,74,0.5)' }}>
                     {opt.label}
                   </div>
                 </button>
@@ -126,14 +126,14 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Question 2 */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 8 }}>
+        <div className="feedback-modal-section" style={{ marginBottom: 20 }}>
+          <div className="feedback-modal-question" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 8 }}>
             <RequiredMark />2. What can we do to improve your experience?
           </div>
           <textarea
             value={experience}
             onChange={function(e) { setExperience(e.target.value.slice(0, MAX_LENGTH)) }}
-            rows={3}
+            rows={2}
             placeholder="Share your thoughts..."
             style={{
               width: '100%', padding: '10px 12px', border: 'var(--rr-outline-sm)', borderRadius: 10,
@@ -147,14 +147,14 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Question 3 */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 8 }}>
+        <div className="feedback-modal-section" style={{ marginBottom: 20 }}>
+          <div className="feedback-modal-question" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 8 }}>
             <RequiredMark />3. What features would you most like to see added to Rink Rater?
           </div>
           <textarea
             value={wishlist}
             onChange={function(e) { setWishlist(e.target.value.slice(0, MAX_LENGTH)) }}
-            rows={3}
+            rows={2}
             placeholder="Your wish list of features..."
             style={{
               width: '100%', padding: '10px 12px', border: 'var(--rr-outline-sm)', borderRadius: 10,
@@ -168,7 +168,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div className="feedback-modal-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 20 }}>✉️</span>
             <div style={{ fontSize: 11, color: 'rgba(13,42,74,0.6)', lineHeight: 1.35 }}>
@@ -180,17 +180,62 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={handleSubmit}
             disabled={sending}
-            className="clay-btn clay-btn-primary"
+            className="clay-btn clay-btn-primary feedback-modal-send"
             style={{ fontSize: 14, padding: '11px 24px', flexShrink: 0, opacity: sending ? 0.6 : 1 }}
           >
             {sending ? 'Sending...' : 'Send Feedback'}
           </button>
         </div>
 
-        <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(13,42,74,0.45)', marginTop: 16 }}>
+        <div className="feedback-modal-thanks" style={{ textAlign: 'center', fontSize: 11, color: 'rgba(13,42,74,0.45)', marginTop: 16 }}>
           Thank you for helping us build the best hockey community!
         </div>
       </div>
+
+      <style jsx>{`
+        .feedback-modal-card {
+          padding: 24px;
+        }
+        @media (max-width: 480px) {
+          .feedback-modal-card {
+            padding: 16px;
+          }
+          .feedback-modal-intro {
+            margin-bottom: 12px !important;
+          }
+          .feedback-modal-title {
+            font-size: 18px !important;
+            margin-bottom: 4px !important;
+          }
+          .feedback-modal-subtitle {
+            font-size: 12px !important;
+          }
+          .feedback-modal-section {
+            margin-bottom: 14px !important;
+          }
+          .feedback-modal-question {
+            font-size: 13px !important;
+            margin-bottom: 8px !important;
+          }
+          .feedback-modal-face {
+            width: 34px !important;
+            height: 34px !important;
+          }
+          .feedback-modal-face-label {
+            display: none;
+          }
+          .feedback-modal-footer {
+            flex-direction: column;
+            align-items: stretch !important;
+          }
+          .feedback-modal-send {
+            width: 100%;
+          }
+          .feedback-modal-thanks {
+            margin-top: 10px !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
