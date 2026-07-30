@@ -50,7 +50,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
       style={{
         position: 'fixed', inset: 0, background: 'rgba(13,42,74,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 100, padding: 16,
+        zIndex: 200, padding: 16,
       }}
       onClick={onClose}
     >
@@ -231,9 +231,14 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
           padding: 24px;
         }
         @media (max-width: 480px) {
-          .feedback-modal-card {
-            padding: 16px;
-          }
+  .feedback-modal-card {
+    padding: 14px;
+    max-height: 85dvh;
+  }
+  .feedback-modal-section {
+    margin-bottom: 12px !important;
+  }
+}
             
           .feedback-modal-intro {
             margin-bottom: 12px !important;
