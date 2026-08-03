@@ -31,11 +31,11 @@ const ERAS: Era[] = [
     label: 'The Lightbulb Moment',
     title: 'Sitting in the stands, an idea clicks',
     story: [
-      'Sitting in the stands during one of our kids\u2019 games, I had a thought: \u201cMan, I wish I knew how cold this rink was before we got here!\u201d',
+      'Sitting \u2019in the stands during one of our kids games and absolutely freezing as I had come ill-prepared, I had a thought: \u201cMan, I wish I knew how cold this rink was before we got here!\u201d',
     ],
     quote: '\u201cMan, I wish I knew how cold this rink was before we got here!\u201d',
     story2: [
-      'I bought the domain name, RinkRater.com, right then and there \u2014 and started jotting down every idea I had.',
+      'After thinking about possible solutions, I bought the domain name, RinkRater.com, right then and there \u2014 and started jotting down every idea I had.',
     ],
     img: '/about/timeline/2015-domain-purchase.jpg',
     alt: 'Domain purchase confirmation screen for RinkRater.com, shown on an ice rink.',
@@ -72,7 +72,7 @@ const ERAS: Era[] = [
     label: 'COVID Changes Everything',
     title: 'COVID hits \u2014 and a heartbreaking decision',
     story: [
-      'Rinks closed. Tournaments were canceled. Usage dropped dramatically, and it became unsustainable \u2014 Rink Rater came down from the App Store and Google Play.',
+      'Rinks closed. Tournaments were canceled. Usage dropped dramatically, and unfortunately the app updates became unsustainable \u2014 and Rink Rater had to be pulled down from the App Store and Google Play. I remember the exact moment I had to do it.',
       'But that wasn\u2019t the end of the story. It was just the beginning of the next chapter.',
     ],
     img: '/about/timeline/2020-covid.jpg',
@@ -85,7 +85,7 @@ const ERAS: Era[] = [
     label: 'The AI Spark',
     title: 'What if you could just ask?',
     story: [
-      'I began learning various AI models and soon had a new vision for Rink Rater: an assistant that reads through thousands of real reviews and gives instant, helpful answers \u2014 like \u201cHow cold is The Ice Haus?\u201d \u2014 backed by real hockey parents\u2019 words.',
+      'I began learning various AI models and soon had a new vision for Rink Rater: an assistant that reads through thousands of real reviews and gives instant, helpful answers \u2014 like \u201cHow cold is The Ice Haus?\u201d \u2014 backed by real hockey parents\u2019 reviews.',
     ],
     img: '/about/timeline/2024-ask-tj.jpg',
     alt: 'Rink Rater 2.0 concept: Ask TJ Anything, showing a sample question and answers pulled from real parent reviews about rink temperature, concessions, parking, and skate sharpening.',
@@ -97,7 +97,7 @@ const ERAS: Era[] = [
     label: 'Rink Rater 2.0',
     title: 'Rink Rater 2.0 arrives',
     story: [
-      'Now powered by 14,400+ real reviews from hockey parents across North America \u2014 plus new partnerships with My Hockey Rankings and For the Love of Hockey.',
+      'Now powered by 14,400+ real reviews from hockey parents across North America \u2014 plus a new partnership with For the Love of Hockey.',
       'Ask TJ Anything, earn XP and badges, save your favorite rinks, and get honest reviews on what matters most to hockey families.',
     ],
     img: '/about/timeline/2026-rebirth.jpg',
@@ -223,14 +223,14 @@ export function AboutTimeline() {
             padding: '7px 14px', borderRadius: 999, marginBottom: 14,
           }}
         >
-          <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rr-warm)' }} />
+          <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: '#2E9B5C' }} />
           Our Story
         </span>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 26, color: 'var(--rr-navy)', lineHeight: 1.15, marginBottom: 10 }}>
           How did it all start, <span style={{ color: 'var(--rr-red)' }}>you ask?</span>
         </div>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(13,42,74,0.7)', maxWidth: 440, margin: '0 auto' }}>
-          Here&rsquo;s a cool, interactive timeline! Scroll through \u2014 or jump to any year below.
+          Rink Rater was bourne out of a need that was realized on the spot and took action to fill a gap and provide a real resource for our Hockey Community! Here&rsquo;s a cool, interactive timeline! Scroll through — or jump to any year below.
         </div>
       </div>
 
