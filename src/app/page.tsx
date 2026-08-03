@@ -206,13 +206,13 @@ export default function HomePage() {
         <div className="hero-outer">
           <div className="hero-photo">
             <Image
-              src={isDesktop ? HERO_BACKGROUND : HERO_BACKGROUND_MOBILE}
-              alt=""
-              fill
-              priority
-              sizes={isDesktop ? '66vw' : '100vw'}
-              className="hero-photo-img"
-            />
+  src={HERO_BACKGROUND_MOBILE}
+  alt=""
+  fill
+  priority
+  sizes="100vw"
+  className="hero-photo-img"
+/>
           </div>
 
           <div className="hero-overlay-left">
@@ -495,7 +495,7 @@ export default function HomePage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icons/feedback-bubble.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </span>
-            
+
             <div style={{ textAlign: 'left', flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)' }}>
                 Help Us Make Rink Rater Better!
@@ -547,14 +547,14 @@ export default function HomePage() {
         .hero-photo {
           position: relative;
           width: 100%;
-          aspect-ratio: 4 / 3;
+          aspect-ratio: 16 / 9;
           border-radius: 20px 20px 20px 4px;
           overflow: hidden;
           box-shadow: var(--rr-shadow);
         }
         .hero-photo-img {
           object-fit: cover;
-          object-position: center top;
+          object-position: 25%;
         }
 
         .hero-overlay-left {
