@@ -110,7 +110,7 @@ const BACK_TO_TOP_TRIGGER_ID = '2019'
 export function AboutTimeline() {
   const railTrackRef = useRef<HTMLDivElement>(null)
   const railFillRef = useRef<HTMLDivElement>(null)
-  const eraRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const eraRefs = useRef<Record<string, HTMLElement | null>>({})
   const [activeEra, setActiveEra] = useState<string>(ERAS[0].id)
   const [visibleEras, setVisibleEras] = useState<Set<string>>(new Set())
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null)
