@@ -116,7 +116,25 @@ export function AuthModal({
       return
     }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    const trimmedAlias = alias.trim()
+    const initials      = trimmedAlias.substring(0, 2).toUpperCase()
+
+    // handle_new_user() trigger (on_auth_user_created) reads alias/initials/
+    // avatar_url/has_seen_onboarding out of raw_user_meta_data and creates the
+    // matching profiles row itself — do NOT insert into profiles manually here,
+    // or the second insert will collide with the trigger's row on the id PK.
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          alias:                trimmedAlias,
+          initials,
+          avatar_url:           selectedAvatar,
+          has_seen_onboarding:  cameFromOnboarding,
+        },
+      },
+    })
 
     if (signUpError) {
       setError(signUpError.message)
@@ -125,29 +143,7 @@ export function AuthModal({
     }
 
     if (data.user) {
-      const trimmedAlias = alias.trim()
-      const initials     = trimmedAlias.substring(0, 2).toUpperCase()
-
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id:                  data.user.id,
-        alias:               trimmedAlias,
-        initials,
-        avatar_url:          selectedAvatar,
-        level:               1,
-        level_title:         'Rookie',
-        xp:                  0,
-        xp_to_next:          500,
-        streak:              0,
-        total_reviews:       0,
-        families_helped:     0,
-        has_seen_onboarding: cameFromOnboarding,
-      })
-
-      if (profileError) {
-        setError('Account created but profile setup failed. Please sign in.')
-      } else {
-        setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
-      }
+      setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
     }
 
     setLoading(false)
