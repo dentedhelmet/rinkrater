@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
 
@@ -103,17 +104,22 @@ export function GlobalHeader() {
   return (
     <>
       <header
-        style={{
-          background: 'var(--rr-red)',
-          padding: '10px 14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          borderBottom: 'var(--rr-outline)',
-          zIndex: 100,
-          position: 'relative',
-        }}
-      >
+  style={{
+    background: 'var(--rr-red)',
+    padding: '10px 14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    borderBottom: 'var(--rr-outline)',
+    zIndex: 150,
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    boxSizing: 'border-box',
+  }}
+>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img src="/logo/rinkrater-logo.png" alt="Rink Rater logo" style={{ width: 280, height: 80, objectFit: 'contain' }} />
         </Link>

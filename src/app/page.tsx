@@ -187,7 +187,7 @@ export default function HomePage() {
   }
 
   return (
-    <PageShell topBar={<SiteHeader onSignIn={() => setShowAuth(true)} />} tabBar={<BottomBanner />}>
+    <PageShell tabBar={<BottomBanner />}>
       <div className="home-grid" >
         <div className="home-main-col">
 

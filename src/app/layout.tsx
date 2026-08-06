@@ -39,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div id="app-shell">
           <AuthProvider>
   <GlobalHeader />
+  <div style={{ height: 100 }} />
   {children}
   <OnboardingFlow />
 </AuthProvider>

@@ -33,12 +33,12 @@ export function PageShell(props: PageShellProps) {
           min-height: 100dvh;
         }
         .page-topbar-fixed {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 100;
-        }
+  position: fixed;
+  top: 100px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
         .page-tabbar-fixed {
           position: fixed;
           bottom: 0;
@@ -47,9 +47,9 @@ export function PageShell(props: PageShellProps) {
           z-index: 100;
         }
         .page-scroll-area {
-          flex: 1;
-          overflow-y: auto;
-          padding: 90px 12px 70px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 12px 70px;
           background-image: url('/background/rr-background.jpg');
           background-size: cover;
           background-position: center;
