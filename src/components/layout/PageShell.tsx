@@ -1,7 +1,7 @@
 'use client'
 
 interface PageShellProps {
-  topBar: React.ReactNode
+  topBar?: React.ReactNode
   children: React.ReactNode
   showTabBar?: boolean
   tabBar?: React.ReactNode
