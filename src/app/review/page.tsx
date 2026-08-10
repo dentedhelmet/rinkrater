@@ -6,6 +6,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { TJ } from '@/components/tj/TJ'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
+import { OverallRatingModal } from '@/components/review/OverallRatingModal'
 
 interface ReviewMessage {
   role: 'tj' | 'user'
@@ -24,7 +25,7 @@ const CATEGORY_DEFS = [
   { key: 'RESTROOMS',                   label: 'Restrooms',        emoji: '🚻' },
   { key: 'SKATE SHARPENING',            label: 'Skate Sharpening', emoji: '⛸️' },
   { key: 'CONCESSIONS',                 label: 'Concessions',      emoji: '🍕' },
-  { key: 'DRINKS',                      label: 'Drinks',           emoji: '🥤' },
+  { key: 'DRINKS',                      label: 'Bar',              emoji: '🍺' },
   { key: 'WIFI',                        label: 'WiFi',             emoji: '📶' },
   { key: 'LIVEBARN',                    label: 'LiveBarn',         emoji: '📺' },
   { key: 'RINK RAT ACTIVITIES',         label: 'Rink Rat Fun',     emoji: '🎮' },
@@ -35,6 +36,24 @@ const CATEGORY_DEFS = [
 ]
 
 const TOTAL_CATS = CATEGORY_DEFS.length
+
+// Faces reused from the Overall Rating modal / Feedback modal icon set.
+const RATING_FACES = [
+  '/icons/rating-1.png',
+  '/icons/rating-2.png',
+  '/icons/rating-3.png',
+  '/icons/rating-4.png',
+  '/icons/rating-5.png',
+]
+
+// faceIndex is 1-5. A 4.4 average -> faces 1-4 at 100%, face 5 at ~40% opacity.
+// Floor of 0.15 so an "unearned" face is still visibly present, not invisible.
+function getFaceOpacity(avgRating: number, faceIndex: number) {
+  const diff = avgRating - (faceIndex - 1)
+  if (diff >= 1) return 1
+  if (diff <= 0) return 0.15
+  return Math.max(0.15, diff)
+}
 
 const ACKS = [
   "Got it, thanks!",
@@ -63,6 +82,13 @@ function ReviewPageContent() {
   const [rinkLocation, setRinkLocation] = useState('')
   const [totalReviews, setTotalReviews] = useState(0)
   const [tier, setTier] = useState<string | null>(null) // TODO: confirm actual field name on rink record
+
+  // ── Overall rating state ────────────────────────────────────────────────
+  const [avgOverallRating, setAvgOverallRating] = useState<number | null>(null)
+  const [overallRatingCount, setOverallRatingCount] = useState(0)
+  const [checkedOwnRating, setCheckedOwnRating] = useState(false)
+  const [showOverallRatingModal, setShowOverallRatingModal] = useState(false)
+
   const [messages, setMessages] = useState<ReviewMessage[]>([
     {
       role: 'tj',
@@ -91,6 +117,10 @@ function ReviewPageContent() {
           setRinkLocation(data.rink.city + ', ' + data.rink.state)
           setTotalReviews(data.stats?.total_reviews || 0)
           setTier(data.rink.tier || null)
+          setAvgOverallRating(
+            typeof data.stats?.avg_overall_rating === 'number' ? data.stats.avg_overall_rating : null
+          )
+          setOverallRatingCount(data.stats?.overall_rating_count || 0)
           setMessages([{
             role: 'tj',
             text: `Let's start with ${CATEGORY_DEFS[0].label} at ${data.rink.name} — what was it like? (Or pick a different category below.)`,
@@ -98,6 +128,32 @@ function ReviewPageContent() {
         }
       })
   }, [rinkId])
+
+  // ── Check whether this signed-in user already left an overall rating ────
+  // for this rink. If not, surface the modal as the first thing they see.
+  useEffect(function() {
+    if (!rinkId || !user || !session?.access_token) return
+    let cancelled = false
+    fetch('/api/rink/' + rinkId + '/overall-rating', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then(function(res) { return res.json() })
+      .then(function(data) {
+        if (cancelled) return
+        if (data.rating == null) {
+          setShowOverallRatingModal(true)
+        }
+      })
+      .catch(function() { /* fail silent — don't block the review flow over this check */ })
+      .finally(function() { if (!cancelled) setCheckedOwnRating(true) })
+    return function() { cancelled = true }
+  }, [rinkId, user, session?.access_token])
+
+  function handleOverallRatingDone(result: { avgOverallRating: number | null; overallRatingCount: number }) {
+    setAvgOverallRating(result.avgOverallRating)
+    setOverallRatingCount(result.overallRatingCount)
+    setShowOverallRatingModal(false)
+  }
 
   const thumbnailSrc =
     '/rink-thumbnails/rr_arena' +
@@ -269,6 +325,18 @@ function ReviewPageContent() {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar showBack backHref={rinkId ? '/rink/' + rinkId : '/'} title="LEAVE A REVIEW" />
 
+      {/* ── Overall rating modal — first thing shown once we know this user ── */}
+      {/* hasn't already rated this rink. Skippable; re-checked each visit. */}
+      {showOverallRatingModal && checkedOwnRating && session?.access_token && (
+        <OverallRatingModal
+          rinkId={rinkId}
+          rinkName={rinkName}
+          accessToken={session.access_token}
+          onDone={handleOverallRatingDone}
+          onSkip={() => setShowOverallRatingModal(false)}
+        />
+      )}
+
       {savedToast.visible && (
         <div style={{
           position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -328,7 +396,7 @@ function ReviewPageContent() {
                       cursor: 'pointer', opacity: done && !active ? 0.55 : 1,
                     }}
                   >
-                    {cat.emoji} {cat.label} {done && '✓'}
+                    {cat.label} {done && '✓'}
                   </button>
                 )
               })}
@@ -418,6 +486,32 @@ function ReviewPageContent() {
                 </span>
               )}
             </div>
+
+            {/* ── Overall rating face row ─────────────────────────────────── */}
+            {/* Only renders once at least one person has submitted an overall */}
+            {/* rating. Opacity communicates the average; the caption spells */}
+            {/* out in words that this is an average, not a single score. */}
+            {overallRatingCount > 0 && avgOverallRating != null && (
+              <div style={{ marginTop: 6 }}>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  {RATING_FACES.map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt=""
+                      style={{
+                        width: 'clamp(16px, 3vw, 20px)',
+                        height: 'clamp(16px, 3vw, 20px)',
+                        opacity: getFaceOpacity(avgOverallRating, i + 1),
+                      }}
+                    />
+                  ))}
+                </div>
+                <div style={{ fontSize: 'clamp(8px, 1.3vw, 10px)', color: 'rgba(13,42,74,0.5)', fontWeight: 600, marginTop: 2 }}>
+                  Average of {overallRatingCount} {overallRatingCount === 1 ? 'rating' : 'ratings'}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
