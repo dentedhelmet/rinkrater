@@ -41,11 +41,26 @@ export default function PartnersPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar showBack backHref="/" title="Partners" />
-      <main style={{ flex: 1, overflowY: 'auto', padding: '24px 16px' }} className="scroll-y">
-        <div className="clay-card" style={{ padding: '20px', marginBottom: 16 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, color: 'var(--rr-navy)', marginBottom: 12 }}>
+
+      {/* HERO: header image with title on the open left side */}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '2.45 / 1', maxHeight: 300, overflow: 'hidden', flexShrink: 0 }}>
+        <img
+          src="/hero/header-partners.jpg"
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+        />
+        <div style={{ position: 'absolute', left: '5%', top: '50%', transform: 'translateY(-50%)', maxWidth: '45%' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(20px, 5vw, 36px)', color: 'var(--rr-navy)', lineHeight: 1.1, marginBottom: 6 }}>
             Our Partners
           </div>
+          <div style={{ fontSize: 'clamp(11px, 2.2vw, 14px)', color: 'rgba(13,42,74,0.7)', fontWeight: 600, lineHeight: 1.4 }}>
+            Real reviews. Real partners. Real impact.
+          </div>
+        </div>
+      </div>
+
+      <main style={{ flex: 1, overflowY: 'auto', padding: '24px 16px' }} className="scroll-y">
+        <div className="clay-card" style={{ padding: '20px', marginBottom: 16 }}>
           <div style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(13,42,74,0.75)', marginBottom: 16 }}>
             Rink Rater is proud to partner with leading organizations in the hockey community. Tap a partner below to learn more.
           </div>
