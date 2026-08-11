@@ -1,8 +1,43 @@
 'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
 import { BottomBanner } from '@/components/layout/BottomBanner'
+import { PartnerModal } from '@/components/partners/PartnerModal'
+
+interface Partner {
+  name:  string
+  logo:  string
+  blurb: string
+  facts: string[]
+  href:  string
+}
+
+// NOTE: blurbs below are original summaries written for Rink Rater, not
+// copied from either partner's own site. Facts are drawn from each
+// partner's own published numbers — worth checking with each partner
+// before publishing to confirm these are still current.
+const PARTNERS: Partner[] = [
+  {
+    name:  'My Hockey Rankings',
+    logo:  '/partners/mhr.v5.logo-full-bg.png',
+    blurb: "My Hockey Rankings uses a data-driven rating system — built from goal differential and strength of schedule — to rank youth hockey teams across thousands of clubs and leagues nationwide. What started as a simple way to help teams find evenly matched opponents has grown into one of youth hockey's most trusted ranking resources, free to families thanks to sponsor support and a dedicated volunteer network.",
+    facts: ['Since 2003', '2,900+ Clubs Tracked', '29,000+ Teams Ranked'],
+    href:  'https://myhockeyrankings.com',
+  },
+  {
+    name:  'For The Love Of Hockey',
+    logo:  '/partners/FTLOH_Logo_1.png',
+    blurb: "For The Love Of Hockey is a hockey lifestyle and apparel brand built by and for hockey families — sideline hoodies, rink totes, and gear that says \"hockey mom\" or \"hockey dad\" without saying a word. They call themselves hockey's second rink family, backed by a coach-review tool and rewards program built specifically for youth hockey communities.",
+    facts: ['Riverside, CT', 'Hockey Lifestyle Apparel', 'Coach Review Program'],
+    href:  'https://fortheloveofhockey11.com',
+  },
+]
 
 export default function PartnersPage() {
+  const [activePartner, setActivePartner] = useState<Partner | null>(null)
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <TopBar showBack backHref="/" title="Partners" />
@@ -12,23 +47,54 @@ export default function PartnersPage() {
             Our Partners
           </div>
           <div style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(13,42,74,0.75)', marginBottom: 16 }}>
-            Rink Rater is proud to partner with leading organizations in the hockey community.
+            Rink Rater is proud to partner with leading organizations in the hockey community. Tap a partner below to learn more.
           </div>
-          <a href="https://myhockeyrankings.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 10, padding: '12px 14px', marginBottom: 10, textDecoration: 'none' }}>
-            <img src="/partners/mhr.v5.logo-full-bg.png" alt="My Hockey Rankings" style={{ width: 48, height: 48, objectFit: 'contain' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)' }}>My Hockey Rankings</div>
-          </a>
-          <a href="https://fortheloveofhockey11.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 10, padding: '12px 14px', textDecoration: 'none' }}>
-            <img src="/partners/FTLOH_Logo_1.png" alt="For The Love Of Hockey" style={{ width: 48, height: 48, objectFit: 'contain' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)' }}>For The Love Of Hockey</div>
-          </a>
+
+          {PARTNERS.map((partner, i) => (
+            <button
+              key={partner.name}
+              onClick={() => setActivePartner(partner)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 10,
+                padding: '12px 14px', marginBottom: i < PARTNERS.length - 1 ? 10 : 0,
+                textAlign: 'left', cursor: 'pointer',
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={partner.logo} alt={partner.name} style={{ width: 48, height: 48, objectFit: 'contain', flexShrink: 0 }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)' }}>
+                {partner.name}
+              </div>
+            </button>
+          ))}
         </div>
-        <div className="clay-card" style={{ padding: '20px', textAlign: 'center', opacity: 0.5 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)' }}>
+
+        <div className="clay-card" style={{ padding: '20px', textAlign: 'center' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 14 }}>
             Interested in partnering? Coming soon.
           </div>
+          <Link
+            href="/contact"
+            className="clay-btn clay-btn-primary"
+            style={{ display: 'inline-block', fontSize: 13, padding: '10px 24px', textDecoration: 'none' }}
+          >
+            Contact Us
+          </Link>
         </div>
       </main>
+
+      {activePartner && (
+        <PartnerModal
+          name={activePartner.name}
+          logo={activePartner.logo}
+          blurb={activePartner.blurb}
+          facts={activePartner.facts}
+          href={activePartner.href}
+          onClose={() => setActivePartner(null)}
+        />
+      )}
+
       <BottomBanner />
     </div>
   )
