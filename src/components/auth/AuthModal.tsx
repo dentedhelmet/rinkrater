@@ -137,10 +137,14 @@ export function AuthModal({
     })
 
     if (signUpError) {
-      setError(signUpError.message)
-      setLoading(false)
-      return
-    }
+  setError(
+    signUpError.message.startsWith('Password should contain')
+      ? 'Password needs at least one letter, one uppercase letter, and one number.'
+      : signUpError.message
+  )
+  setLoading(false)
+  return
+}
 
     if (data.user) {
       setSuccess("Welcome to Rink Rater! Check your email to verify your account, then sign in.")
