@@ -159,6 +159,7 @@ export default function MyReviewsPage() {
   const [reviews, setReviews] = useState<MyReview[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   useEffect(function() {
     if (!user || !session?.access_token) return
@@ -181,6 +182,18 @@ export default function MyReviewsPage() {
   function handleUpdated(updated: MyReview) {
     setReviews((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
   }
+
+  // Client-side filter — the whole list is already loaded in one request,
+  // so there's no need for a server round-trip just to narrow it down.
+  // Matches against rink name OR category, so "temp" finds every Rink
+  // Temperature entry too, not just rink names.
+  const query = search.trim().toLowerCase()
+  const filteredReviews = query
+    ? reviews.filter((r) =>
+        r.rink_name.toLowerCase().includes(query) ||
+        r.category.toLowerCase().includes(query)
+      )
+    : reviews
 
   if (authLoading) {
     return (
@@ -208,6 +221,52 @@ export default function MyReviewsPage() {
       <TopBar showBack backHref="/profile" title="My Reviews" />
 
       <main style={{ flex: 1, overflowY: 'auto', background: '#EEF4FA', padding: 12 }} className="scroll-y">
+        {!loading && !loadError && reviews.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <label
+              htmlFor="my-reviews-search"
+              style={{
+                display: 'block', marginBottom: 6, fontSize: 15, fontWeight: 800,
+                color: 'var(--rr-navy)', fontFamily: 'var(--font-display)',
+                textTransform: 'uppercase', letterSpacing: 0.3,
+              }}
+            >
+              Search by Rink Name or Category
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="my-reviews-search"
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="e.g. South Windsor, Parking..."
+                style={{
+                  width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-body)',
+                  fontSize: 14, padding: '10px 36px 10px 12px', borderRadius: 'var(--rr-radius-sm)',
+                  border: 'var(--rr-outline-sm)', color: 'var(--rr-navy)', background: '#fff',
+                  outline: 'none',
+                }}
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                  style={{
+                    position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                    width: 28, height: 28, borderRadius: '50%', border: 'none',
+                    background: 'rgba(13,42,74,0.08)', color: 'rgba(13,42,74,0.6)',
+                    fontSize: 14, cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {loading && (
           <div style={{ textAlign: 'center', padding: 30, color: 'rgba(13,42,74,0.4)', fontSize: 12 }}>
             Loading your reviews...
@@ -226,7 +285,13 @@ export default function MyReviewsPage() {
           </div>
         )}
 
-        {!loading && !loadError && reviews.map((review) => (
+        {!loading && !loadError && reviews.length > 0 && filteredReviews.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 30, color: 'rgba(13,42,74,0.4)', fontSize: 12 }}>
+            No reviews match "{search}".
+          </div>
+        )}
+
+        {!loading && !loadError && filteredReviews.map((review) => (
           <ReviewCard
             key={review.id}
             review={review}
