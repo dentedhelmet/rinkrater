@@ -10,6 +10,21 @@ import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 import { CategorySheet } from '@/components/rink/CategorySheet'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
+const RATING_FACES = [
+  '/icons/rating-1.png',
+  '/icons/rating-2.png',
+  '/icons/rating-3.png',
+  '/icons/rating-4.png',
+  '/icons/rating-5.png',
+]
+
+// faceIndex is 1-5. A 4.4 average -> faces 1-4 at 100%, face 5 at ~40% opacity.
+function getFaceOpacity(avgRating: number, faceIndex: number) {
+  const diff = avgRating - (faceIndex - 1)
+  if (diff >= 1) return 1
+  if (diff <= 0) return 0.15
+  return Math.max(0.15, diff)
+}
 
 interface RinkData {
   id: string
@@ -26,6 +41,8 @@ interface StatsData {
   total_reviews: number
   confidence_tier: string
   rr_unique_reviewers?: number
+  avg_overall_rating?: number | null
+  overall_rating_count?: number
 }
 
 export default function RinkProfilePage() {
@@ -188,6 +205,29 @@ export default function RinkProfilePage() {
             <span className={'tier-chip tier-chip--' + tierKey} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
               {totalReviews} reviews - {tierText}
             </span>
+
+            {/* Overall rating face row — only renders once someone has rated */}
+            {typeof stats?.overall_rating_count === 'number' && stats.overall_rating_count > 0 && typeof stats?.avg_overall_rating === 'number' && (
+              <div style={{ marginTop: 6 }}>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  {RATING_FACES.map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt=""
+                      style={{
+                        width: 'clamp(16px, 3vw, 20px)',
+                        height: 'clamp(16px, 3vw, 20px)',
+                        opacity: getFaceOpacity(stats.avg_overall_rating as number, i + 1),
+                      }}
+                    />
+                  ))}
+                </div>
+                <div style={{ fontSize: 'clamp(8px, 1.3vw, 10px)', color: 'rgba(255,255,255,0.6)', fontWeight: 600, marginTop: 2 }}>
+                  Average of {stats.overall_rating_count} {stats.overall_rating_count === 1 ? 'rating' : 'ratings'}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
