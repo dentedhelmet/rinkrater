@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: 'Partners',         href: '/partners'        },
   { label: 'Shop',             href: '/shop'            },
   { label: "What's the Call?", href: '/whats-the-call'  },
+  { label: 'Contact RR',          href: '/contact'         },
 ]
 
 export function GlobalHeader() {
