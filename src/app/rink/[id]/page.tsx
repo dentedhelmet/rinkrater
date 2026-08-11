@@ -205,31 +205,44 @@ export default function RinkProfilePage() {
             <span className={'tier-chip tier-chip--' + tierKey} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
               {totalReviews} reviews - {tierText}
             </span>
-
-            {/* Overall rating face row — only renders once someone has rated */}
-            {typeof stats?.overall_rating_count === 'number' && stats.overall_rating_count > 0 && typeof stats?.avg_overall_rating === 'number' && (
-              <div style={{ marginTop: 6 }}>
-                <div style={{ display: 'flex', gap: 2 }}>
-                  {RATING_FACES.map((src, i) => (
-                    <img
-                      key={i}
-                      src={src}
-                      alt=""
-                      style={{
-                        width: 'clamp(16px, 3vw, 20px)',
-                        height: 'clamp(16px, 3vw, 20px)',
-                        opacity: getFaceOpacity(stats.avg_overall_rating as number, i + 1),
-                      }}
-                    />
-                  ))}
-                </div>
-                <div style={{ fontSize: 'clamp(8px, 1.3vw, 10px)', color: 'rgba(255,255,255,0.6)', fontWeight: 600, marginTop: 2 }}>
-                  Average of {stats.overall_rating_count} {stats.overall_rating_count === 1 ? 'rating' : 'ratings'}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Overall rating row — moved out of the hero overlay card (which has a
+            fixed height and clips overflow) so the faces have room to render
+            at a readable size without pushing the rink name out of view. */}
+        {typeof stats?.overall_rating_count === 'number' && stats.overall_rating_count > 0 && typeof stats?.avg_overall_rating === 'number' && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            padding: '10px 14px', background: '#fff', borderBottom: 'var(--rr-outline)',
+          }}>
+            <div style={{
+              fontSize: 'clamp(10px, 2vw, 12px)', color: 'var(--rr-navy)', fontWeight: 800,
+              fontFamily: 'var(--font-display)', letterSpacing: 0.5, textTransform: 'uppercase',
+            }}>
+              Overall Rink Rating
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 3 }}>
+                {RATING_FACES.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt=""
+                    style={{
+                      width: 'clamp(26px, 6vw, 34px)',
+                      height: 'clamp(26px, 6vw, 34px)',
+                      opacity: getFaceOpacity(stats.avg_overall_rating as number, i + 1),
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ fontSize: 'clamp(11px, 2.4vw, 13px)', color: 'var(--rr-navy)', fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+                Average of {stats.overall_rating_count} {stats.overall_rating_count === 1 ? 'rating' : 'ratings'}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="rink-actions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, padding: '10px 12px', background: 'var(--rr-warm)', borderBottom: 'var(--rr-outline)' }}>
           <button
