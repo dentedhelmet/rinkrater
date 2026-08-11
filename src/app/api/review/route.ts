@@ -11,29 +11,37 @@ interface Entry {
 }
 
 // ─── Claude prompt ─────────────────────────────────────────────────────────────
+// IMPORTANT: Claude's ONLY job here is moderation classification. It does not
+// rewrite, rephrase, or "clean up" the reviewer's words in any way — and the
+// code below never reads a comment/text field back from its response even if
+// it were to include one. The published review is always built directly from
+// the reviewer's own rawText, matched back by position. This is deliberate:
+// a platform-generated rewrite of a family's actual words is both a trust
+// problem and a Section 230 risk (see project notes on AI-generated
+// characterizations of rinks).
 function buildPrompt(entries: Entry[], rinkName: string, city: string, state: string) {
   const list = entries
     .map((e, i) => `${i + 1}. Category: ${e.category}\n   Reviewer wrote: "${e.rawText}"`)
     .join('\n\n')
 
-  return `You are processing hockey rink review entries for Rink Rater, a family-friendly platform for hockey parents.
+  return `You are moderating hockey rink review entries for Rink Rater, a family-friendly platform for hockey parents.
+
+You are NOT rewriting, rephrasing, editing, or "cleaning up" the reviewer's words in any way. Their exact text will be published as-is. Your only job is to classify each entry for moderation.
 
 Rink: ${rinkName} in ${city}, ${state}
 
-The reviewer has ALREADY told us which category each entry below belongs to — do not guess or reassign categories. For each numbered entry:
-1. Write a clean 1-2 sentence comment in the reviewer's voice, based only on what they actually wrote. Light grammar cleanup is fine; never invent details.
-2. Moderate it:
-   - "published" = clean, factual, family-friendly → post immediately
+The reviewer has ALREADY told us which category each entry below belongs to — do not guess or reassign categories. For each numbered entry, decide:
+   - "published" = clean, factual, family-friendly → post immediately, exactly as written
    - "pending" = mentions staff/employees by name negatively, unverifiable serious claims, borderline language, or anything needing human review
    - "rejected" = profanity, hate speech, clearly fake/spam, or genuinely unrelated to the stated category
 
 Entries:
 ${list}
 
-Respond ONLY with valid JSON, entries in the same order as above, and nothing else:
+Respond ONLY with valid JSON, entries in the same order as above, and nothing else. Do NOT include a rewritten comment or any version of the reviewer's text — only the moderation decision:
 {
   "entries": [
-    { "category": "EXACT CATEGORY FROM INPUT", "comment": "...", "status": "published", "reason": null }
+    { "category": "EXACT CATEGORY FROM INPUT", "status": "published", "reason": null }
   ]
 }`.trim()
 }
@@ -110,10 +118,10 @@ export async function POST(req: NextRequest) {
     const city     = rink?.city  || ''
     const state    = rink?.state || ''
 
-    // ── Claude: clean up + moderate each already-categorized entry ──────────
+    // ── Claude: MODERATION CLASSIFICATION ONLY — see buildPrompt comment ────
     const aiResponse = await anthropic.messages.create({
       model:      'claude-sonnet-4-6',
-      max_tokens: 1200,
+      max_tokens: 800,
       messages: [{
         role:    'user',
         content: buildPrompt(cleanEntries, rinkName, city, state),
@@ -122,19 +130,37 @@ export async function POST(req: NextRequest) {
 
     const rawJson = aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : ''
 
-    let resultEntries: { category: string; comment: string; status: 'published' | 'pending' | 'rejected'; reason: string | null }[]
+    type ModerationResult = { category: string; status: 'published' | 'pending' | 'rejected'; reason: string | null }
+    let moderationResults: ModerationResult[]
 
     try {
       const clean = rawJson.replace(/```json|```/g, '').trim()
-      resultEntries = JSON.parse(clean).entries || []
+      moderationResults = JSON.parse(clean).entries || []
     } catch {
-      resultEntries = cleanEntries.map((e) => ({
-        category: e.category,
-        comment:  e.rawText,
-        status:   'pending' as const,
-        reason:   'AI parse error — needs human review',
-      }))
+      moderationResults = []
     }
+
+    if (moderationResults.length !== cleanEntries.length) {
+      console.error(
+        'Moderation result count mismatch — expected', cleanEntries.length,
+        'got', moderationResults.length, '. Falling back to pending for missing entries.'
+      )
+    }
+
+    // ── Build final entries: comment is ALWAYS the reviewer's verbatim text.
+    // Matched back to the AI's moderation decision by position (not by
+    // re-reading any text field from the AI — there isn't one to read).
+    // Any entry missing a moderation result defaults to "pending" as a safe
+    // fallback rather than risking auto-publishing an unclassified entry.
+    const resultEntries = cleanEntries.map((entry, i) => {
+      const mod = moderationResults[i]
+      return {
+        category: entry.category,
+        comment:  entry.rawText,
+        status:   (mod?.status as ModerationResult['status']) || 'pending',
+        reason:   mod?.status ? mod.reason : 'Moderation response incomplete — needs human review',
+      }
+    })
 
     const today = new Date().toISOString().split('T')[0]
 
