@@ -89,6 +89,11 @@ export function RinkSVG({
       onTouchStart={handleTouch}
     >
       {/* ── Ice surface ── */}
+      <defs>
+        <clipPath id="iceClip">
+          <rect x="4" y="4" width={W - 8} height={H - 8} rx="36" />
+        </clipPath>
+      </defs>
       <rect x="4" y="4" width={W - 8} height={H - 8}
         rx="36" fill="#E8F5FC" stroke="#0D2A4A" strokeWidth="3"/>
 
@@ -100,6 +105,14 @@ export function RinkSVG({
         style={{ pointerEvents: 'none' }}>
         CENTER ICE
       </text>
+
+      {/* ── Center ice faceoff circle — bisected by the center-ice line, */}
+      {/* clipped so it cuts off cleanly at the rink boundary rather than */}
+      {/* poking above the black border. */}
+      <g clipPath="url(#iceClip)">
+        <circle cx={W / 2} cy="24" r="42" fill="none" stroke="#1565C0" strokeWidth="1.5"/>
+        <circle cx={W / 2} cy="24" r="3.5" fill="#1565C0"/>
+      </g>
 
       {/* ── Blue line ── */}
       <line x1="4" y1="136" x2={W - 4} y2="136"
@@ -114,7 +127,7 @@ export function RinkSVG({
         fill="rgba(13,42,74,0.15)" fontSize="13"
         fontFamily="'Nunito',sans-serif" fontWeight="900"
         style={{ pointerEvents: 'none' }}>
-        DEFENSIVE ZONE
+        NEUTRAL ZONE
       </text>
 
       {/* ── Defensive zone faceoff circles ── */}
@@ -125,14 +138,34 @@ export function RinkSVG({
         fill="rgba(200,16,46,0.04)" stroke="#C8102E" strokeWidth="1.5"/>
       <circle cx={W - 72} cy="246" r="3.5" fill="#C8102E"/>
 
+      {/* ── Faceoff circle hash marks ── */}
+      {/* Outer ticks: short marks projecting straight out from the circle's
+          left/right sides — matches where players line up for a faceoff. */}
+      {/* Inner crosshair: small target mark around the center dot. */}
+      {[72, W - 72].map((cx) => (
+        <g key={cx} stroke="#C8102E" strokeWidth="1.5">
+          {/* Outer ticks — left side */}
+          <line x1={cx - 42} y1={236} x2={cx - 50} y2={236} />
+          <line x1={cx - 42} y1={256} x2={cx - 50} y2={256} />
+          {/* Outer ticks — right side */}
+          <line x1={cx + 42} y1={236} x2={cx + 50} y2={236} />
+          <line x1={cx + 42} y1={256} x2={cx + 50} y2={256} />
+          {/* Inner crosshair around center dot */}
+          <line x1={cx - 9} y1={246} x2={cx - 3} y2={246} />
+          <line x1={cx + 9} y1={246} x2={cx + 3} y2={246} />
+          <line x1={cx}     y1={246 - 9} x2={cx} y2={246 - 3} />
+          <line x1={cx}     y1={246 + 9} x2={cx} y2={246 + 3} />
+        </g>
+      ))}
+
       {/* ── Goal line ── */}
-      <line x1="28" y1="310" x2={W - 28} y2="310"
+      <line x1="8" y1="310" x2={W - 8} y2="310"
         stroke="#C8102E" strokeWidth="2.5"/>
 
       {/* ── Crease (rectangle + D arc) ── */}
       <rect x="108" y="298" width="64" height="12"
         fill="rgba(21,101,192,0.1)" stroke="#1565C0" strokeWidth="1.5"/>
-      <path d={`M 108 298 A 52 52 0 0 0 172 298`}
+      <path d={`M 108 298 A 52 52 0 0 1 172 298`}
         fill="rgba(21,101,192,0.1)" stroke="#1565C0" strokeWidth="1.5"/>
 
       {/* ── Goal / net ── */}
