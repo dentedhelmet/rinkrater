@@ -584,6 +584,19 @@ export default function RinkProfilePage() {
           prompt="Sign in to leave a review and earn XP."
         />
       )}
+
+      <SuggestEditModal
+        isOpen={showSuggestEdit}
+        onClose={() => setShowSuggestEdit(false)}
+        rink={{
+          id: rink.id,
+          name: rink.name,
+          city: rink.city,
+          state: rink.state,
+          address: rink.address || '',
+          rink_type: rink.rink_type || '',
+        }}
+      />
     </div>
   )
 }
