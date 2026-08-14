@@ -10,6 +10,7 @@ import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 import { CategorySheet } from '@/components/rink/CategorySheet'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
+import SuggestEditModal from '@/components/SuggestEditModal'
 const RATING_FACES = [
   '/icons/rating-1.png',
   '/icons/rating-2.png',
@@ -35,6 +36,7 @@ interface RinkData {
   phone?: string
   website?: string
   sheets?: number
+  rink_type?: string
 }
 
 interface StatsData {
@@ -60,6 +62,7 @@ export default function RinkProfilePage() {
   const [notFound, setNotFound] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
+  const [showSuggestEdit, setShowSuggestEdit] = useState(false)
 
   // Intercept "Leave a Review" clicks — if not signed in, open the auth
   // modal directly instead of navigating to /review at all. Avoids the
@@ -403,6 +406,22 @@ export default function RinkProfilePage() {
         }}>
           * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
         </p>
+
+        <button
+  onClick={function() { setShowSuggestEdit(true) }}
+  style={{
+    background: 'none',
+    border: 'none',
+    padding: '0 16px 12px',
+    fontSize: 12,
+    color: 'var(--rr-navy)',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    minHeight: 44,
+  }}
+>
+  Something wrong here? Suggest a fix
+</button>
 
         <div style={{ background: '#EEF4FA', padding: '12px 12px' }}>
           <button

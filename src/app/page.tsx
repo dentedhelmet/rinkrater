@@ -11,6 +11,7 @@ import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
 import { Footer } from '@/components/layout/Footer'
 import { FeedbackModal } from '@/components/home/FeedbackModal'
+import SuggestRinkModal from '@/components/SuggestRinkModal'
 
 interface RinkResult {
   rink_id?: string
@@ -123,6 +124,7 @@ export default function HomePage() {
   const [trendingQuestions, setTrendingQuestions] = useState<string[]>(TRENDING_QUESTIONS_FALLBACK)
   const [callAnswer, setCallAnswer] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [showSuggestRink, setShowSuggestRink] = useState(false)
 
   useEffect(function() {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -285,6 +287,28 @@ export default function HomePage() {
                     })}
                   </div>
                 )}
+                {!loading && (
+                  <div style={{ textAlign: 'center', padding: '10px 4px 4px' }}>
+                    <button
+                      type="button"
+                      onClick={function() { setShowSuggestRink(true) }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 6,
+                        fontFamily: 'var(--font-display)',
+                        fontWeight: 700,
+                        fontSize: 11,
+                        color: 'var(--rr-navy)',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        minHeight: 44,
+                      }}
+                    >
+                      Don't see your rink? Suggest we add it {'\u2192'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -331,8 +355,27 @@ export default function HomePage() {
                   <div style={{ color: 'rgba(13,42,74,0.5)', fontSize: 12, marginBottom: 10 }}>
                     No rinks found for "{query}".
                   </div>
-                  <a
-                    href={'mailto:senan@rinkrater.com?subject=Add a Rink&body=Rink name: ' + encodeURIComponent(query) + '%0ACity, State: %0AAddress (optional): %0AAnything else: '}
+                </div>
+              )}
+
+              <div className="rink-grid">
+                {rinks.map(function(rink) {
+                  return <RinkCard key={rink.rink_id || rink.id} rink={rink} />
+                })}
+              </div>
+
+              {/* Always shown whenever there's an active search — fuzzy
+                  search almost always returns *something* (partial name
+                  matches, etc.), so gating this on rinks.length === 0 meant
+                  it rarely appeared even when the user's actual rink truly
+                  isn't in the database. Showing it here, below whatever
+                  results did come back, works for both cases: "none of
+                  these are mine" and "these are close but not it." */}
+              {!loading && query.trim() !== '' && (
+                <div style={{ textAlign: 'center', padding: '14px 0 4px' }}>
+                  <button
+                    type="button"
+                    onClick={function() { setShowSuggestRink(true) }}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -345,19 +388,14 @@ export default function HomePage() {
                       fontWeight: 800,
                       fontSize: 11,
                       color: 'var(--rr-navy)',
-                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      minHeight: 44,
                     }}
                   >
-                    Can't find your rink? Let us know {'\u2192'}
-                  </a>
+                    Don't see your rink here? Suggest we add it {'\u2192'}
+                  </button>
                 </div>
               )}
-
-              <div className="rink-grid">
-                {rinks.map(function(rink) {
-                  return <RinkCard key={rink.rink_id || rink.id} rink={rink} />
-                })}
-              </div>
             </div>
           )}
           </div>
@@ -765,7 +803,15 @@ export default function HomePage() {
       `}</style>
       <Footer />
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-{showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}    </PageShell>
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+      {showSuggestRink && (
+        <SuggestRinkModal
+          isOpen={showSuggestRink}
+          onClose={() => setShowSuggestRink(false)}
+          initialQuery={query}
+        />
+      )}
+    </PageShell>
   )
 }
 
