@@ -47,13 +47,14 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(13,42,74,0.55)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 200, padding: 16,
-      }}
-      onClick={onClose}
-    >
+  style={{
+    position: 'fixed', top: 100, left: 0, right: 0, bottom: 0,
+    background: 'rgba(13,42,74,0.55)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 200, padding: 16, overflowY: 'auto',
+  }}
+  onClick={onClose}
+>
       <div
         className="clay-card feedback-modal-card"
         style={{
@@ -235,50 +236,45 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
     padding: 14px;
     max-height: 85dvh;
   }
-  .feedback-modal-section {
+  .feedback-modal-intro {
     margin-bottom: 12px !important;
   }
+  .feedback-modal-title {
+    font-size: 18px !important;
+    margin-bottom: 4px !important;
+  }
+  .feedback-modal-subtitle {
+    font-size: 12px !important;
+  }
+  .feedback-modal-section {
+    margin-bottom: 14px !important;
+  }
+  .feedback-modal-question {
+    font-size: 13px !important;
+    margin-bottom: 8px !important;
+  }
+  .feedback-modal-face {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .feedback-modal-face-label {
+    display: none;
+  }
+  .feedback-modal-footer {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .feedback-modal-send {
+    width: 100%;
+  }
+  .feedback-modal-thanks {
+    margin-top: 10px !important;
+  }
+  .feedback-success-icon {
+    width: 70px !important;
+    height: 70px !important;
+  }
 }
-            
-          .feedback-modal-intro {
-            margin-bottom: 12px !important;
-          }
-          .feedback-modal-title {
-            font-size: 18px !important;
-            margin-bottom: 4px !important;
-          }
-          .feedback-modal-subtitle {
-            font-size: 12px !important;
-          }
-          .feedback-modal-section {
-            margin-bottom: 14px !important;
-          }
-          .feedback-modal-question {
-            font-size: 13px !important;
-            margin-bottom: 8px !important;
-          }
-          .feedback-modal-face {
-            width: 34px !important;
-            height: 34px !important;
-          }
-          .feedback-modal-face-label {
-            display: none;
-          }
-          .feedback-modal-footer {
-            flex-direction: column;
-            align-items: stretch !important;
-          }
-          .feedback-modal-send {
-            width: 100%;
-          }
-          .feedback-modal-thanks {
-            margin-top: 10px !important;
-          }
-            .feedback-success-icon {
-              width: 70px !important;
-              height: 70px !important;
-          }
-        }
       `}</style>
     </div>
   )
