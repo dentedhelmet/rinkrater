@@ -36,15 +36,34 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function ReviewCard({ review, token, onUpdated }: {
+// Small trash-can icon — inline SVG so no new icon asset/import is needed.
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function ReviewCard({ review, token, onUpdated, onDeleted }: {
   review: MyReview
   token: string
   onUpdated: (updated: MyReview) => void
+  onDeleted: (id: string) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft]     = useState(review.comment)
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function handleSave() {
     if (!draft.trim()) {
@@ -82,6 +101,27 @@ function ReviewCard({ review, token, onUpdated }: {
     setEditing(false)
   }
 
+  async function handleConfirmDelete() {
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`/api/my-reviews/${review.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!data.success) {
+        setDeleteError(data.error || 'Could not delete this review.')
+        return
+      }
+      onDeleted(review.id)
+    } catch {
+      setDeleteError('Could not delete right now — check your connection.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="clay-card" style={{ padding: '12px 14px', marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
@@ -96,7 +136,42 @@ function ReviewCard({ review, token, onUpdated }: {
         <StatusBadge status={review.status} />
       </div>
 
-      {editing ? (
+      {confirmingDelete ? (
+        <div style={{
+          background: 'rgba(200,16,46,0.06)', border: '1px solid rgba(200,16,46,0.25)',
+          borderRadius: 'var(--rr-radius-sm)', padding: '10px 12px',
+        }}>
+          <div style={{ fontSize: 12, color: 'var(--rr-navy)', fontWeight: 700, marginBottom: 8 }}>
+            Delete this review? This can't be undone from your end.
+          </div>
+          {deleteError && (
+            <div style={{ fontSize: 11, color: '#C8102E', fontWeight: 700, marginBottom: 8 }}>
+              {deleteError}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              style={{
+                background: '#C8102E', color: '#fff', border: 'none', borderRadius: 999,
+                padding: '7px 16px', fontFamily: 'var(--font-display)', fontWeight: 700,
+                fontSize: 12, cursor: 'pointer', opacity: deleting ? 0.6 : 1, minHeight: 44,
+              }}
+            >
+              {deleting ? 'Deleting...' : 'Yes, delete it'}
+            </button>
+            <button
+              onClick={() => { setConfirmingDelete(false); setDeleteError(null) }}
+              disabled={deleting}
+              className="clay-btn clay-btn-secondary"
+              style={{ fontSize: 12, padding: '7px 16px', minHeight: 44 }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : editing ? (
         <div>
           <textarea
             value={draft}
@@ -138,16 +213,30 @@ function ReviewCard({ review, token, onUpdated }: {
           <div style={{ fontSize: 13, color: 'rgba(13,42,74,0.8)', lineHeight: 1.5, marginBottom: 8 }}>
             "{review.comment}"
           </div>
-          <button
-            onClick={() => setEditing(true)}
-            style={{
-              background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 999,
-              padding: '6px 14px', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11,
-              color: 'var(--rr-navy)', cursor: 'pointer',
-            }}
-          >
-            Edit
-          </button>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              onClick={() => setEditing(true)}
+              style={{
+                background: 'var(--rr-ice)', border: 'var(--rr-outline-sm)', borderRadius: 999,
+                padding: '6px 14px', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11,
+                color: 'var(--rr-navy)', cursor: 'pointer', minHeight: 44,
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              aria-label="Delete this review"
+              title="Delete this review"
+              style={{
+                background: 'transparent', border: 'var(--rr-outline-sm)', borderRadius: 999,
+                width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#C8102E', cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -181,6 +270,10 @@ export default function MyReviewsPage() {
 
   function handleUpdated(updated: MyReview) {
     setReviews((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+  }
+
+  function handleDeleted(id: string) {
+    setReviews((prev) => prev.filter((r) => r.id !== id))
   }
 
   // Client-side filter — the whole list is already loaded in one request,
@@ -297,6 +390,7 @@ export default function MyReviewsPage() {
             review={review}
             token={session!.access_token}
             onUpdated={handleUpdated}
+            onDeleted={handleDeleted}
           />
         ))}
       </main>

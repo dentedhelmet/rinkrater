@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
     .from('reviews')
     .select('id, rink_id, rink_name, rink_city, rink_state, category, comment, review_date, status')
     .eq('user_id', userData.user.id)
+    .is('deleted_at', null) // hide soft-deleted reviews from the user's own list
     .order('review_date', { ascending: false })
 
   if (error) {
