@@ -63,7 +63,7 @@ body {
 
 @media (min-width: 768px) {
   #app-shell {
-    max-width: 1100px;
+    max-width: 1600px;
     overflow: visible;
   }
 }

@@ -50,11 +50,12 @@ export function PageShell(props: PageShellProps) {
   flex: 1;
   overflow-y: auto;
   padding: 20px 12px 70px;
-          background-image: url('/background/rr-background.jpg');
-          background-size: cover;
-          background-position: center;
-          background-attachment: fixed;
-        }
+  background-color: magenta;
+  background-image: url('/background/rr-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
         @media (max-width: 767px) {
           .page-scroll-area {
             background-attachment: scroll;
@@ -69,7 +70,7 @@ export function PageShell(props: PageShellProps) {
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            max-width: 1100px;
+            max-width: 1600px;
           }
         }
       `}</style>
