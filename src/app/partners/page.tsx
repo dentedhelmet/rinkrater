@@ -87,7 +87,7 @@ export default function PartnersPage() {
 
         <div className="clay-card" style={{ padding: '20px', textAlign: 'center' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: 'var(--rr-navy)', marginBottom: 14 }}>
-            Interested in partnering? Coming soon.
+            Interested in partnering? FEEL FREE TO REACH OUT.
           </div>
           <Link
             href="/contact"

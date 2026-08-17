@@ -230,8 +230,8 @@ export function AboutTimeline() {
           How did it all start, <span style={{ color: 'var(--rr-red)' }}>you ask?</span>
         </div>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(13,42,74,0.7)', maxWidth: 440, margin: '0 auto' }}>
-          Rink Rater was bourne out of a need that was realized on the spot and took action to fill a gap and provide a real resource for our Hockey Community! Here&rsquo;s a cool, interactive timeline! Scroll through — or jump to any year below.
-        </div>
+  Rink Rater was born in the stands! I was freezing! I came quite ill-prepared for how cold this particular rink was (you know the one) and ultimately, that was the reason I literally bought the domain: RinkRater.com right there in the stands! It&rsquo;s been a journey ever since, but one that I felt giving another chance to provide our Hockey Community with a helpful resource, was worth it.
+</div>
       </div>
 
       {/* ---------------- sticky year picker ---------------- */}
