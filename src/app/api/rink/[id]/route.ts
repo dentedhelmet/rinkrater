@@ -21,6 +21,7 @@ export async function GET(
     .from('reviews')
     .select('category, comment, source, review_date, user_alias')
     .eq('rink_id', rinkId)
+    .eq('status', 'published')
     .is('deleted_at', null)
     .order('review_date', { ascending: false })
     .limit(50)
