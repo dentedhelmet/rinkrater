@@ -65,8 +65,7 @@ const ADS = [
     id: 'heated-jacket-1',
     desktop: '/ads/heated-jacket-desktop.png',
     mobile: '/ads/heated-jacket-mobile.png',
-    // TODO: replace with the real Amazon affiliate/product link before launch
-    link: 'https://www.amazon.com/',
+    link: 'https://www.amazon.com/shop/rinkrater',
     alt: 'Amazon: heated jackets for every rink — 5 heating zones, all-day warmth, rechargeable power. Shop Now.',
     aspectDesktop: '650 / 548',
     aspectMobile: '750 / 290',
@@ -75,8 +74,7 @@ const ADS = [
     id: 'bubble-hockey-1',
     desktop: '/ads/bubble-hockey-desktop.png',
     mobile: '/ads/bubble-hockey-mobile.png',
-    // TODO: replace with the real destination link before launch
-    link: 'https://www.amazon.com/',
+    link: 'https://www.amazon.com/shop/rinkrater',
     // TODO: update this description once the actual ad copy/offer is confirmed
     alt: 'Advertisement: bubble hockey table. Shop Now.',
     // TODO: these aspect ratios are copied from the heated-jacket ad as a

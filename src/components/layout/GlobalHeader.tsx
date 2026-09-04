@@ -9,7 +9,7 @@ import { AuthModal } from '@/components/auth/AuthModal'
 const NAV_LINKS = [
   { label: 'About',            href: '/about'          },
   { label: 'Partners',         href: '/partners'        },
-  { label: 'Shop',             href: '/shop'            },
+  { label: 'Shop',             href: 'https://www.amazon.com/shop/rinkrater', external: true },
   { label: "What's the Call?", href: '/whats-the-call'  },
   { label: 'Contact RR',          href: '/contact'         },
 ]
@@ -128,13 +128,25 @@ export function GlobalHeader() {
         {/* Desktop nav */}
         <nav className="topbar-desktop-nav" style={{ marginLeft: 'auto', display: 'none', alignItems: 'center', gap: 24 }}>
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
-            >
-              {link.label}
-            </Link>
+            link.external ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
           <AuthButton />
         </nav>
@@ -172,14 +184,27 @@ export function GlobalHeader() {
             }}
           >
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
-              >
-                {link.label}
-              </Link>
+              link.external ? (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
             <div style={{ marginTop: 4 }}>
               <AuthButton onClick={() => setMenuOpen(false)} />
