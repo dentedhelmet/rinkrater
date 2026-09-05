@@ -6,10 +6,16 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
 
-const NAV_LINKS = [
+interface NavLink {
+  label:    string
+  href:     string
+  external?: boolean
+}
+
+const NAV_LINKS: NavLink[] = [
   { label: 'About',            href: '/about'          },
   { label: 'Partners',         href: '/partners'        },
-  { label: 'Shop',             href: 'https://www.amazon.com/shop/rinkrater', external: true },
+  { label: 'Shop',             href: '/shop'            },
   { label: "What's the Call?", href: '/whats-the-call'  },
   { label: 'Contact RR',          href: '/contact'         },
 ]
