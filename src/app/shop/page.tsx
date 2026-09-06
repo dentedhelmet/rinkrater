@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { TopBar } from '@/components/layout/TopBar'
 import { BottomBanner } from '@/components/layout/BottomBanner'
 import { supabase } from '@/lib/supabase'
+import { withAssociateTag } from '@/lib/amazonLink'
 
 const STOREFRONT_URL = 'https://www.amazon.com/shop/rinkrater'
 
@@ -84,18 +85,21 @@ export default function ShopPage() {
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 22, color: 'var(--rr-navy)', marginBottom: 10 }}>
             Rink Rater Shop
           </div>
-          <div style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(13,42,74,0.75)', marginBottom: 14 }}>
-            Gear picks for hockey families, hand-picked by us. Purchases through these links help support Rink Rater at no extra cost to you.
+          <div style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(13,42,74,0.75)', marginBottom: 10 }}>
+            Gear picks for hockey families, hand-picked by us.
           </div>
           <a
-            href={STOREFRONT_URL}
+            href={withAssociateTag(STOREFRONT_URL)}
             target="_blank"
             rel="sponsored noopener noreferrer"
             className="clay-btn clay-btn-secondary"
-            style={{ display: 'inline-block', padding: '10px 20px' }}
+            style={{ display: 'inline-block', padding: '10px 20px', marginBottom: 10 }}
           >
             Browse our full Amazon Storefront {'→'}
           </a>
+          <div style={{ fontSize: 11, lineHeight: 1.5, color: 'rgba(13,42,74,0.5)' }}>
+            As an Amazon Associate, Rink Rater earns from qualifying purchases — at no extra cost to you.
+          </div>
         </div>
 
         {loading && (
@@ -107,7 +111,7 @@ export default function ShopPage() {
         {!loading && loadError && (
           <div className="clay-card" style={{ padding: '20px', textAlign: 'center', color: 'rgba(13,42,74,0.5)', fontSize: 13, fontWeight: 700 }}>
             Couldn&apos;t load the shop right now. Try again in a bit, or visit our{' '}
-            <a href={STOREFRONT_URL} target="_blank" rel="sponsored noopener noreferrer" style={{ color: 'var(--rr-red)' }}>
+            <a href={withAssociateTag(STOREFRONT_URL)} target="_blank" rel="sponsored noopener noreferrer" style={{ color: 'var(--rr-red)' }}>
               Amazon Storefront
             </a>.
           </div>
@@ -131,7 +135,7 @@ export default function ShopPage() {
               {group.items.map((item) => (
                 <a
                   key={item.id}
-                  href={item.product_url}
+                  href={withAssociateTag(item.product_url)}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
                   className="clay-card-sm shop-product-card"

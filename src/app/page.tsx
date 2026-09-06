@@ -10,6 +10,7 @@ import { BottomBanner } from '@/components/layout/BottomBanner'
 import { RotatingQuestions } from '@/components/home/RotatingQuestions'
 import { FeaturedPartners } from '@/components/home/FeaturedPartners'
 import { Footer } from '@/components/layout/Footer'
+import { withAssociateTag } from '@/lib/amazonLink'
 import { FeedbackModal } from '@/components/home/FeedbackModal'
 import SuggestRinkModal from '@/components/SuggestRinkModal'
 
@@ -402,26 +403,31 @@ export default function HomePage() {
             {(function() {
               const ad = ADS[adIndex]
               return (
-                <a
-                  href={ad.link}
-                  target="_blank"
-                  rel="sponsored noopener noreferrer"
-                  className="ad-link"
-                  aria-label={'Advertisement: ' + ad.alt}
-                >
-                  <div
-                    className="ad-image-wrap"
-                    style={{ aspectRatio: isDesktop ? ad.aspectDesktop : ad.aspectMobile }}
+                <>
+                  <a
+                    href={withAssociateTag(ad.link)}
+                    target="_blank"
+                    rel="sponsored noopener noreferrer"
+                    className="ad-link"
+                    aria-label={'Advertisement: ' + ad.alt}
                   >
-                    <Image
-                      src={isDesktop ? ad.desktop : ad.mobile}
-                      alt={ad.alt}
-                      fill
-                      sizes={isDesktop ? '240px' : '100vw'}
-                      style={{ objectFit: 'contain' }}
-                    />
+                    <div
+                      className="ad-image-wrap"
+                      style={{ aspectRatio: isDesktop ? ad.aspectDesktop : ad.aspectMobile }}
+                    >
+                      <Image
+                        src={isDesktop ? ad.desktop : ad.mobile}
+                        alt={ad.alt}
+                        fill
+                        sizes={isDesktop ? '240px' : '100vw'}
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </div>
+                  </a>
+                  <div style={{ fontSize: 9, lineHeight: 1.4, color: 'rgba(13,42,74,0.4)', textAlign: 'center', marginTop: 4 }}>
+                    As an Amazon Associate, Rink Rater earns from qualifying purchases.
                   </div>
-                </a>
+                </>
               )
             })()}
           </div>

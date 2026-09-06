@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { withAssociateTag } from '@/lib/amazonLink'
 
 // Matches the single-admin RLS check on shop_products (auth.users.email).
 // When role-based admin access lands, swap this for a role lookup instead.
@@ -103,7 +104,7 @@ export default function AdminShopPage() {
       category:    draft.category.trim(),
       title:       draft.title.trim(),
       image_url:   draft.image_url.trim(),
-      product_url: draft.product_url.trim(),
+      product_url: withAssociateTag(draft.product_url.trim()),
       price_note:  draft.price_note.trim() || null,
       sort_order:  Number.parseInt(draft.sort_order, 10) || 0,
       active:      draft.active,
@@ -258,6 +259,9 @@ export default function AdminShopPage() {
           onChange={(e) => setNewDraft((prev) => ({ ...prev, product_url: e.target.value }))}
           placeholder="https://www.amazon.com/dp/..."
         />
+        <p className="field-hint">
+          Paste the plain product page link — your tracking ID (tag=rinkrater-20) is added automatically when you save.
+        </p>
 
         <div className="field-row">
           <div className="field-col">
@@ -350,6 +354,9 @@ export default function AdminShopPage() {
                 value={draft.product_url}
                 onChange={(e) => updateRowDraft(row.id, { product_url: e.target.value })}
               />
+              <p className="field-hint">
+                Tracking ID (tag=rinkrater-20) is added automatically on save if missing.
+              </p>
 
               <div className="field-row">
                 <div className="field-col">
@@ -490,6 +497,11 @@ export default function AdminShopPage() {
           color: var(--rr-navy);
           margin: 12px 0 4px;
           font-size: 0.85rem;
+        }
+        .field-hint {
+          margin: 4px 0 0;
+          font-size: 0.75rem;
+          color: rgba(13, 42, 74, 0.55);
         }
         input {
           width: 100%;

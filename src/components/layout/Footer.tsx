@@ -111,7 +111,8 @@ export function Footer() {
         margin:     0,
       }}>
         © 2026 Rink Rater™. All rights reserved.<br />
-        Rink Rater is a registered trade name of Rater Nation LLC.
+        Rink Rater is a registered trade name of Rater Nation LLC.<br />
+        As an Amazon Associate, Rink Rater earns from qualifying purchases.
       </p>
     </footer>
   )
