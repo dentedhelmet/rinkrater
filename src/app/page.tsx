@@ -71,7 +71,7 @@ export default function HomePage() {
   }
 
   return (
-    <PageShell topBar={<TopBar />} tabBar={<BottomBanner />}>
+    <PageShell topBar={<TopBar showBack={false} />} tabBar={<BottomBanner />}>
       <div className="home-grid" >
         <div className="home-main-col">
         <div

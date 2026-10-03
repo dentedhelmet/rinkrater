@@ -10,7 +10,7 @@ export async function GET(
 
   const { data: reviews, error } = await supabase
     .from('reviews')
-    .select('comment, source, review_date')
+    .select('comment, source, user_alias, review_date')
     .eq('rink_id', rinkId)
     .eq('category', decodedCategory)
     .order('review_date', { ascending: false })

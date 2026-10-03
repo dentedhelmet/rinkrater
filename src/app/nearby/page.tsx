@@ -53,7 +53,6 @@ function PlaceCard({ place, emoji }: { place: NearbyPlace; emoji: string }) {
         alignItems: 'stretch',
         background: 'var(--rr-warm)',
       }}>
-        {/* Photo or emoji fallback */}
         <div style={{
           width:      80,
           minWidth:   80,
@@ -76,7 +75,6 @@ function PlaceCard({ place, emoji }: { place: NearbyPlace; emoji: string }) {
           )}
         </div>
 
-        {/* Info */}
         <div style={{ flex: 1, padding: '10px 10px', overflow: 'hidden' }}>
           <div style={{
             fontFamily:   'var(--font-display)',
@@ -103,7 +101,6 @@ function PlaceCard({ place, emoji }: { place: NearbyPlace; emoji: string }) {
           {place.rating ? <StarRating rating={place.rating} /> : null}
         </div>
 
-        {/* Distance */}
         {place.distanceMiles != null && (
           <div style={{
             padding:    '10px 10px',
@@ -141,11 +138,12 @@ function NearbyPageContent() {
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
   const { lat, lng, status, error, requestLocation } = useLocation()
-  const [sections,      setSections]      = useState<NearbySection[]>([])
-  const [loadingPlaces, setLoadingPlaces] = useState(false)
-  const [rinkLat,       setRinkLat]       = useState<number | null>(null)
-  const [rinkLng,       setRinkLng]       = useState<number | null>(null)
-  const [rinkName,      setRinkName]      = useState('')
+  const [sections,          setSections]          = useState<NearbySection[]>([])
+  const [loadingPlaces,      setLoadingPlaces]      = useState(false)
+  const [rinkLat,            setRinkLat]            = useState<number | null>(null)
+  const [rinkLng,            setRinkLng]            = useState<number | null>(null)
+  const [rinkName,           setRinkName]           = useState('')
+  const [collapsedSections,  setCollapsedSections]  = useState<Record<string, boolean>>({})
 
   // Pull rink coords as fallback
   useEffect(() => {
@@ -164,7 +162,6 @@ function NearbyPageContent() {
 
   // Fetch nearby when coords are ready
   useEffect(() => {
-    // Wait for user to grant or deny before falling back to rink coords
     const userDecided = status === 'granted' || status === 'denied' || status === 'unsupported'
     const useLat = status === 'granted' ? lat : userDecided ? rinkLat : null
     const useLng = status === 'granted' ? lng : userDecided ? rinkLng : null
@@ -173,13 +170,27 @@ function NearbyPageContent() {
     setLoadingPlaces(true)
     fetch(`/api/nearby?lat=${useLat}&lng=${useLng}`)
       .then((r) => r.json())
-      .then((data) => setSections(data.sections || []))
+      .then((data) => {
+        const fetched: NearbySection[] = data.sections || []
+        setSections(fetched)
+        // Default every section to collapsed on first load
+        setCollapsedSections(
+          fetched.reduce((acc, s) => {
+            acc[s.key] = true
+            return acc
+          }, {} as Record<string, boolean>)
+        )
+      })
       .catch(() => setSections([]))
       .finally(() => setLoadingPlaces(false))
   }, [lat, lng, rinkLat, rinkLng])
 
+  function toggleSection(key: string) {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   const userDecided = status === 'granted' || status === 'denied' || status === 'unsupported'
-const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
+  const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -188,7 +199,6 @@ const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
       <main style={{ flex: 1, overflowY: 'auto', background: '#EEF4FA', padding: '12px 12px 0' }}
         className="scroll-y">
 
-        {/* ── Location prompt ── */}
         {!hasCoords && status === 'idle' && (
           <div className="clay-card" style={{ padding: 16, marginBottom: 14, textAlign: 'center' }}>
             <TJ state="idle" size="lg" />
@@ -234,42 +244,64 @@ const hasCoords = userDecided && (!!(lat && lng) || !!(rinkLat && rinkLng))
         )}
 
         {/* ── Sections ── */}
-        {sections.map((section) => (
-          <div key={section.key} style={{ marginBottom: 20 }}>
-            {/* Category header */}
-            <div style={{
-              display:      'flex',
-              alignItems:   'center',
-              gap:          6,
-              marginBottom: 8,
-            }}>
-              <span style={{ fontSize: 16 }}>{section.emoji}</span>
-              <span style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 900,
-                fontSize:   14,
-                color:      'var(--rr-navy)',
-              }}>
-                {section.displayName}
-              </span>
-              <span style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                fontSize:   10,
-                color:      'rgba(13,42,74,0.35)',
-              }}>
-                {section.places.length} nearby
-              </span>
-            </div>
+        {sections.map((section) => {
+          const isCollapsed = collapsedSections[section.key] ?? true
+          return (
+            <div key={section.key} style={{ marginBottom: 20 }}>
+              {/* Category header — now a toggle button */}
+              <button
+                onClick={() => toggleSection(section.key)}
+                style={{
+                  width:       '100%',
+                  background:  'transparent',
+                  border:      'none',
+                  padding:     0,
+                  display:     'flex',
+                  alignItems:  'center',
+                  gap:         6,
+                  marginBottom: 8,
+                  cursor:      'pointer',
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{section.emoji}</span>
+                <span style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 900,
+                  fontSize:   14,
+                  color:      'var(--rr-navy)',
+                }}>
+                  {section.displayName}
+                </span>
+                <span style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 700,
+                  fontSize:   10,
+                  color:      'rgba(13,42,74,0.35)',
+                }}>
+                  {section.places.length} nearby
+                </span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize:   12,
+                  color:      'var(--rr-navy)',
+                  transform:  isCollapsed ? 'none' : 'rotate(180deg)',
+                  transition: 'transform 0.2s',
+                }}>
+                  {'\u25BC'}
+                </span>
+              </button>
 
-            {/* Place cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {section.places.map((place, i) => (
-                <PlaceCard key={i} place={place} emoji={section.emoji} />
-              ))}
+              {/* Place cards */}
+              {!isCollapsed && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {section.places.map((place, i) => (
+                    <PlaceCard key={i} place={place} emoji={section.emoji} />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         <div style={{ height: 24 }} />
       </main>

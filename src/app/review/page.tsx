@@ -24,7 +24,7 @@ function ReviewPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
-  const { user, profile } = useAuth()
+  const { user, profile, session, refreshProfile } = useAuth()
   const [showAuth,     setShowAuth]     = useState(false)
   const [rinkName,     setRinkName]     = useState('this rink')
   const [rinkLocation, setRinkLocation] = useState('')
@@ -104,7 +104,10 @@ function ReviewPageContent() {
     try {
       const res = await fetch('/api/review', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({
           rinkId,
           rawText:   messages.filter(m => m.role === 'user').map(m => m.text).join('. '),
@@ -113,8 +116,25 @@ function ReviewPageContent() {
         }),
       })
       const data = await res.json()
-      // XP is awarded by the API — use categories found for accurate calculation
-      setXpEarned(data.categoriesFound ? 125 + data.categoriesFound * 25 : 125)
+
+      // The API returns success:false when nothing was actually saved
+      // (too vague to extract categories, moderation rejected it, or the
+      // Supabase insert failed) — surface that instead of celebrating a
+      // review that never hit the database.
+      if (!data.success) {
+        setMessages(prev => [...prev, {
+          role: 'tj',
+          text: data.reason || "Hmm, that didn't save — mind adding a bit more detail and trying again?",
+        }])
+        return
+      }
+
+      // Profile/XP in context is a snapshot from session hydration — the
+      // save above already updated the real row in Supabase, so refresh
+      // context here or the profile page will keep showing stale numbers.
+      await refreshProfile()
+
+      setXpEarned(125 + data.categoriesFound * 25)
       setDone(true)
     } finally {
       setLoading(false)

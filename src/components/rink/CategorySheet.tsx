@@ -10,9 +10,17 @@ interface CategorySheetProps {
 }
 
 interface CategoryReview {
-  comment: string
-  source: string
-  review_date: string
+  comment:      string
+  source:       string
+  review_date:  string
+  user_alias?:  string
+}
+
+function formatReviewDate(dateStr?: string | null): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function CategorySheet(props: CategorySheetProps) {
@@ -80,7 +88,7 @@ export function CategorySheet(props: CategorySheetProps) {
           )}
 
           {!loading && reviews.map(function(r, i) {
-            const attribution = r.source === 'ftloh' ? 'FTLOH' : 'Rink Rater reviewer'
+            const attribution = r.source === 'ftloh' ? 'FTLOH' : (r.user_alias || 'Rink Rater reviewer')
             return (
               <div key={i} className="clay-card-sm" style={{ padding: '12px 14px', marginBottom: 8 }}>
                 <div style={{ fontSize: 14, color: 'rgba(13,42,74,0.8)', lineHeight: 1.5, marginBottom: 6 }}>
@@ -88,6 +96,9 @@ export function CategorySheet(props: CategorySheetProps) {
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(13,42,74,0.45)' }}>
                   {attribution}
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(13,42,74,0.35)', marginTop: 2 }}>
+                  {formatReviewDate(r.review_date)}
                 </div>
               </div>
             )

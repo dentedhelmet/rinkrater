@@ -1,6 +1,7 @@
 export const maxDuration = 30
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { anthropic } from '@/lib/ai'
 
@@ -51,7 +52,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing rinkId or review text' }, { status: 400 })
     }
 
-    // ── Fetch rink info ──────────────────────────────────────────────────────
+    // ── Build a client scoped to the requesting user's session ──────────────
+    // The shared `supabase` client (anon key, no session) always hits
+    // Postgres as `anon`, which RLS policies on `reviews`/`profiles` reject.
+    // This client carries the user's access token so inserts/updates run
+    // as `authenticated` with auth.uid() correctly populated.
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+
+    const supabaseAsUser = token
+      ? createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { global: { headers: { Authorization: `Bearer ${token}` } } }
+        )
+      : null
+
+    if (!supabaseAsUser) {
+      return NextResponse.json({
+        success:         false,
+        status:          'pending',
+        categoriesFound: 0,
+        reason:          'You need to be signed in to save a review.',
+      }, { status: 401 })
+    }
+
+    // ── Fetch rink info (read-only, fine on the shared anon client) ─────────
     const { data: rink } = await supabase
       .from('rinks')
       .select('name, city, state')
@@ -80,11 +105,9 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Strip any accidental markdown fences
       const clean = rawJson.replace(/```json|```/g, '').trim()
       parsed = JSON.parse(clean)
     } catch {
-      // If Claude returns malformed JSON, default to pending for human review
       parsed = {
         moderation: { status: 'pending', reason: 'AI parse error — needs human review' },
         categories: [],
@@ -93,57 +116,75 @@ export async function POST(req: NextRequest) {
 
     const status = parsed.moderation.status
 
-    // ── Save to Supabase ─────────────────────────────────────────────────────
+    // ── Guard: nothing to save ───────────────────────────────────────────────
+    if (status === 'rejected') {
+      return NextResponse.json({
+        success:         false,
+        status,
+        categoriesFound: 0,
+        reason:          parsed.moderation.reason || 'Review could not be published.',
+      })
+    }
+
+    if (parsed.categories.length === 0) {
+      return NextResponse.json({
+        success:         false,
+        status:          'pending',
+        categoriesFound: 0,
+        reason:          'Not enough detail to save — try adding a bit more, like how cold it was or what parking was like!',
+      })
+    }
+
+    // ── Save to Supabase (as the authenticated user) ─────────────────────────
     const today = new Date().toISOString().split('T')[0]
 
-    if (status !== 'rejected' && parsed.categories.length > 0) {
-      const rows = parsed.categories.map((cat) => ({
-        rink_id:     rinkId,
-        rink_name:   rinkName,
-        rink_city:   city,
-        rink_state:  state,
-        source:      'rinkrater',
-        category:    cat.category,
-        comment:     cat.comment,
-        user_id:     userId  || null,
-        user_alias:  userAlias || 'Rink Rater reviewer',
-        review_date: today,
+    const rows = parsed.categories.map((cat) => ({
+      id:          crypto.randomUUID(),
+      rink_id:     rinkId,
+      rink_name:   rinkName,
+      rink_city:   city,
+      rink_state:  state,
+      source:      'rinkrater',
+      category:    cat.category,
+      comment:     cat.comment,
+      user_id:     userId  || null,
+      user_alias:  userAlias || 'Rink Rater reviewer',
+      review_date: today,
+      status,
+    }))
+
+    const { error: insertError } = await supabaseAsUser.from('reviews').insert(rows)
+
+    if (insertError) {
+      console.error('Review insert error:', insertError)
+      return NextResponse.json({
+        success:         false,
         status,
-      }))
+        categoriesFound: 0,
+        reason:          'We hit a snag saving your review — please try again.',
+      }, { status: 500 })
+    }
 
-      const { error: insertError } = await supabase.from('reviews').insert(rows)
-      if (insertError) {
-        console.error('Review insert error:', insertError)
-      }
+    // ── Award XP (also as the authenticated user) ────────────────────────────
+    if (userId && status === 'published') {
+      const xpToAdd = 125 + (parsed.categories.length * 25)
 
-      // ── Award XP ──────────────────────────────────────────────────────────
-      if (userId && status === 'published') {
-        const xpToAdd = 125 + (parsed.categories.length * 25)
+      const { error: xpError } = await supabaseAsUser.rpc('increment_profile_stats', {
+        p_user_id: userId,
+        p_xp:      xpToAdd,
+        p_reviews: 1,
+      })
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('xp, total_reviews')
-          .eq('id', userId)
-          .single()
-
-        if (profile) {
-          await supabase
-            .from('profiles')
-            .update({
-              xp:            profile.xp + xpToAdd,
-              total_reviews: profile.total_reviews + 1,
-              updated_at:    new Date().toISOString(),
-            })
-            .eq('id', userId)
-        }
+      if (xpError) {
+        console.error('XP update error:', xpError)
       }
     }
 
     return NextResponse.json({
-      success:        true,
+      success:         true,
       status,
       categoriesFound: parsed.categories.length,
-      reason:         parsed.moderation.reason,
+      reason:          parsed.moderation.reason,
     })
 
   } catch (err) {

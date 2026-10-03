@@ -109,13 +109,7 @@ export function RinkSVG({
       <circle cx="72"     cy="108" r="4" fill="#C8102E"/>
       <circle cx={W - 72} cy="108" r="4" fill="#C8102E"/>
 
-      {/* ── Zone label ── */}
-      <text x={W / 2} y="85" textAnchor="middle"
-        fill="rgba(13,42,74,0.15)" fontSize="13"
-        fontFamily="'Nunito',sans-serif" fontWeight="900"
-        style={{ pointerEvents: 'none' }}>
-        DEFENSIVE ZONE
-      </text>
+    
 
       {/* ── Defensive zone faceoff circles ── */}
       <circle cx="72"     cy="246" r="42"
@@ -132,8 +126,8 @@ export function RinkSVG({
       {/* ── Crease (rectangle + D arc) ── */}
       <rect x="108" y="298" width="64" height="12"
         fill="rgba(21,101,192,0.1)" stroke="#1565C0" strokeWidth="1.5"/>
-      <path d={`M 108 298 A 52 52 0 0 0 172 298`}
-        fill="rgba(21,101,192,0.1)" stroke="#1565C0" strokeWidth="1.5"/>
+      <path d={`M 108 298 A 52 52 0 0 1 172 298`}
+  fill="rgba(21,101,192,0.1)" stroke="#1565C0" strokeWidth="1.5"/>
 
       {/* ── Goal / net ── */}
       <rect x="116" y="310" width="48" height="22" rx="2"

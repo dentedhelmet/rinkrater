@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from 'react'
 import { getCategoryIcon } from '@/lib/categoryIcons'
 
 interface ReviewItem {
-  category: string
-  comment: string
-  source: string
+  category:     string
+  comment:      string
+  source:       string
+  user_alias?:  string
+  review_date?: string
 }
 
 interface LatestReviewsCarouselProps {
@@ -16,6 +18,13 @@ interface LatestReviewsCarouselProps {
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text
   return text.slice(0, max).trim() + '...'
+}
+
+function formatReviewDate(dateStr?: string | null): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function LatestReviewsCarousel(props: LatestReviewsCarouselProps) {
@@ -73,7 +82,7 @@ export function LatestReviewsCarousel(props: LatestReviewsCarouselProps) {
 
         <div className="carousel-scroll" ref={scrollRef} onScroll={updateArrows}>
           {reviews.map(function(review, i) {
-            const attribution = review.source === 'ftloh' ? 'FTLOH' : 'Rink Rater reviewer'
+            const attribution = review.source === 'ftloh' ? 'FTLOH' : (review.user_alias || 'Rink Rater reviewer')
             return (
               <div key={i} className="carousel-card clay-card">
                 <div className="carousel-icon">
@@ -116,6 +125,16 @@ export function LatestReviewsCarousel(props: LatestReviewsCarouselProps) {
                   }}
                 >
                   {attribution}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: 'rgba(13,42,74,0.35)',
+                    textAlign: 'center',
+                    marginTop: 2,
+                  }}
+                >
+                  {formatReviewDate(review.review_date)}
                 </div>
               </div>
             )

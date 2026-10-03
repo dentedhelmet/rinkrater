@@ -12,19 +12,69 @@ interface CategoryConfig {
 }
 
 const CATEGORIES: Record<string, CategoryConfig> = {
-  food:          { includedTypes: ['restaurant'],                          radius: 1500, max: 5, displayName: 'Food',              emoji: '🍽️' },
-  pizza:         { includedTypes: ['pizza_restaurant'],                    radius: 2000, max: 4, displayName: 'Pizza',             emoji: '🍕' },
-  fastfood:      { includedTypes: ['fast_food_restaurant'],                radius: 1500, max: 4, displayName: 'Fast Food',         emoji: '🍟' },
-  coffee:        { includedTypes: ['cafe'],                                radius: 1200, max: 3, displayName: 'Coffee',            emoji: '☕' },
-  bars:          { includedTypes: ['bar'],                                 radius: 2000, max: 4, displayName: 'Bars & Breweries',  emoji: '🍺' },
-  dessert:       { includedTypes: ['dessert_shop', 'ice_cream_shop'],      radius: 1500, max: 3, displayName: 'Dessert & Ice Cream', emoji: '🍦' },
-  grocery:       { includedTypes: ['grocery_store', 'supermarket'],        radius: 2000, max: 3, displayName: 'Grocery',           emoji: '🛒' },
-  sporting:      { includedTypes: ['sporting_goods_store'],                radius: 3000, max: 3, displayName: 'Sporting Goods',    emoji: '🏒' },
-  pharmacy:      { includedTypes: ['pharmacy', 'drugstore'],               radius: 2000, max: 3, displayName: 'Pharmacy',          emoji: '💊' },
-  gas:           { includedTypes: ['gas_station', 'convenience_store'],    radius: 2000, max: 3, displayName: 'Gas & Convenience', emoji: '⛽' },
-  attractions:   { includedTypes: ['tourist_attraction', 'museum', 'amusement_park'], radius: 5000, max: 4, displayName: 'Attractions', emoji: '🎯' },
-  entertainment: { includedTypes: ['amusement_center', 'bowling_alley', 'movie_theater'], radius: 3000, max: 3, displayName: 'Entertainment', emoji: '🎮' },
-  hotels:        { includedTypes: ['lodging'],                             radius: 5000, max: 4, displayName: 'Hotels',            emoji: '🏨' },
+  food: {
+    includedTypes: [
+      'restaurant', 'american_restaurant', 'italian_restaurant', 'mexican_restaurant',
+      'chinese_restaurant', 'japanese_restaurant', 'sushi_restaurant', 'thai_restaurant',
+      'indian_restaurant', 'korean_restaurant', 'vietnamese_restaurant', 'mediterranean_restaurant',
+      'greek_restaurant', 'french_restaurant', 'spanish_restaurant', 'seafood_restaurant',
+      'steak_house', 'bar_and_grill', 'buffet_restaurant', 'breakfast_restaurant',
+      'brunch_restaurant', 'diner', 'sandwich_shop', 'deli', 'vegan_restaurant',
+      'vegetarian_restaurant', 'middle_eastern_restaurant', 'ramen_restaurant',
+      'indonesian_restaurant', 'turkish_restaurant', 'lebanese_restaurant',
+      'afghani_restaurant', 'african_restaurant', 'brazilian_restaurant',
+      'fine_dining_restaurant', 'food_court',
+    ],
+    radius: 4000, max: 15, displayName: 'Food', emoji: '🍽️',
+  },
+  pizza: {
+    includedTypes: ['pizza_restaurant'],
+    radius: 4000, max: 10, displayName: 'Pizza', emoji: '🍕',
+  },
+  fastfood: {
+    includedTypes: ['fast_food_restaurant'],
+    radius: 3000, max: 10, displayName: 'Fast Food', emoji: '🍟',
+  },
+  coffee: {
+    includedTypes: ['cafe', 'coffee_shop'],
+    radius: 3000, max: 10, displayName: 'Coffee', emoji: '☕',
+  },
+  bars: {
+    includedTypes: ['bar', 'night_club', 'wine_bar'],
+    radius: 4000, max: 10, displayName: 'Bars & Breweries', emoji: '🍺',
+  },
+  dessert: {
+    includedTypes: ['dessert_shop', 'ice_cream_shop', 'bakery'],
+    radius: 3000, max: 8, displayName: 'Dessert & Ice Cream', emoji: '🍦',
+  },
+  grocery: {
+    includedTypes: ['grocery_store', 'supermarket'],
+    radius: 4000, max: 8, displayName: 'Grocery', emoji: '🛒',
+  },
+  sporting: {
+    includedTypes: ['sporting_goods_store'],
+    radius: 6000, max: 8, displayName: 'Sporting Goods', emoji: '🏒',
+  },
+  pharmacy: {
+    includedTypes: ['pharmacy', 'drugstore'],
+    radius: 4000, max: 8, displayName: 'Pharmacy', emoji: '💊',
+  },
+  gas: {
+    includedTypes: ['gas_station', 'convenience_store'],
+    radius: 3000, max: 8, displayName: 'Gas & Convenience', emoji: '⛽',
+  },
+  attractions: {
+    includedTypes: ['tourist_attraction', 'museum', 'amusement_park', 'aquarium', 'zoo', 'historical_landmark'],
+    radius: 8000, max: 10, displayName: 'Attractions', emoji: '🎯',
+  },
+  entertainment: {
+    includedTypes: ['amusement_center', 'bowling_alley', 'movie_theater', 'video_arcade'],
+    radius: 6000, max: 8, displayName: 'Entertainment', emoji: '🎮',
+  },
+  hotels: {
+    includedTypes: ['lodging'],
+    radius: 8000, max: 10, displayName: 'Hotels', emoji: '🏨',
+  },
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -90,7 +140,6 @@ async function searchCategory(
   const json  = await res.json()
   const raw   = (json.places ?? []) as any[]
 
-  // Fetch all photo URLs in parallel
   const places = await Promise.all(
     raw.map(async (p) => {
       const photoName = p.photos?.[0]?.name ?? null
@@ -126,7 +175,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ sections: [], error: 'Nearby search is not configured' })
   }
 
-  // Fetch all categories in parallel
   const entries = Object.entries(CATEGORIES)
   const results = await Promise.all(
     entries.map(async ([key, config]) => {
@@ -140,7 +188,6 @@ export async function GET(req: NextRequest) {
     })
   )
 
-  // Filter out empty sections
   const sections = results.filter((s) => s.places.length > 0)
 
   return NextResponse.json({ sections })
