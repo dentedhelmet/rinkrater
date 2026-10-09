@@ -55,103 +55,114 @@ const STATE_MAP: Record<string, string> = {
   WY: 'WY', WYOMING: 'WY',
 }
 
+// Returns the subset of the given rink IDs that are active.
+// Used for results that come from rink_stats or the fuzzy-search function,
+// which don't know about the rinks.active flag on their own.
+async function getActiveIds(ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set()
+  const { data } = await supabase
+    .from('rinks')
+    .select('id')
+    .in('id', ids)
+    .eq('active', true)
+  return new Set((data || []).map(function(r) { return r.id }))
+}
+
+async function attachStats(rows: { id: string; name: string; city: string; state: string }[]) {
+  const rinkIds = rows.map(function(r) { return r.id })
+  const { data: statsData } = await supabase
+    .from('rink_stats')
+    .select('rink_id, total_reviews, confidence_tier')
+    .in('rink_id', rinkIds)
+
+  const statsMap: Record<string, any> = {}
+  for (const s of statsData || []) {
+    statsMap[s.rink_id] = s
+  }
+
+  return rows.map(function(r) {
+    const s = statsMap[r.id]
+    return {
+      rink_id: r.id,
+      rink_name: r.name,
+      city: r.city,
+      state: r.state,
+      total_reviews: s ? s.total_reviews : 0,
+      confidence_tier: s ? s.confidence_tier : 'NO_DATA',
+    }
+  })
+}
+
 export async function GET(req: NextRequest) {
   const query = req.nextUrl.searchParams.get('q')?.trim()
 
+  // No query: most-reviewed rinks. Fetch extra, drop inactive, keep top 10.
   if (!query) {
     const { data, error } = await supabase
       .from('rink_stats')
       .select('rink_id, rink_name, city, state, total_reviews, confidence_tier')
       .order('total_reviews', { ascending: false })
-      .limit(10)
+      .limit(30)
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    return NextResponse.json({ rinks: data })
+    const activeIds = await getActiveIds((data || []).map(function(s) { return s.rink_id }))
+    const rinks = (data || [])
+      .filter(function(s) { return activeIds.has(s.rink_id) })
+      .slice(0, 10)
+    return NextResponse.json({ rinks })
   }
 
   const upperQuery = query.toUpperCase().trim()
   const stateCode = STATE_MAP[upperQuery]
 
+  // State search: active rinks only.
   if (stateCode) {
     const { data, error } = await supabase
       .from('rinks')
       .select('id, name, city, state')
       .eq('state', stateCode)
+      .eq('active', true)
+      .order('name')
       .limit(30)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const rinkIds = (data || []).map(function(r) { return r.id })
-    const { data: statsData } = await supabase
-      .from('rink_stats')
-      .select('rink_id, total_reviews, confidence_tier')
-      .in('rink_id', rinkIds)
-
-    const statsMap: Record<string, any> = {}
-    for (const s of statsData || []) {
-      statsMap[s.rink_id] = s
-    }
-
-    const rinks = (data || []).map(function(r) {
-      const s = statsMap[r.id]
-      return {
-        rink_id: r.id,
-        rink_name: r.name,
-        city: r.city,
-        state: r.state,
-        total_reviews: s ? s.total_reviews : 0,
-        confidence_tier: s ? s.confidence_tier : 'NO_DATA',
-      }
-    })
-
+    const rinks = await attachStats(data || [])
     return NextResponse.json({ rinks })
   }
 
+  // City search: active rinks only.
   const { data: cityMatch } = await supabase
     .from('rinks')
     .select('id, name, city, state')
     .ilike('city', query)
+    .eq('active', true)
     .limit(30)
 
   if (cityMatch && cityMatch.length > 0) {
-    const rinkIds = cityMatch.map(function(r) { return r.id })
-    const { data: statsData } = await supabase
-      .from('rink_stats')
-      .select('rink_id, total_reviews, confidence_tier')
-      .in('rink_id', rinkIds)
-
-    const statsMap: Record<string, any> = {}
-    for (const s of statsData || []) {
-      statsMap[s.rink_id] = s
-    }
-
-    const rinks = cityMatch.map(function(r) {
-      const s = statsMap[r.id]
-      return {
-        rink_id: r.id,
-        rink_name: r.name,
-        city: r.city,
-        state: r.state,
-        total_reviews: s ? s.total_reviews : 0,
-        confidence_tier: s ? s.confidence_tier : 'NO_DATA',
-      }
-    })
-
+    const rinks = await attachStats(cityMatch)
     return NextResponse.json({ rinks })
   }
 
+  // Fuzzy name search: fetch extra, drop inactive, keep top 10 in original order.
   const { data, error } = await supabase.rpc('search_rinks_fuzzy', {
     name_query: query,
     state_filter: null,
-    limit_count: 10,
+    limit_count: 20,
   })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ rinks: data })
+  const results: any[] = data || []
+  const activeIds = await getActiveIds(results.map(function(r) { return r.rink_id ?? r.id }))
+  const rinks = results
+    .filter(function(r) { return activeIds.has(r.rink_id ?? r.id) })
+    .slice(0, 10)
+
+  return NextResponse.json({ rinks })
 }
