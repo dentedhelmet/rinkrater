@@ -9,9 +9,12 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.supabase.co' },
     ],
   },
-  // Map the "@/..." import alias to src/ explicitly for webpack builds.
-  // Hostinger's npm install skips devDependencies, so webpack can't rely on
-  // reading tsconfig.json paths on its own.
+  // Local dev (`npm run dev`) uses Turbopack, which reads the "@/..." alias
+  // from tsconfig.json on its own — nothing extra needed here. This empty
+  // block just tells Next.js the webpack section below is intentional.
+  turbopack: {},
+  // Production build (`next build --webpack`) on Hostinger: map "@/..." to
+  // src/ explicitly, since Hostinger's install skips devDependencies.
   webpack: (config) => {
     config.resolve.alias['@'] = path.join(__dirname, 'src')
     return config
