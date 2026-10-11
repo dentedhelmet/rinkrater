@@ -50,7 +50,7 @@ export function PageShell(props: PageShellProps) {
   flex: 1;
   overflow-y: auto;
   padding: 20px 12px 70px;
-  background-color: magenta;
+  background-color: var(--rr-ice);
   background-image: url('/background/rr-background.jpg');
   background-size: cover;
   background-position: center;
