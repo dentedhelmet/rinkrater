@@ -160,9 +160,26 @@ export async function GET(req: NextRequest) {
 
   const results: any[] = data || []
   const activeIds = await getActiveIds(results.map(function(r) { return r.rink_id ?? r.id }))
-  const rinks = results
-    .filter(function(r) { return activeIds.has(r.rink_id ?? r.id) })
-    .slice(0, 10)
+  const nameMatches = results.filter(function(r) { return activeIds.has(r.rink_id ?? r.id) })
+
+  // Alternate-name search: catches former names after a rename or merge
+  // (e.g. "Tri-Town" -> Delta Dental Arena, "Drady" -> O'Neill Arena).
+  // The fuzzy function only looks at the current name.
+  const escaped = query.replace(/[\\%_]/g, function(c) { return '\\' + c })
+  const { data: altData } = await supabase
+    .from('rinks')
+    .select('id, name, city, state')
+    .ilike('altname', '%' + escaped + '%')
+    .eq('active', true)
+    .limit(5)
+
+  const seen = new Set(nameMatches.map(function(r) { return r.rink_id ?? r.id }))
+  const altMatches = await attachStats((altData || []).filter(function(r) { return !seen.has(r.id) }))
+
+  // Keep room for alternate-name matches so a former name always finds the rink.
+  const rinks = nameMatches
+    .slice(0, 10 - altMatches.length)
+    .concat(altMatches)
 
   return NextResponse.json({ rinks })
 }
