@@ -39,7 +39,7 @@ function nowTime() {
 function ChatPageContent() {
   const searchParams = useSearchParams()
   const rinkId = searchParams.get('rink') || ''
-  const { user, loading: authLoading } = useAuth()
+  const { user, session, loading: authLoading } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
 
   const [rinkName, setRinkName] = useState('this rink')
@@ -97,10 +97,21 @@ function ChatPageContent() {
     try {
       const res = await fetch('/api/ask', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ question: text, rinkId, rinkName }),
       })
       const data = await res.json()
+      if (res.status === 401) {
+        setMessages(prev => [...prev, {
+          role: 'agent',
+          text: data.error ?? 'Please sign in again to keep asking TJ.',
+          time: nowTime(),
+        }])
+        return
+      }
       setTjState('answering')
       setMessages(prev => [...prev, {
         role: 'agent',

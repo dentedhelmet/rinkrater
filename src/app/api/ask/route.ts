@@ -29,6 +29,19 @@ const STOP_WORDS = ['what', 'where', 'when', 'does', 'this', 'there', 'have', 'm
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Require a signed-in user ───────────────────────────────────────────
+    // The Ask TJ page is already gated, but this endpoint calls OpenAI and
+    // Anthropic on every request, so it must also reject direct calls that
+    // don't carry a valid Supabase session token.
+    const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+    if (!token) {
+      return NextResponse.json({ error: 'Sign in to ask TJ.' }, { status: 401 })
+    }
+    const { data: authData, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !authData?.user) {
+      return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
+    }
+
     const { question, rinkId, rinkName } = await req.json()
 
     if (!question?.trim()) {
