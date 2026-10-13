@@ -176,10 +176,20 @@ export async function GET(req: NextRequest) {
   const seen = new Set(nameMatches.map(function(r) { return r.rink_id ?? r.id }))
   const altMatches = await attachStats((altData || []).filter(function(r) { return !seen.has(r.id) }))
 
-  // Keep room for alternate-name matches so a former name always finds the rink.
-  const rinks = nameMatches
-    .slice(0, 10 - altMatches.length)
+  // Ranking:
+  //   1. Strong name matches  - the rink's current name contains the search text
+  //   2. Alternate-name matches - a former name contains the search text
+  //   3. Weak name matches    - fuzzy "sounds similar" results
+  // Comparison ignores case, spaces and punctuation, so "Tri Town" = "Tri-Town".
+  const normalize = function(s: string) { return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '') }
+  const q = normalize(query)
+  const strong = nameMatches.filter(function(r) { return q.length > 0 && normalize(r.rink_name ?? r.name).includes(q) })
+  const weak = nameMatches.filter(function(r) { return !(q.length > 0 && normalize(r.rink_name ?? r.name).includes(q)) })
+
+  const rinks = strong
     .concat(altMatches)
+    .concat(weak)
+    .slice(0, 10)
 
   return NextResponse.json({ rinks })
 }
