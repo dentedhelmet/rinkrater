@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { POST_COLUMNS, formatPostDate, postState, type Post, type PostState } from '@/lib/blog'
+import type { AdminRole } from '@/lib/useAdminRole'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { RefreshButton } from '@/components/admin/RefreshButton'
 import { PostEditor } from '@/components/admin/blog/PostEditor'
@@ -22,14 +23,17 @@ export default function AdminBlogPage() {
     <AdminShell
       title="Blog"
       subtitle="Write, schedule and publish posts for rinkrater.com/blog."
-      allow={['super_admin']}
+      allow={['super_admin', 'moderator']}
     >
-      {() => <BlogManager />}
+      {(role) => <BlogManager role={role} />}
     </AdminShell>
   )
 }
 
-function BlogManager() {
+function BlogManager({ role }: { role: AdminRole }) {
+  // Super Admins publish, schedule and remove. Moderators write drafts only —
+  // the database enforces the same rule, this just keeps the screen honest.
+  const canPublish = role === 'super_admin'
   const reduceMotion = useReducedMotion()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,6 +118,7 @@ function BlogManager() {
         <PostEditor
           key={editing === 'new' ? 'new' : editing.id + editing.updated_at}
           post={editing === 'new' ? null : editing}
+          canPublish={canPublish}
           onCancel={() => { setEditing(null); setAnnouncement('') }}
           onSaved={onSaved}
         />
@@ -194,9 +199,17 @@ function BlogManager() {
                     </span>
                   </span>
                   {s === 'removed' ? (
-                    <button type="button" className="clay-btn edit-btn" onClick={() => restore(p)} disabled={busyId === p.id}>
-                      {busyId === p.id ? 'Restoring…' : 'Restore'}
-                    </button>
+                    canPublish ? (
+                      <button type="button" className="clay-btn edit-btn" onClick={() => restore(p)} disabled={busyId === p.id}>
+                        {busyId === p.id ? 'Restoring…' : 'Restore'}
+                      </button>
+                    ) : null
+                  ) : !canPublish && s === 'live' ? (
+                    <a className="clay-btn edit-btn" href={`/blog/${p.slug}`} target="_blank" rel="noopener noreferrer" aria-label={`View ${p.title} on the blog`}>
+                      View
+                    </a>
+                  ) : !canPublish && s === 'scheduled' ? (
+                    <span className="locked">Locked</span>
                   ) : (
                     <button type="button" className="clay-btn edit-btn" onClick={() => { setAnnouncement(''); setEditing(p) }} aria-label={`Edit ${p.title}`}>
                       Edit
@@ -289,6 +302,8 @@ function BlogManager() {
           border: 2px solid var(--rr-navy) !important;
           color: var(--rr-navy) !important;
         }
+        .post-list :global(a.edit-btn) { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+        .locked { font-size: 0.8rem; font-weight: 800; color: rgba(13, 42, 74, 0.75); min-width: 90px; text-align: center; }
         .post-list :global(.edit-btn:focus-visible) { outline: 3px solid var(--rr-yellow); outline-offset: 2px; }
         @media (max-width: 520px) { .thumb { display: none; } }
       `}</style>

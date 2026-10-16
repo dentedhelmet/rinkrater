@@ -60,10 +60,13 @@ async function uploadBlogImage(file: File, slugHint: string): Promise<string> {
 
 export function PostEditor({
   post,
+  canPublish,
   onCancel,
   onSaved,
 }: {
   post: Post | null
+  /** Super Admins publish, schedule and remove; Moderators write drafts only. */
+  canPublish: boolean
   onCancel: () => void
   onSaved: (message: string, saved: Post) => void
 }) {
@@ -78,7 +81,9 @@ export function PostEditor({
   const [coverAlt, setCoverAlt] = useState(post?.cover_image_alt ?? '')
   const [rinkIds, setRinkIds] = useState<string[]>(post?.rink_ids ?? [])
   const [instagram, setInstagram] = useState(post?.instagram_permalink ?? '')
-  const [mode, setMode] = useState<PublishMode>(state === 'live' ? 'now' : state === 'scheduled' ? 'schedule' : 'draft')
+  const [mode, setMode] = useState<PublishMode>(
+    !canPublish ? 'draft' : state === 'live' ? 'now' : state === 'scheduled' ? 'schedule' : 'draft'
+  )
   const [scheduleAt, setScheduleAt] = useState(state === 'scheduled' ? toLocalInput(post!.published_at) : nextMondayMorning())
   const [tab, setTab] = useState<'write' | 'preview'>('write')
   const [saving, setSaving] = useState(false)
@@ -239,6 +244,14 @@ export function PostEditor({
 
         <aside className="side-col" aria-label="Post settings">
           {/* ── Publishing ─────────────────────────────── */}
+          {!canPublish ? (
+            <fieldset className="panel">
+              <legend>Publishing</legend>
+              <p className="draft-note">
+                You’re writing a <strong>draft</strong>. When it’s ready, let a Super Admin know — they’ll review it and publish or schedule it.
+              </p>
+            </fieldset>
+          ) : (
           <fieldset className="panel">
             <legend>Publishing</legend>
             <label className="radio">
@@ -261,6 +274,7 @@ export function PostEditor({
               </>
             )}
           </fieldset>
+          )}
 
           {/* ── Cover image ────────────────────────────── */}
           <fieldset className="panel">
@@ -366,7 +380,7 @@ export function PostEditor({
         <button type="button" className="clay-btn btn-primary" onClick={save} disabled={saving || uploadingCover}>{saveLabel}</button>
         <button type="button" className="clay-btn btn-outline" onClick={cancel} disabled={saving}>Close</button>
         {dirty && <span className="unsaved" role="status">Unsaved changes</span>}
-        {post && !post.deleted_at && (
+        {canPublish && post && !post.deleted_at && (
           confirmRemove ? (
             <span className="confirm">
               Take this post off the blog?
@@ -430,6 +444,7 @@ export function PostEditor({
         input:focus, textarea:focus { outline: 3px solid var(--rr-yellow); outline-offset: 1px; border-color: var(--rr-navy); }
         .hint { margin: 6px 0 0; font-size: 0.78rem; color: rgba(13, 42, 74, 0.85); }
         .hint.warn { color: var(--rr-red); font-weight: 800; }
+        .draft-note { margin: 4px 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--rr-navy); }
         .side-col { display: flex; flex-direction: column; gap: 14px; }
         .panel {
           margin: 0;

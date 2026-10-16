@@ -62,7 +62,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     description: 'Write, schedule and publish blog posts',
     icon:        '📰',
     href:        '/admin/blog',
-    roles:       ['super_admin'],
+    roles:       ['super_admin', 'moderator'],
     status:      'live',
   },
   {
