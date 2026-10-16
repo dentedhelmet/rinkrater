@@ -6,6 +6,7 @@ import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TopBar } from '@/components/layout/TopBar'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useAuth } from '@/context/AuthContext'
+import { useAdminRole } from '@/lib/useAdminRole'
 import { getLevelForXP, getNextLevelXP, LEVELS } from '@/lib/levels'
 import Link from 'next/link'
 
@@ -27,6 +28,7 @@ export default function ProfilePage() {
   const { user, profile, loading, signOut } = useAuth()
   const [showAuth,   setShowAuth]   = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const { isAdmin } = useAdminRole()
 
   if (loading) {
     return (
@@ -212,6 +214,26 @@ export default function ProfilePage() {
             </div>
           ))}
         </div>
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}
+          >
+            <div className="clay-card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--rr-navy)' }}>
+              <div style={{ fontSize: 32, flexShrink: 0 }} aria-hidden="true">🛠️</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 14, color: '#fff' }}>
+                  Rink Rater HQ
+                </div>
+                <div className="body-xs" style={{ color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>
+                  Admin dashboard — moderation, stats and tools
+                </div>
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'rgba(255,255,255,0.7)' }} aria-hidden="true">›</div>
+            </div>
+          </Link>
+        )}
 
         <Link
           href="/profile/my-reviews"
