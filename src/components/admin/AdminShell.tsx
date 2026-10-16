@@ -13,6 +13,8 @@ interface AdminShellProps {
   allow?:       AdminRole[]
   /** Show a "← Dashboard" link (every page except the hub itself). */
   showBack?:    boolean
+  /** Wider layout for split-screen pages like the hub. */
+  wide?:        boolean
   actions?:     ReactNode
   children:     (role: AdminRole) => ReactNode
 }
@@ -22,7 +24,7 @@ interface AdminShellProps {
  * The database functions enforce access on their own; this gate just keeps
  * non-admins from seeing an empty admin screen.
  */
-export function AdminShell({ title, subtitle, allow, showBack = true, actions, children }: AdminShellProps) {
+export function AdminShell({ title, subtitle, allow, showBack = true, wide = false, actions, children }: AdminShellProps) {
   const { role, loading } = useAdminRole()
   const reduceMotion = useReducedMotion()
 
@@ -55,7 +57,7 @@ export function AdminShell({ title, subtitle, allow, showBack = true, actions, c
   }
 
   return (
-    <div className="admin-page">
+    <div className={`admin-page ${wide ? 'admin-page-wide' : ''}`}>
       <motion.header
         className="admin-header"
         initial={reduceMotion ? false : { opacity: 0, y: -8 }}
@@ -86,6 +88,9 @@ export function AdminShell({ title, subtitle, allow, showBack = true, actions, c
           max-width: 880px;
           margin: 0 auto;
           padding: 24px 16px 96px;
+        }
+        .admin-page-wide {
+          max-width: 1120px;
         }
         .admin-header {
           margin-bottom: 20px;

@@ -114,6 +114,8 @@ export async function POST(req: NextRequest) {
         .from('reviews')
         .select('id, rink_id, rink_name, rink_city, rink_state, source, category, comment, review_date')
         .eq('rink_id', resolvedRinkId)
+        .eq('status', 'published') // TJ must only ever see live reviews
+        .is('deleted_at', null)
         .or(orFilter)
         .limit(10)
 

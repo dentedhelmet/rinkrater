@@ -8,15 +8,30 @@ export interface ActivityPoint {
 }
 
 /**
- * Bar chart of reviews per day. Bars grow from the baseline on first load
- * and glide to their new heights on every refresh (refreshKey bump).
- * A visually hidden table carries the same data for screen readers.
+ * Bar chart of a daily count. Bars grow from the baseline on first load and
+ * glide to their new heights on every refresh (bump refreshKey). Today's bar
+ * is highlighted. A visually hidden table carries the data for screen readers.
  */
-export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; refreshKey: number }) {
+export function ActivityChart({
+  data,
+  refreshKey,
+  title = 'Reviews, last 14 days',
+  unit = 'reviews',
+  totalLabel,
+  accent = 'navy',
+}: {
+  data:        ActivityPoint[]
+  refreshKey:  number
+  title?:      string
+  unit?:       string
+  /** Overrides the "N total" caption (e.g. unique visitors aren't a simple sum). */
+  totalLabel?: string
+  accent?:     'navy' | 'blue'
+}) {
   const reduceMotion = useReducedMotion()
   const max = Math.max(1, ...data.map((d) => d.count))
   const total = data.reduce((sum, d) => sum + d.count, 0)
-  const todayIso = new Date().toISOString().slice(0, 10)
+  const todayIso = data.length ? data[data.length - 1].day : ''
 
   const dayLabel = (iso: string) =>
     new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { weekday: 'narrow' })
@@ -24,10 +39,10 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
     new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 
   return (
-    <figure className="activity">
+    <figure className={`activity accent-${accent}`}>
       <figcaption>
-        <span className="activity-title">Reviews, last 14 days</span>
-        <span className="activity-total">{total.toLocaleString()} total</span>
+        <span className="activity-title">{title}</span>
+        <span className="activity-total">{totalLabel ?? `${total.toLocaleString()} total`}</span>
       </figcaption>
 
       <div className="bars" aria-hidden="true">
@@ -35,7 +50,7 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
           const pct = (d.count / max) * 100
           const isToday = d.day === todayIso
           return (
-            <div className="bar-col" key={d.day} title={`${fullLabel(d.day)}: ${d.count}`}>
+            <div className="bar-col" key={d.day} title={`${fullLabel(d.day)}: ${d.count} ${unit}`}>
               <div className="bar-track">
                 <motion.div
                   key={`${d.day}-${refreshKey}`}
@@ -52,9 +67,9 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
       </div>
 
       <table className="sr-only">
-        <caption>Reviews per day, last 14 days</caption>
+        <caption>{title}</caption>
         <thead>
-          <tr><th scope="col">Day</th><th scope="col">Reviews</th></tr>
+          <tr><th scope="col">Day</th><th scope="col">{unit}</th></tr>
         </thead>
         <tbody>
           {data.map((d) => (
@@ -72,6 +87,7 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
           display: flex;
           justify-content: space-between;
           align-items: baseline;
+          gap: 8px;
           margin-bottom: 12px;
         }
         .activity-title {
@@ -82,12 +98,13 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
           font-weight: 700;
           font-size: 0.85rem;
           color: rgba(13, 42, 74, 0.78);
+          text-align: right;
         }
         .bars {
           display: grid;
           grid-template-columns: repeat(14, 1fr);
-          gap: 6px;
-          height: 140px;
+          gap: 5px;
+          height: 130px;
           align-items: end;
         }
         .bar-col {
@@ -102,17 +119,18 @@ export function ActivityChart({ data, refreshKey }: { data: ActivityPoint[]; ref
           width: 100%;
           display: flex;
           align-items: flex-end;
-          background: var(--rr-ice, #eaf4fb);
+          background: var(--rr-ice, #d6effa);
           border-radius: 6px;
           overflow: hidden;
         }
         .bar-track :global(.bar) {
           width: 100%;
-          background: var(--rr-navy);
           border-radius: 6px 6px 0 0;
         }
+        .accent-navy .bar-track :global(.bar) { background: var(--rr-navy); }
+        .accent-blue .bar-track :global(.bar) { background: #2a7ab8; }
         .bar-track :global(.bar-today) {
-          background: var(--rr-red);
+          background: var(--rr-red) !important;
         }
         .bar-label {
           font-size: 0.75rem;

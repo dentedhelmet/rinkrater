@@ -13,6 +13,8 @@ export async function GET(
     .select('comment, source, review_date, user_alias')
     .eq('rink_id', rinkId)
     .eq('category', decodedCategory)
+    .eq('status', 'published') // never show pending/rejected reviews publicly
+    .is('deleted_at', null)    // or soft-deleted ones
     .order('review_date', { ascending: false })
 
   if (error) {

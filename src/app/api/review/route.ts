@@ -164,25 +164,43 @@ export async function POST(req: NextRequest) {
 
     const today = new Date().toISOString().split('T')[0]
 
+    const baseRow = (e: (typeof resultEntries)[number]) => ({
+      id:          crypto.randomUUID(),
+      rink_id:     rinkId,
+      rink_name:   rinkName,
+      rink_city:   city,
+      rink_state:  state,
+      source:      'rinkrater',
+      category:    e.category,
+      comment:     e.comment,
+      user_id:     userId  || null,
+      user_alias:  userAlias || 'Rink Rater reviewer',
+      review_date: today,
+      status:      e.status,
+      // Why the automatic check held or blocked it — shown to moderators in
+      // the admin dashboard. Never shown publicly, never touches the comment.
+      moderation_reason: e.status === 'published' ? null : (e.reason || null),
+    })
+
+    // Inserts rows, retrying without moderation_reason if that column doesn't
+    // exist yet (i.e. the v2 admin migration hasn't been run). Saving the
+    // family's review always matters more than saving the reason.
+    const insertReviews = async (rows: ReturnType<typeof baseRow>[]) => {
+      const { error } = await supabaseAsUser.from('reviews').insert(rows)
+      if (error && /moderation_reason/i.test(error.message || '')) {
+        const withoutReason = rows.map(({ moderation_reason: _omit, ...rest }) => rest)
+        const retry = await supabaseAsUser.from('reviews').insert(withoutReason)
+        return retry.error
+      }
+      return error
+    }
+
     const rowsToInsert = resultEntries
       .filter((e) => e.status !== 'rejected')
-      .map((e) => ({
-        id:          crypto.randomUUID(),
-        rink_id:     rinkId,
-        rink_name:   rinkName,
-        rink_city:   city,
-        rink_state:  state,
-        source:      'rinkrater',
-        category:    e.category,
-        comment:     e.comment,
-        user_id:     userId  || null,
-        user_alias:  userAlias || 'Rink Rater reviewer',
-        review_date: today,
-        status:      e.status,
-      }))
+      .map(baseRow)
 
     if (rowsToInsert.length > 0) {
-      const { error: insertError } = await supabaseAsUser.from('reviews').insert(rowsToInsert)
+      const insertError = await insertReviews(rowsToInsert)
 
       if (insertError) {
         console.error('Review insert error:', insertError)
@@ -193,6 +211,22 @@ export async function POST(req: NextRequest) {
           results:         [],
           reason:          'We hit a snag saving your review — please try again.',
         }, { status: 500 })
+      }
+    }
+
+    // ── Keep a record of blocked entries ─────────────────────────────────────
+    // Entries the check rejected are saved already soft-deleted, so they never
+    // appear anywhere public but do show in the admin Removed tab, where a
+    // wrongly blocked review can be restored. This is best-effort: if it
+    // fails, the reviewer's response is unaffected.
+    const rejectedRows = resultEntries
+      .filter((e) => e.status === 'rejected')
+      .map((e) => ({ ...baseRow(e), deleted_at: new Date().toISOString() }))
+
+    if (rejectedRows.length > 0) {
+      const { error: rejectedError } = await supabaseAsUser.from('reviews').insert(rejectedRows)
+      if (rejectedError) {
+        console.error('Could not record rejected review entries:', rejectedError)
       }
     }
 

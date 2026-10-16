@@ -38,14 +38,26 @@ export async function PATCH(
   // Editing resets status to 'pending' — an edited review shouldn't stay
   // silently "published" with unreviewed new wording. No AI re-moderation
   // pass here, just a status reset so it surfaces for a human look.
-  const { data, error } = await supabaseAsUser
-    .from('reviews')
-    .update({ comment: comment.trim(), status: 'pending' })
-    .eq('id', reviewId)
-    .eq('user_id', userData.user.id) // defense in depth beyond RLS
-    .is('deleted_at', null) // can't edit something already deleted
-    .select()
-    .single()
+  const runEdit = (fields: Record<string, string>) =>
+    supabaseAsUser
+      .from('reviews')
+      .update(fields)
+      .eq('id', reviewId)
+      .eq('user_id', userData.user.id) // defense in depth beyond RLS
+      .is('deleted_at', null) // can't edit something already deleted
+      .select()
+      .single()
+
+  // moderation_reason tells admins why this is back in the queue. If that
+  // column doesn't exist yet (v2 admin migration not run), save without it.
+  let { data, error } = await runEdit({
+    comment: comment.trim(),
+    status: 'pending',
+    moderation_reason: 'Edited by the reviewer — needs a fresh look',
+  })
+  if (error && /moderation_reason/i.test(error.message || '')) {
+    ;({ data, error } = await runEdit({ comment: comment.trim(), status: 'pending' }))
+  }
 
   if (error || !data) {
     console.error('My review edit error:', error)

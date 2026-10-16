@@ -10,6 +10,7 @@ import { ADMIN_SECTIONS } from '@/components/admin/adminSections'
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber'
 import { RefreshButton } from '@/components/admin/RefreshButton'
 import { ActivityChart, type ActivityPoint } from '@/components/admin/ActivityChart'
+import { TrafficPanel } from '@/components/admin/TrafficPanel'
 
 interface DashboardStats {
   pending:   number
@@ -22,7 +23,7 @@ const AUTO_REFRESH_MS = 60_000
 
 export default function AdminHubPage() {
   return (
-    <AdminShell title="Rink Rater HQ" subtitle="Everything behind the boards." showBack={false}>
+    <AdminShell title="Rink Rater HQ" subtitle="Everything behind the boards." showBack={false} wide>
       {(role) => <HubContent role={role} />}
     </AdminShell>
   )
@@ -35,6 +36,7 @@ function HubContent({ role }: { role: AdminRole }) {
   const [refreshing, setRefreshing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
+  const [trafficSignal, setTrafficSignal] = useState(0)
 
   const load = useCallback(async () => {
     setRefreshing(true)
@@ -73,55 +75,73 @@ function HubContent({ role }: { role: AdminRole }) {
         <span className="updated" aria-live="polite">
           {refreshing ? 'Refreshing…' : updatedAt ? `Updated ${updatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}
         </span>
-        <RefreshButton onClick={load} refreshing={refreshing} label="Refresh stats" />
+        <RefreshButton
+          onClick={() => { load(); setTrafficSignal((n) => n + 1) }}
+          refreshing={refreshing}
+          label="Refresh everything"
+        />
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
 
-      <div className="tiles">
-        {tiles.map((t, i) => {
-          const inner = (
-            <motion.div
-              className={`clay-card tile ${t.tone}`}
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07, duration: 0.35 }}
-              whileHover={reduceMotion ? undefined : { y: -3 }}
-            >
-              <motion.span
-                key={`${t.label}-${refreshKey}`}
-                className="tile-num"
-                initial={reduceMotion ? false : { scale: 0.92 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              >
-                {stats ? <AnimatedNumber value={t.value} /> : '–'}
-              </motion.span>
-              <span className="tile-label">{t.label}</span>
-            </motion.div>
-          )
-          return t.href ? (
-            <Link key={t.label} href={t.href} className="tile-link" aria-label={`${t.label}: ${t.value}. Open review moderation`}>
-              {inner}
-            </Link>
-          ) : (
-            <div key={t.label}>{inner}</div>
-          )
-        })}
-      </div>
+      <div className="split">
+        <section className="split-col" aria-labelledby="reviews-col-heading">
+          <h2 id="reviews-col-heading" className="col-heading">
+            <span aria-hidden="true">🛡️</span> Reviews
+          </h2>
+          <div className="tiles">
+            {tiles.map((t, i) => {
+              const inner = (
+                <motion.div
+                  className={`clay-card tile ${t.tone}`}
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07, duration: 0.35 }}
+                  whileHover={reduceMotion ? undefined : { y: -3 }}
+                >
+                  <motion.span
+                    key={`${t.label}-${refreshKey}`}
+                    className="tile-num"
+                    initial={reduceMotion ? false : { scale: 0.92 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                  >
+                    {stats ? <AnimatedNumber value={t.value} /> : '–'}
+                  </motion.span>
+                  <span className="tile-label">{t.label}</span>
+                </motion.div>
+              )
+              return t.href ? (
+                <Link key={t.label} href={t.href} className="tile-link" aria-label={`${t.label}: ${t.value}. Open review moderation`}>
+                  {inner}
+                </Link>
+              ) : (
+                <div key={t.label}>{inner}</div>
+              )
+            })}
+          </div>
 
-      <motion.div
-        className="clay-card chart-card"
-        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.35 }}
-      >
-        {stats ? (
-          <ActivityChart data={stats.activity} refreshKey={refreshKey} />
-        ) : (
-          <div className="chart-placeholder">Warming up the Zamboni…</div>
-        )}
-      </motion.div>
+          <motion.div
+            className="clay-card chart-card"
+            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.35 }}
+          >
+            {stats ? (
+              <ActivityChart data={stats.activity} refreshKey={refreshKey} />
+            ) : (
+              <div className="chart-placeholder">Warming up the Zamboni…</div>
+            )}
+          </motion.div>
+        </section>
+
+        <section className="split-col" aria-labelledby="traffic-col-heading">
+          <h2 id="traffic-col-heading" className="col-heading">
+            <span aria-hidden="true">📈</span> Traffic
+          </h2>
+          <TrafficPanel refreshSignal={trafficSignal} />
+        </section>
+      </div>
 
       <h2 className="section-heading">Tools</h2>
       <div className="sections">
@@ -181,6 +201,30 @@ function HubContent({ role }: { role: AdminRole }) {
           color: var(--rr-red);
           font-weight: 800;
         }
+        .split {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          align-items: start;
+          margin-bottom: 28px;
+        }
+        .split-col {
+          min-width: 0;
+        }
+        .col-heading {
+          font-weight: 900;
+          color: var(--rr-navy);
+          font-size: 1.1rem;
+          margin: 0 0 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        @media (max-width: 820px) {
+          .split {
+            grid-template-columns: 1fr;
+          }
+        }
         .tiles {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -222,7 +266,7 @@ function HubContent({ role }: { role: AdminRole }) {
         .tiles :global(.tile-live .tile-num)    { color: var(--rr-navy); }
         .tiles :global(.tile-removed .tile-num) { color: rgba(13, 42, 74, 0.75); }
         :global(.chart-card) {
-          margin-bottom: 24px;
+          margin-bottom: 0;
         }
         .chart-placeholder {
           height: 190px;

@@ -25,6 +25,7 @@ interface ReviewRow {
   review_date: string
   status:      'published' | 'pending' | 'rejected'
   deleted_at:  string | null
+  moderation_reason: string | null
   reviewer_published_count: number
   last_action: { action: Action; note: string | null; at: string } | null
 }
@@ -44,7 +45,7 @@ const ACTION_DONE: Record<Action, string> = {
   approve: 'Approved — it’s live now.',
   reject:  'Rejected and hidden. You can restore it from Removed.',
   remove:  'Removed from the site. You can restore it from Removed.',
-  restore: 'Restored.',
+  restore: 'Restored. Blocked reviews go to Waiting for your decision.',
 }
 
 export default function AdminReviewsPage() {
@@ -371,7 +372,12 @@ function ReviewCard({
   const removedBy =
     row.last_action?.action === 'reject' ? 'Rejected by a moderator'
     : row.last_action?.action === 'remove' ? 'Removed by a moderator'
+    : row.status === 'rejected' ? 'Blocked automatically when saved'
     : 'Deleted by the reviewer'
+
+  // The automatic check's reason, shown on Waiting cards and on blocked ones.
+  const showReason =
+    !!row.moderation_reason && (tab === 'pending' || (tab === 'removed' && !row.last_action))
 
   return (
     <article className="clay-card review-card" aria-labelledby={`rink-${row.id}`}>
@@ -384,6 +390,14 @@ function ReviewCard({
         </div>
         <span className="category-chip">{row.category}</span>
       </header>
+
+      {showReason && (
+        <p className="flag-reason">
+          <span aria-hidden="true">🚩 </span>
+          <span className="flag-label">{tab === 'pending' ? 'Held because: ' : 'Blocked because: '}</span>
+          {row.moderation_reason}
+        </p>
+      )}
 
       <blockquote className="comment">{row.comment}</blockquote>
 
@@ -509,6 +523,18 @@ function ReviewCard({
           background: var(--rr-ice, #eaf4fb);
           color: var(--rr-navy);
           white-space: nowrap;
+        }
+        .flag-reason {
+          margin: 0 0 10px;
+          padding: 8px 12px;
+          border-radius: 8px;
+          background: #fff4d1;
+          border: 1px solid var(--rr-yellow);
+          color: var(--rr-navy);
+          font-size: 0.9rem;
+        }
+        .flag-label {
+          font-weight: 800;
         }
         .comment {
           margin: 0 0 10px;
