@@ -1,9 +1,14 @@
 import type { Metadata, Viewport } from 'next'
 import { Nunito } from 'next/font/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { AuthProvider } from '@/context/AuthContext'
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 import '../styles/globals.css'
 import { GlobalHeader } from '@/components/layout/GlobalHeader'
+
+// Google Analytics 4 — only loads on production builds so local dev traffic stays out of reports.
+const GA_MEASUREMENT_ID = 'G-LZGG27K01P'
+const isProduction = process.env.NODE_ENV === 'production'
 
 const nunito = Nunito({
   subsets:  ['latin'],
@@ -38,13 +43,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={nunito.className}>
         <div id="app-shell">
           <AuthProvider>
-  <GlobalHeader />
-  <div style={{ height: 100 }} />
-  {children}
-  <OnboardingFlow />
-</AuthProvider>
+            <GlobalHeader />
+            <div style={{ height: 100 }} />
+            {children}
+            <OnboardingFlow />
+          </AuthProvider>
         </div>
       </body>
+      {isProduction && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </html>
   )
 }
