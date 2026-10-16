@@ -63,7 +63,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     icon:        '🤝',
     href:        '/admin/partners',
     roles:       ['super_admin', 'partner_manager'],
-    status:      'soon',
+    status:      'live',
   },
   {
     id:          'live',
@@ -72,7 +72,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     icon:        '📡',
     href:        '/admin/live',
     roles:       ['super_admin'],
-    status:      'soon',
+    status:      'live',
   },
   {
     id:          'admins',
@@ -81,7 +81,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     icon:        '🧑‍✈️',
     href:        '/admin/team',
     roles:       ['super_admin'],
-    status:      'soon',
+    status:      'live',
   },
 ]
 

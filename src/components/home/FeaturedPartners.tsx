@@ -1,19 +1,11 @@
 'use client'
 
-const PARTNERS = [
-  {
-    name: 'My Hockey Rankings',
-    logo: '/partners/mhr.v5.logo-full-bg.png',
-    url: 'https://myhockeyrankings.com',
-  },
-  {
-    name: 'For The Love Of Hockey',
-    logo: '/partners/FTLOH_Logo_1.png',
-    url: 'https://fortheloveofhockey11.com',
-  },
-]
+import { usePartners } from '@/lib/partners'
 
 export function FeaturedPartners() {
+  const PARTNERS = usePartners({ featuredOnly: true })
+  if (PARTNERS.length === 0) return null
+
   return (
     <div className="clay-card" style={{ padding: '14px', marginBottom: 14 }}>
       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 13, color: 'var(--rr-navy)', marginBottom: 10 }}>
@@ -23,8 +15,8 @@ export function FeaturedPartners() {
         {PARTNERS.map(function(partner) {
           return (
             <a
-              key={partner.name}
-              href={partner.url}
+              key={partner.id}
+              href={partner.href}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -39,7 +31,7 @@ export function FeaturedPartners() {
               }}
             >
               <img
-                src={partner.logo}
+                src={partner.logo_url}
                 alt={partner.name}
                 style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }}
               />

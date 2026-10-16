@@ -10,6 +10,7 @@ import { ActivityChart } from './ActivityChart'
 interface SummaryData {
   configured: boolean
   error?:     string
+  detail?:    string
   days?:      { day: string; users: number; sessions: number; views: number }[]
   totals?:    { users: number; sessions: number; views: number }
 }
@@ -17,6 +18,7 @@ interface SummaryData {
 interface LiveData {
   configured: boolean
   error?:     string
+  detail?:    string
   activeNow?: number
   minutes?:   { minutesAgo: number; users: number }[]
   topPages?:  { page: string; users: number }[]
@@ -129,7 +131,10 @@ export function TrafficPanel({ refreshSignal }: { refreshSignal: number }) {
         </div>
 
         {live?.error ? (
-          <p className="panel-error" role="alert">{live.error}</p>
+          <div role="alert">
+            <p className="panel-error">{live.error}</p>
+            {live.detail && <p className="panel-detail">Google said: {live.detail}</p>}
+          </div>
         ) : (
           <>
             <div className="live-number" aria-live="polite">
@@ -198,7 +203,8 @@ export function TrafficPanel({ refreshSignal }: { refreshSignal: number }) {
       {/* ── Last 14 days ──────────────────────────────────────────────────── */}
       <section className="clay-card" aria-label="Site visitors, last 14 days">
         {summary?.error ? (
-          <p className="panel-error summary-error" role="alert">{summary.error}</p>
+          // Same failure as the live card, so don't repeat the message twice.
+          <p className="summary-muted">14-day traffic will appear once the connection above is fixed.</p>
         ) : summary?.days ? (
           <>
             <ActivityChart
@@ -382,10 +388,17 @@ export function TrafficPanel({ refreshSignal }: { refreshSignal: number }) {
           font-weight: 800;
           color: #ffd4da;
         }
-        .summary-error {
+        .panel-detail {
+          margin: 8px 0 0;
+          font-size: 0.8rem;
+          color: rgba(255, 255, 255, 0.85);
+          overflow-wrap: anywhere;
+        }
+        .summary-muted {
           padding: 16px;
           margin: 0;
-          color: var(--rr-red);
+          font-weight: 700;
+          color: rgba(13, 42, 74, 0.8);
         }
         .summary-loading {
           height: 190px;

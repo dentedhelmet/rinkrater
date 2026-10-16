@@ -1,5 +1,7 @@
 'use client'
 
+import { trackEvent } from '@/lib/analytics'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -180,6 +182,10 @@ export default function HomePage() {
       const res = await fetch(url)
       const data = await res.json()
       setRinks(data.rinks || [])
+      // GA's standard "search" event — rink names/towns only, so no personal data.
+      if (searchQuery.trim().length >= 2) {
+        trackEvent('search', { search_term: searchQuery.trim().slice(0, 100), results: (data.rinks || []).length })
+      }
     } catch {
       setRinks([])
     } finally {

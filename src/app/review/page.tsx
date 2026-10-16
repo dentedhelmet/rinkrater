@@ -1,5 +1,7 @@
 'use client'
 
+import { trackEvent } from '@/lib/analytics'
+
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
@@ -249,6 +251,11 @@ function ReviewPageContent() {
       })
 
       const gained = data.xpAwarded || 0
+      trackEvent('review_saved', {
+        rink_id:    rinkId,
+        categories: results.length,
+        published:  results.filter((r) => r.status === 'published').length,
+      })
       setXpEarned(prev => prev + gained)
       setSavedToast({ visible: true, gained })
       await refreshProfile()

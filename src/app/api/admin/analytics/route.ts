@@ -8,6 +8,7 @@ import { requireAdmin } from '@/lib/requireAdmin'
 //
 // GET /api/admin/analytics?scope=summary  → last 14 days: visitors, sessions, page views
 // GET /api/admin/analytics?scope=live     → right now: active visitors, per-minute, top pages, devices
+// GET /api/admin/analytics?scope=detail   → live + countries/cities, plus 14-day channels, sources, landing pages
 //
 // Reads GA through a Google service account. Required environment variables
 // (server-only — none of these may be NEXT_PUBLIC_):
@@ -26,18 +27,39 @@ const LIVE_CACHE_MS = 20_000
 const cache = new Map<string, { expires: number; body: unknown }>()
 let jwtClient: JWT | null = null
 
+const stripQuotes = (v: string) => v.trim().replace(/^['"]+|['"]+$/g, '').trim()
+
+/**
+ * Rebuilds the private key into proper PEM format no matter how a hosting
+ * panel stored it: wrapped in quotes, with literal \n (or \\n), with line
+ * breaks collapsed into spaces, or as one long line.
+ */
+function normalizePrivateKey(raw: string | undefined): string | null {
+  if (!raw) return null
+  const unescaped = stripQuotes(raw).replace(/\\\\n/g, '\n').replace(/\\n/g, '\n')
+  const match = unescaped.match(/-----BEGIN ([A-Z ]*PRIVATE KEY)-----([\s\S]*?)-----END \1-----/)
+  if (!match) return null
+  const label = match[1]
+  const body = match[2].replace(/[^A-Za-z0-9+/=]/g, '')
+  if (!body) return null
+  const lines = body.match(/.{1,64}/g) ?? []
+  return `-----BEGIN ${label}-----\n${lines.join('\n')}\n-----END ${label}-----\n`
+}
+
 function gaConfig() {
-  const propertyId = process.env.GA_PROPERTY_ID?.trim()
-  const email = process.env.GA_SERVICE_ACCOUNT_EMAIL?.trim()
-  // Hosting panels often store the key on one line with literal \n sequences.
-  const key = process.env.GA_SERVICE_ACCOUNT_KEY?.replace(/\\n/g, '\n').trim()
+  const propertyId = process.env.GA_PROPERTY_ID ? stripQuotes(process.env.GA_PROPERTY_ID) : ''
+  const email = process.env.GA_SERVICE_ACCOUNT_EMAIL ? stripQuotes(process.env.GA_SERVICE_ACCOUNT_EMAIL) : ''
+  const rawKey = process.env.GA_SERVICE_ACCOUNT_KEY
   const timeZone = process.env.GA_TIMEZONE?.trim() || 'America/New_York'
-  if (!propertyId || !email || !key) return null
-  return { propertyId, email, key, timeZone }
+  if (!propertyId || !email || !rawKey) return null
+  return { propertyId, email, key: normalizePrivateKey(rawKey), timeZone }
 }
 
 async function gaRequest(propertyId: string, method: 'runReport' | 'runRealtimeReport', body: object) {
   const config = gaConfig()!
+  if (!config.key) {
+    throw Object.assign(new Error('GA_SERVICE_ACCOUNT_KEY is not a valid private key'), { kind: 'key' })
+  }
   if (!jwtClient) {
     jwtClient = new JWT({
       email: config.email,
@@ -159,6 +181,90 @@ async function buildLive(propertyId: string) {
   }
 }
 
+// Events worth showing on Live Visitors, in plain words. Anything else GA
+// collects automatically (scrolls, clicks, etc.) is left out.
+const ACTION_LABELS: Record<string, string> = {
+  page_view:    'Page views',
+  search:       'Rink searches',
+  ask_tj:       'Questions for TJ',
+  review_saved: 'Reviews saved',
+  sign_up:      'Sign-ups',
+  login:        'Sign-ins',
+}
+
+const rowsToList = (report: GaReport, key: string) =>
+  (report.rows ?? []).map((row) => ({
+    [key]: row.dimensionValues?.[0]?.value || '(not set)',
+    users: num(row.metricValues?.[0]?.value),
+  })) as ({ users: number } & Record<string, string | number>)[]
+
+// Full Live Visitors page: where people are right now, plus where traffic
+// has come from over the last 14 days.
+async function buildDetail(propertyId: string) {
+  const live = await buildLive(propertyId)
+  const top = (dim: string, limit: number) => ({
+    dimensions: [{ name: dim }],
+    metrics: [{ name: 'activeUsers' }],
+    orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+    limit,
+  })
+  const range = (dim: string, metric: string, limit: number) => ({
+    dateRanges: [{ startDate: '13daysAgo', endDate: 'today' }],
+    dimensions: [{ name: dim }],
+    metrics: [{ name: metric }],
+    orderBys: [{ metric: { metricName: metric }, desc: true }],
+    limit,
+  })
+
+  const [countries, cities, pages, events, channels, sources, landing, broken] = await Promise.all([
+    gaRequest(propertyId, 'runRealtimeReport', top('country', 8)),
+    gaRequest(propertyId, 'runRealtimeReport', top('city', 8)),
+    gaRequest(propertyId, 'runRealtimeReport', top('unifiedScreenName', 10)),
+    gaRequest(propertyId, 'runRealtimeReport', {
+      dimensions: [{ name: 'eventName' }],
+      metrics: [{ name: 'eventCount' }],
+      orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+      limit: 20,
+    }),
+    gaRequest(propertyId, 'runReport', range('sessionDefaultChannelGroup', 'sessions', 8)),
+    gaRequest(propertyId, 'runReport', range('sessionSource', 'sessions', 8)),
+    gaRequest(propertyId, 'runReport', range('landingPage', 'sessions', 10)),
+    // Pages that showed the "not found" screen, and which URLs caused them.
+    gaRequest(propertyId, 'runReport', {
+      dateRanges: [{ startDate: '13daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'pagePath' }],
+      metrics: [{ name: 'screenPageViews' }],
+      dimensionFilter: { filter: { fieldName: 'pageTitle', stringFilter: { matchType: 'CONTAINS', value: '404' } } },
+      orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+      limit: 10,
+    }),
+  ])
+
+  const sessionsList = (report: GaReport, key: string) =>
+    (report.rows ?? []).map((row) => ({
+      [key]: row.dimensionValues?.[0]?.value || '(not set)',
+      sessions: num(row.metricValues?.[0]?.value),
+    }))
+
+  return {
+    ...live,
+    countries: rowsToList(countries, 'name'),
+    cities:    rowsToList(cities, 'name').filter((c) => c.name !== '(not set)'),
+    topPages:  rowsToList(pages, 'page'),
+    channels:  sessionsList(channels, 'name'),
+    sources:   sessionsList(sources, 'name'),
+    landing:   sessionsList(landing, 'page'),
+    actions:   (events.rows ?? [])
+      .map((row) => ({ name: row.dimensionValues?.[0]?.value || '', count: num(row.metricValues?.[0]?.value) }))
+      .filter((e) => e.name in ACTION_LABELS)
+      .map((e) => ({ ...e, label: ACTION_LABELS[e.name] })),
+    broken:    (broken.rows ?? []).map((row) => ({
+      page:  row.dimensionValues?.[0]?.value || '(unknown)',
+      views: num(row.metricValues?.[0]?.value),
+    })),
+  }
+}
+
 export async function GET(req: NextRequest) {
   const check = await requireAdmin(req)
   if (!check.ok) return check.response
@@ -168,7 +274,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ configured: false })
   }
 
-  const scope = req.nextUrl.searchParams.get('scope') === 'live' ? 'live' : 'summary'
+  const requested = req.nextUrl.searchParams.get('scope')
+  const scope = requested === 'live' || requested === 'detail' ? requested : 'summary'
   const cacheKey = scope
   const hit = cache.get(cacheKey)
   if (hit && hit.expires > Date.now()) {
@@ -176,18 +283,33 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const body = scope === 'live'
-      ? await buildLive(config.propertyId)
+    const body =
+      scope === 'live'   ? await buildLive(config.propertyId)
+      : scope === 'detail' ? await buildDetail(config.propertyId)
       : await buildSummary(config.propertyId, config.timeZone)
-    cache.set(cacheKey, { expires: Date.now() + (scope === 'live' ? LIVE_CACHE_MS : SUMMARY_CACHE_MS), body })
+    cache.set(cacheKey, { expires: Date.now() + (scope === 'summary' ? SUMMARY_CACHE_MS : LIVE_CACHE_MS), body })
     return NextResponse.json(body)
   } catch (err) {
-    const status = (err as { status?: number }).status
+    const e = err as { status?: number; kind?: string; message?: string; response?: { data?: { error_description?: string; error?: string } } }
+    const raw = `${e.message ?? ''} ${e.response?.data?.error_description ?? ''} ${e.response?.data?.error ?? ''}`
     console.error(`GA ${scope} report failed:`, err)
+    jwtClient = null // rebuild the client next time in case the env changed
+
     const hint =
-      status === 403 ? 'Google said no access — add the service account email as a Viewer on the GA property.'
-      : status === 404 ? 'GA property not found — check GA_PROPERTY_ID (the numeric ID, not G-…).'
+      e.kind === 'key' || /DECODER|PEM|asn1|private key|unsupported/i.test(raw)
+        ? 'The private key isn’t readable — re-copy the private_key value from the JSON file into GA_SERVICE_ACCOUNT_KEY (everything from -----BEGIN to -----END PRIVATE KEY-----).'
+      : /invalid_grant|account not found|invalid_client|unauthorized_client/i.test(raw)
+        ? 'Google rejected the login — check GA_SERVICE_ACCOUNT_EMAIL matches client_email in the same JSON file as the key.'
+      : e.status === 403 || /PERMISSION_DENIED/i.test(raw)
+        ? /has not been used|is disabled|SERVICE_DISABLED/i.test(raw)
+          ? 'The Google Analytics Data API isn’t enabled on the Cloud project that owns this service account.'
+          : 'Google said no access — add the service account email as a Viewer on the GA property.'
+      : e.status === 404 || e.status === 400
+        ? 'GA property not found — check GA_PROPERTY_ID (the numeric ID, not G-…).'
       : 'Google Analytics did not respond. Try again in a minute.'
-    return NextResponse.json({ configured: true, error: hint }, { status: 502 })
+
+    // Admin-only route, so it's safe to include Google's own wording for troubleshooting.
+    const detail = raw.replace(/\s+/g, ' ').trim().slice(0, 240) || undefined
+    return NextResponse.json({ configured: true, error: hint, detail }, { status: 502 })
   }
 }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 // Keeps every /admin page out of search engines.
 export const metadata: Metadata = {
-  title: 'Admin — Rink Rater',
+  title: 'Admin',
   robots: { index: false, follow: false, nocache: true },
 }
 

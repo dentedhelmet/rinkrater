@@ -1,5 +1,7 @@
 'use client'
 
+import { trackEvent } from '@/lib/analytics'
+
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
@@ -113,6 +115,8 @@ function ChatPageContent() {
         return
       }
       setTjState('answering')
+      // Count the question (never its text) so Live Visitors shows "Asked TJ".
+      trackEvent('ask_tj', { rink_id: rinkId || undefined, answered: !!data.answer })
       setMessages(prev => [...prev, {
         role: 'agent',
         text: data.answer ?? 'Sorry, I had trouble finding that information.',
