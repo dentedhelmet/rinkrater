@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TJ } from '@/components/tj/TJ'
 import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
+import { RinkNews } from '@/components/rink/RinkNews'
 import { CategorySheet } from '@/components/rink/CategorySheet'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
@@ -406,6 +407,8 @@ export default function RinkProfilePage() {
         }}>
           * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
         </p>
+
+        <RinkNews rinkId={rink.id} />
 
         <button
   onClick={function() { setShowSuggestEdit(true) }}

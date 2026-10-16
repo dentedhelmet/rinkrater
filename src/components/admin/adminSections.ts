@@ -57,6 +57,15 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     status:      'live',
   },
   {
+    id:          'blog',
+    title:       'Blog',
+    description: 'Write, schedule and publish blog posts',
+    icon:        '📰',
+    href:        '/admin/blog',
+    roles:       ['super_admin'],
+    status:      'live',
+  },
+  {
     id:          'partners',
     title:       'Partners',
     description: 'Edit the public Partners page',
