@@ -124,7 +124,7 @@ function ModerationQueue() {
   }
 
   const runAction = async (row: ReviewRow, action: Action, note?: string) => {
-    const { error } = await supabase.rpc('admin_moderate_review', {
+    const { data, error } = await supabase.rpc('admin_moderate_review', {
       p_review_id: row.id,
       p_action:    action,
       p_note:      note?.trim() || null,
@@ -136,7 +136,8 @@ function ModerationQueue() {
     setExitAction((prev) => ({ ...prev, [row.id]: action }))
     setRows((prev) => prev.filter((r) => r.id !== row.id))
     setTotal((t) => Math.max(0, t - 1))
-    setAnnouncement(ACTION_DONE[action])
+    const xp = (data as { xp_awarded?: number } | null)?.xp_awarded ?? 0
+    setAnnouncement(xp > 0 ? `${ACTION_DONE[action]} ${row.user_alias || 'The reviewer'} earned ${xp} XP.` : ACTION_DONE[action])
     return null
   }
 
@@ -402,7 +403,13 @@ function ReviewCard({
       <blockquote className="comment">{row.comment}</blockquote>
 
       <div className="meta byline">
-        {row.user_alias || 'Unknown reviewer'} · {reviewed} ·{' '}
+        {row.user_id ? (
+          <Link href={`/admin/users/${row.user_id}`} className="reviewer-link">
+            {row.user_alias || 'Unknown reviewer'}
+          </Link>
+        ) : (
+          row.user_alias || 'Unknown reviewer'
+        )}{' '}· {reviewed} ·{' '}
         {row.reviewer_published_count} live review{row.reviewer_published_count === 1 ? '' : 's'}
       </div>
 
@@ -548,6 +555,17 @@ function ReviewCard({
         }
         .byline {
           margin-bottom: 4px;
+        }
+        .byline :global(.reviewer-link) {
+          font-weight: 800;
+          color: var(--rr-navy);
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+        .byline :global(.reviewer-link:focus-visible) {
+          outline: 3px solid var(--rr-yellow);
+          outline-offset: 2px;
+          border-radius: 4px;
         }
         .removed-note {
           font-size: 0.85rem;

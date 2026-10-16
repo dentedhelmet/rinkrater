@@ -54,7 +54,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     icon:        '🔎',
     href:        '/admin/users',
     roles:       ['super_admin', 'moderator'],
-    status:      'soon',
+    status:      'live',
   },
   {
     id:          'partners',

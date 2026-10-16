@@ -8,20 +8,11 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useAuth } from '@/context/AuthContext'
 import { useAdminRole } from '@/lib/useAdminRole'
 import { getLevelForXP, getNextLevelXP, LEVELS } from '@/lib/levels'
+import { badgesFor } from '@/lib/badges'
 import Link from 'next/link'
 
 const FAMILIES_HELPED_MULTIPLIER = 3
 
-const BADGE_DEFS = [
-  { id: 'rink_regular',   icon: '/badges/badges-rink-regular.png',    label: 'Rink Regular',   criteria: 'Leave 1 review',      earnedIf: (r: number) => r >= 1  },
-  { id: 'road_warrior',   icon: '/badges/badges-road-warrior.png',    label: 'Road Warrior',   criteria: 'Reach 1,000 XP',      earnedIf: (_: number, xp: number) => xp >= 1000 },
-  { id: 'scout',          icon: '/badges/badges-scout.png',           label: 'Scout',          criteria: 'Leave 5 reviews',     earnedIf: (r: number) => r >= 5  },
-  { id: 'pioneer',        icon: '/badges/badges-pioneer.png',         label: 'Pioneer',        criteria: 'Leave 10 reviews',    earnedIf: (r: number) => r >= 10 },
-  { id: 'temp_reporter',  icon: '/badges/badges-temp-reporter.png',   label: 'Temp Reporter',  criteria: 'Leave 3 reviews',     earnedIf: (r: number) => r >= 3  },
-  { id: 'review_50',      icon: '/badges/badges-fifty-reviews.png',   label: '50 Reviews',     criteria: 'Leave 50 reviews',    earnedIf: (r: number) => r >= 50 },
-  { id: 'coast_to_coast', icon: '/badges/badges-five-states.png',     label: '5 States',       criteria: 'Coming soon',         earnedIf: () => false, comingSoon: true },
-  { id: 'rink_rat_mom',   icon: '/badges/badges-rink-rat-mom.png',    label: 'Rink Rat Mom',   criteria: 'Coming soon',         earnedIf: () => false, comingSoon: true },
-]
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -77,10 +68,7 @@ export default function ProfilePage() {
 
   const familiesHelped = profile.total_reviews * FAMILIES_HELPED_MULTIPLIER
 
-  const badges = BADGE_DEFS.map((b) => ({
-    ...b,
-    earned: b.earnedIf(profile.total_reviews, xp),
-  }))
+  const badges = badgesFor(profile.total_reviews, xp)
 
   const nextBadge = badges.find((b) => !b.earned && !b.comingSoon)
 

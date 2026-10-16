@@ -107,6 +107,24 @@ export async function POST(req: NextRequest) {
       }, { status: 401 })
     }
 
+    // ── Banned accounts can't post — check before spending an AI call ───────
+    // (The database enforces this too; this just gives a clear message.)
+    const { data: banRow, error: banError } = await supabaseAsUser
+      .from('profiles')
+      .select('banned_at')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (!banError && banRow?.banned_at) {
+      return NextResponse.json({
+        success:         false,
+        categoriesFound: 0,
+        xpAwarded:       0,
+        results:         [],
+        reason:          'Your account can no longer post reviews. Contact feedback@rinkrater.com if you think this is a mistake.',
+      }, { status: 403 })
+    }
+
     // ── Fetch rink info (read-only, fine on the shared anon client) ─────────
     const { data: rink } = await supabase
       .from('rinks')
@@ -180,16 +198,19 @@ export async function POST(req: NextRequest) {
       // Why the automatic check held or blocked it — shown to moderators in
       // the admin dashboard. Never shown publicly, never touches the comment.
       moderation_reason: e.status === 'published' ? null : (e.reason || null),
+      // Published-on-save reviews earn XP right here (below), so they're
+      // marked credited. Held ones earn their XP if a moderator approves.
+      stats_credited: e.status === 'published',
     })
 
-    // Inserts rows, retrying without moderation_reason if that column doesn't
-    // exist yet (i.e. the v2 admin migration hasn't been run). Saving the
-    // family's review always matters more than saving the reason.
+    // Inserts rows, retrying without the admin-only columns if they don't
+    // exist yet (an admin migration hasn't been run). Saving the family's
+    // review always matters more than saving the bookkeeping.
     const insertReviews = async (rows: ReturnType<typeof baseRow>[]) => {
       const { error } = await supabaseAsUser.from('reviews').insert(rows)
-      if (error && /moderation_reason/i.test(error.message || '')) {
-        const withoutReason = rows.map(({ moderation_reason: _omit, ...rest }) => rest)
-        const retry = await supabaseAsUser.from('reviews').insert(withoutReason)
+      if (error && /moderation_reason|stats_credited/i.test(error.message || '')) {
+        const plainRows = rows.map(({ moderation_reason: _r, stats_credited: _c, ...rest }) => rest)
+        const retry = await supabaseAsUser.from('reviews').insert(plainRows)
         return retry.error
       }
       return error
