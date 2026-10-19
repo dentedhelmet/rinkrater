@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { TopBar } from '@/components/layout/TopBar'
+import { PostTopBar, PostBackLink } from '@/components/blog/PostBackNav'
 import { BottomBanner } from '@/components/layout/BottomBanner'
 import { SITE_URL, formatPostDate, htmlToText, readingMinutes } from '@/lib/blog'
 import { getPostBySlug, getPostRinks } from '@/lib/blogQueries'
@@ -88,11 +88,11 @@ export default async function BlogPostPage({ params }: Params) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <TopBar showBack backHref="/blog" title="Blog" />
+      <PostTopBar slug={post.slug} />
 
       <main className={styles.page}>
         <article>
-          <Link href="/blog" className={styles.backLink}>← All posts</Link>
+          <PostBackLink slug={post.slug} />
           <h1 className={styles.title}>{post.title}</h1>
           <p className={styles.byline}>
             <time dateTime={post.published_at ?? undefined}>{formatPostDate(post.published_at)}</time>

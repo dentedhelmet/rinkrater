@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
@@ -8,6 +8,7 @@ import { BottomBanner } from '@/components/layout/BottomBanner'
 import { TJ } from '@/components/tj/TJ'
 import { LatestReviewsCarousel } from '@/components/rink/LatestReviewsCarousel'
 import { RinkNews } from '@/components/rink/RinkNews'
+import { rememberRink, takeRinkScroll } from '@/lib/returnToRink'
 import { CategorySheet } from '@/components/rink/CategorySheet'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
@@ -64,6 +65,14 @@ export default function RinkProfilePage() {
   const [showContactModal, setShowContactModal] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [showSuggestEdit, setShowSuggestEdit] = useState(false)
+  // The page re-loads its data on every visit and shows "Loading rink…" first,
+  // so when you come Back the browser has nothing to scroll to and drops you
+  // at the top. We remember the spot ourselves. Depending on screen size the
+  // page scrolls either the window or <main>, so we handle both.
+  const mainRef = useRef<HTMLElement>(null)
+  function currentScroll() {
+    return Math.max(window.scrollY || 0, mainRef.current ? mainRef.current.scrollTop : 0)
+  }
 
   // Intercept "Leave a Review" clicks — if not signed in, open the auth
   // modal directly instead of navigating to /review at all. Avoids the
@@ -91,6 +100,21 @@ export default function RinkProfilePage() {
       .catch(function() { setNotFound(true) })
       .finally(function() { setLoading(false) })
   }, [id])
+
+  // Coming back from a blog post opened under "In the news": return to the
+  // same spot. Tried twice in case images above it are still settling.
+  useEffect(() => {
+    if (loading || !rink) return
+    const top = takeRinkScroll(rink.id)
+    if (top == null) return
+    const restore = () => {
+      window.scrollTo({ top: top, behavior: 'instant' as ScrollBehavior })
+      if (mainRef.current) mainRef.current.scrollTop = top
+    }
+    requestAnimationFrame(restore)
+    const t = window.setTimeout(restore, 350)
+    return () => window.clearTimeout(t)
+  }, [loading, rink])
 
   if (loading) {
     return (
@@ -157,7 +181,7 @@ export default function RinkProfilePage() {
         shareAriaLabel="Share this rink"
       />
 
-      <main style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
+      <main ref={mainRef} style={{ flex: 1, overflowY: 'auto' }} className="scroll-y">
 
         <div style={{ position: 'relative', width: '100%' }}>
           <img
@@ -408,7 +432,17 @@ export default function RinkProfilePage() {
           * Some reviews are from our original Rink Rater app and may be dated. If something looks off, leaving a new review will surface it to the top.
         </p>
 
-        <RinkNews rinkId={rink.id} />
+        <RinkNews
+          rinkId={rink.id}
+          onOpenPost={function(postSlug) {
+            rememberRink({
+              rinkId: rink.id,
+              rinkName: rink.name,
+              postSlug: postSlug,
+              scrollTop: currentScroll(),
+            })
+          }}
+        />
 
         <button
   onClick={function() { setShowSuggestEdit(true) }}

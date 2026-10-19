@@ -9,6 +9,7 @@ interface TopBarProps {
   title?:          string
   showBack?:       boolean
   backHref?:       string
+  onBack?:         () => void // when set, the Back button runs this instead of following backHref
   rightAction?:    React.ReactNode // legacy escape hatch — prefer shareIcon/onShare below
   variant?:        'red' | 'navy' | 'transparent' // only affects the Home-page nav bar now
   shareIcon?:      'dots' | 'chat'
@@ -53,7 +54,7 @@ function ChatShareIcon() {
 
 export function TopBar(props: TopBarProps) {
   const {
-    title, showBack = false, backHref = '/', rightAction,
+    title, showBack = false, backHref = '/', onBack, rightAction,
     variant = 'red', shareIcon, onShare, shareAriaLabel,
   } = props
   const { user, profile, signOut } = useAuth()
@@ -188,7 +189,7 @@ export function TopBar(props: TopBarProps) {
           flexShrink: 0,
         }}
       >
-        <PlaqueButton label="Back" href={backHref}>
+        <PlaqueButton label="Back" href={onBack ? undefined : backHref} onClick={onBack}>
           <BackIcon />
         </PlaqueButton>
 
