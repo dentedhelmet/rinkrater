@@ -14,6 +14,56 @@ const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 const EXCERPT_MAX = 160
 
+/** How often drafts autosave to the database while you're writing. */
+const AUTOSAVE_MS = 5 * 60_000
+/** How often a backup copy is kept in this browser (covers live posts and crashes). */
+const BACKUP_MS = 15_000
+
+/** Everything the editor can change about a post's content. */
+interface Fields {
+  title:     string
+  slug:      string
+  excerpt:   string
+  body:      string
+  coverUrl:  string
+  coverAlt:  string
+  rinkIds:   string[]
+  instagram: string
+}
+
+interface Backup { fields: Fields; savedAt: string }
+
+const backupKey = (id: string | null | undefined) => `rr-blog-backup:${id ?? 'new'}`
+
+function readBackup(id: string | null | undefined): Backup | null {
+  try {
+    const raw = window.localStorage.getItem(backupKey(id))
+    return raw ? (JSON.parse(raw) as Backup) : null
+  } catch {
+    return null
+  }
+}
+
+function writeBackup(id: string | null | undefined, fields: Fields) {
+  try {
+    window.localStorage.setItem(backupKey(id), JSON.stringify({ fields, savedAt: new Date().toISOString() }))
+  } catch { /* storage full or blocked — the database autosave still runs */ }
+}
+
+function clearBackup(id: string | null | undefined) {
+  try { window.localStorage.removeItem(backupKey(id)) } catch { /* ignore */ }
+}
+
+const sameFields = (a: Fields, b: Fields) => JSON.stringify(a) === JSON.stringify(b)
+
+const clock = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+type AutoStatus =
+  | { kind: 'idle' }
+  | { kind: 'saving' }
+  | { kind: 'saved'; at: Date }
+  | { kind: 'paused'; reason: string }
+
 type PublishMode = 'draft' | 'now' | 'schedule'
 
 /** ISO → value for <input type="datetime-local"> in the browser's time zone. */
@@ -63,14 +113,25 @@ export function PostEditor({
   canPublish,
   onCancel,
   onSaved,
+  onAutosaved,
 }: {
   post: Post | null
   /** Super Admins publish, schedule and remove; Moderators write drafts only. */
   canPublish: boolean
   onCancel: () => void
   onSaved: (message: string, saved: Post) => void
+  /** Quietly keeps the post list in step after an autosave (no page change). */
+  onAutosaved?: (saved: Post) => void
 }) {
   const state = post ? postState(post) : 'draft'
+  // The database copy of this post. Starts as the post you opened; a new post
+  // gets one the first time it autosaves.
+  const [savedPost, setSavedPost] = useState<Post | null>(post)
+  const savedPostRef = useRef<Post | null>(post)
+  savedPostRef.current = savedPost
+  // Drafts autosave to the database. Live and scheduled posts don't — that
+  // would publish half-finished edits — so they get a browser backup instead.
+  const autosavesToDb = state === 'draft'
 
   const [title, setTitle] = useState(post?.title ?? '')
   const [slug, setSlug] = useState(post?.slug ?? '')
@@ -91,8 +152,123 @@ export function PostEditor({
   const [error, setError] = useState<string | null>(null)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [autoStatus, setAutoStatus] = useState<AutoStatus>({ kind: 'idle' })
+  const [editorKey, setEditorKey] = useState(0)
+  const [editorHtml, setEditorHtml] = useState(post?.body_html ?? '')
+  const [restorable, setRestorable] = useState<Backup | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const coverRef = useRef<HTMLInputElement>(null)
+  // Counts edits, so an autosave knows whether you kept typing while it ran.
+  const editsRef = useRef(0)
+  const busyRef = useRef(false)
+
+  const fields: Fields = { title, slug, excerpt, body, coverUrl, coverAlt, rinkIds, instagram }
+  const fieldsRef = useRef(fields)
+  fieldsRef.current = fields
+  const dirtyRef = useRef(dirty)
+  dirtyRef.current = dirty
+
+  const markDirty = useCallback(() => { editsRef.current += 1; setDirty(true) }, [])
+
+  // On open: offer to restore a browser backup that's newer than the saved post.
+  useEffect(() => {
+    const b = readBackup(post?.id)
+    if (!b) return
+    const newer = !post || new Date(b.savedAt).getTime() > new Date(post.updated_at).getTime()
+    if (newer && !sameFields(b.fields, fieldsRef.current)) setRestorable(b)
+    else clearBackup(post?.id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const restoreBackup = () => {
+    if (!restorable) return
+    const f = restorable.fields
+    setTitle(f.title); setSlug(f.slug); setSlugTouched(true); setExcerpt(f.excerpt)
+    setBody(f.body); setCoverUrl(f.coverUrl); setCoverAlt(f.coverAlt)
+    setRinkIds(f.rinkIds); setInstagram(f.instagram)
+    setEditorHtml(f.body)
+    setEditorKey((k) => k + 1)   // reload the writing area with the restored text
+    setRestorable(null)
+    markDirty()
+  }
+
+  const discardBackup = () => {
+    clearBackup(post?.id)
+    setRestorable(null)
+  }
+
+  // Browser backup every few seconds while there are unsaved edits.
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      if (dirtyRef.current) writeBackup(savedPostRef.current?.id ?? null, fieldsRef.current)
+    }, BACKUP_MS)
+    return () => window.clearInterval(t)
+  }, [])
+
+  /** Saves the draft's content without touching its status. Never publishes. */
+  const autosave = useCallback(async () => {
+    if (!autosavesToDb || !dirtyRef.current || busyRef.current) return
+    const f = fieldsRef.current
+    const cleanTitle = f.title.trim()
+    const cleanSlug = f.slug.trim()
+    if (!cleanTitle) { setAutoStatus({ kind: 'paused', reason: 'Add a title to start autosaving.' }); return }
+    if (!SLUG_PATTERN.test(cleanSlug)) { setAutoStatus({ kind: 'paused', reason: 'Autosave paused — fix the web address.' }); return }
+
+    busyRef.current = true
+    setAutoStatus({ kind: 'saving' })
+    const editsAtStart = editsRef.current
+    const current = savedPostRef.current
+    const row = {
+      title:               cleanTitle,
+      slug:                cleanSlug,
+      excerpt:             f.excerpt.trim(),
+      body_html:           f.body,
+      cover_image_url:     f.coverUrl,
+      cover_image_alt:     f.coverUrl ? f.coverAlt.trim() : '',
+      rink_ids:            f.rinkIds,
+      instagram_permalink: f.instagram.trim(),
+    }
+    const result = current
+      ? await supabase.from('posts').update(row).eq('id', current.id).select(POST_COLUMNS).single()
+      : await supabase.from('posts').insert({ ...row, status: 'draft', published_at: null }).select(POST_COLUMNS).single()
+    busyRef.current = false
+
+    if (result.error) {
+      console.error('autosave failed:', result.error)
+      setAutoStatus({
+        kind: 'paused',
+        reason: result.error.code === '23505'
+          ? 'Autosave paused — another post uses this web address.'
+          : 'Autosave didn’t go through — click Save draft.',
+      })
+      return
+    }
+
+    const saved = result.data as Post
+    if (!current) clearBackup(null)          // the "new post" backup now lives under its id
+    clearBackup(saved.id)
+    setSavedPost(saved)
+    if (editsRef.current === editsAtStart) setDirty(false)
+    setAutoStatus({ kind: 'saved', at: new Date() })
+    onAutosaved?.(saved)
+  }, [autosavesToDb, onAutosaved])
+
+  // Autosave on a timer, and when you switch away from the tab or close the laptop lid.
+  useEffect(() => {
+    if (!autosavesToDb) return
+    const t = window.setInterval(autosave, AUTOSAVE_MS)
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') {
+        writeBackup(savedPostRef.current?.id ?? null, fieldsRef.current)
+        autosave()
+      }
+    }
+    document.addEventListener('visibilitychange', onHide)
+    return () => {
+      window.clearInterval(t)
+      document.removeEventListener('visibilitychange', onHide)
+    }
+  }, [autosavesToDb, autosave])
 
   useEffect(() => { if (!post) titleRef.current?.focus() }, [post])
 
@@ -104,15 +280,15 @@ export function PostEditor({
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
 
-  const touch = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setDirty(true) }
+  const touch = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); markDirty() }
 
   const onTitle = (v: string) => {
     setTitle(v)
-    setDirty(true)
+    markDirty()
     if (!slugTouched) setSlug(slugifyTitle(v))
   }
 
-  const onBody = useCallback((html: string) => { setBody(html); setDirty(true) }, [])
+  const onBody = useCallback((html: string) => { setBody(html); markDirty() }, [markDirty])
   const uploadForBody = useCallback((file: File) => uploadBlogImage(file, slug), [slug])
 
   const uploadCover = async (file: File) => {
@@ -120,7 +296,7 @@ export function PostEditor({
     setUploadingCover(true)
     try {
       setCoverUrl(await uploadBlogImage(file, slug))
-      setDirty(true)
+      markDirty()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed.')
     }
@@ -150,8 +326,8 @@ export function PostEditor({
       if (!htmlToText(body)) return setError('Write something before publishing.')
       if (!excerpt.trim()) return setError('Add a short summary before publishing — it shows in Google and on the blog page.')
       if (mode === 'now') {
-        const keepDate = state === 'live' && post?.published_at
-        publishedAt = keepDate ? post!.published_at : new Date().toISOString()
+        const keepDate = state === 'live' && savedPost?.published_at
+        publishedAt = keepDate ? savedPost!.published_at : new Date().toISOString()
       } else {
         const when = new Date(scheduleAt)
         if (!scheduleAt || Number.isNaN(when.getTime())) return setError('Pick a date and time to publish.')
@@ -174,9 +350,11 @@ export function PostEditor({
     }
 
     setSaving(true)
-    const result = post
-      ? await supabase.from('posts').update(row).eq('id', post.id).select(POST_COLUMNS).single()
+    busyRef.current = true
+    const result = savedPost
+      ? await supabase.from('posts').update(row).eq('id', savedPost.id).select(POST_COLUMNS).single()
       : await supabase.from('posts').insert(row).select(POST_COLUMNS).single()
+    busyRef.current = false
     setSaving(false)
 
     if (result.error) {
@@ -188,6 +366,8 @@ export function PostEditor({
 
     setDirty(false)
     const saved = result.data as Post
+    clearBackup(null)
+    clearBackup(saved.id)
     const label =
       mode === 'draft' ? 'Draft saved.' :
       mode === 'now' ? (state === 'live' ? 'Changes are live.' : 'Published — it’s live on the blog.') :
@@ -196,22 +376,24 @@ export function PostEditor({
   }
 
   const removePost = async () => {
-    if (!post) return
+    if (!savedPost) return
     setSaving(true)
     const { data, error: rmError } = await supabase
       .from('posts')
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', post.id)
+      .eq('id', savedPost.id)
       .select(POST_COLUMNS)
       .single()
     setSaving(false)
     if (rmError) return setError(rmError.message || 'Could not remove.')
     setDirty(false)
-    onSaved(`“${post.title}” removed. You can restore it from the Removed tab.`, data as Post)
+    clearBackup(savedPost.id)
+    onSaved(`“${savedPost.title}” removed. You can restore it from the Removed tab.`, data as Post)
   }
 
   const cancel = () => {
-    if (dirty && !window.confirm('Discard your unsaved changes?')) return
+    if (dirty && !window.confirm('Close without saving your latest changes? (A backup stays in this browser.)')) return
+    if (dirty) writeBackup(savedPostRef.current?.id ?? null, fieldsRef.current)
     onCancel()
   }
 
@@ -223,6 +405,26 @@ export function PostEditor({
 
   return (
     <section className="clay-card editor" aria-label={post ? `Edit ${post.title}` : 'New post'}>
+      {post?.source === 'instagram' && post.status === 'draft' && (
+        <p className="ig-note">
+          <strong>Imported from Instagram.</strong> Before publishing: describe the cover image, turn the caption into
+          a fuller post (Google favors a few real paragraphs), tag any rinks, and add a short summary.
+        </p>
+      )}
+
+      {restorable && (
+        <div className="restore" role="alert">
+          <span>
+            <strong>Unsaved changes found</strong> from {new Date(restorable.savedAt).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
+            {' '}— they were kept in this browser.
+          </span>
+          <span className="restore-btns">
+            <button type="button" className="clay-btn btn-primary" onClick={restoreBackup}>Restore them</button>
+            <button type="button" className="clay-btn btn-outline" onClick={discardBackup}>Discard</button>
+          </span>
+        </div>
+      )}
+
       <div className="tabs" role="tablist" aria-label="Editor view">
         <button type="button" role="tab" aria-selected={tab === 'write'} className={`tab ${tab === 'write' ? 'tab-on' : ''}`} onClick={() => setTab('write')}>Write</button>
         <button type="button" role="tab" aria-selected={tab === 'preview'} className={`tab ${tab === 'preview' ? 'tab-on' : ''}`} onClick={() => setTab('preview')}>Preview</button>
@@ -238,7 +440,7 @@ export function PostEditor({
           <input id="post-title" ref={titleRef} className="title-input" value={title} maxLength={140} onChange={(e) => onTitle(e.target.value)} placeholder="e.g. 7 Rinks With the Warmest Bleachers in New England" />
 
           <span className="label" id="post-body-label">Post</span>
-          <RichTextEditor initialHtml={post?.body_html ?? ''} onChange={onBody} uploadImage={uploadForBody} labelId="post-body-label" />
+          <RichTextEditor key={editorKey} initialHtml={editorHtml} onChange={onBody} uploadImage={uploadForBody} labelId="post-body-label" />
           <p className="hint">{minutes} min read</p>
         </div>
 
@@ -377,10 +579,21 @@ export function PostEditor({
       {error && <p className="err" role="alert">{error}</p>}
 
       <div className="actions">
-        <button type="button" className="clay-btn btn-primary" onClick={save} disabled={saving || uploadingCover}>{saveLabel}</button>
+        <button type="button" className="clay-btn btn-primary" onClick={save} disabled={saving || uploadingCover || autoStatus.kind === 'saving'}>{saveLabel}</button>
         <button type="button" className="clay-btn btn-outline" onClick={cancel} disabled={saving}>Close</button>
-        {dirty && <span className="unsaved" role="status">Unsaved changes</span>}
-        {canPublish && post && !post.deleted_at && (
+        <span className={`unsaved ${autoStatus.kind === 'paused' ? 'unsaved-warn' : ''}`} role="status" aria-live="polite">
+          {autosavesToDb ? (
+            autoStatus.kind === 'saving' ? 'Autosaving…' :
+            autoStatus.kind === 'paused' && dirty ? autoStatus.reason :
+            dirty ? 'Unsaved changes · autosaves every 5 min' :
+            autoStatus.kind === 'saved' ? `Draft autosaved at ${clock(autoStatus.at)}` : ''
+          ) : (
+            dirty ? (state === 'live'
+              ? 'Unsaved changes — click Update live post to publish them'
+              : 'Unsaved changes — click Schedule post to keep them') : ''
+          )}
+        </span>
+        {canPublish && savedPost && !savedPost.deleted_at && (
           confirmRemove ? (
             <span className="confirm">
               Take this post off the blog?
@@ -444,6 +657,16 @@ export function PostEditor({
         input:focus, textarea:focus { outline: 3px solid var(--rr-yellow); outline-offset: 1px; border-color: var(--rr-navy); }
         .hint { margin: 6px 0 0; font-size: 0.78rem; color: rgba(13, 42, 74, 0.85); }
         .hint.warn { color: var(--rr-red); font-weight: 800; }
+        .ig-note {
+          margin: 0 0 14px;
+          padding: 10px 14px;
+          border-radius: 10px;
+          background: var(--rr-ice);
+          border: 1.5px solid var(--rr-navy);
+          color: var(--rr-navy);
+          font-size: 0.88rem;
+          line-height: 1.5;
+        }
         .draft-note { margin: 4px 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--rr-navy); }
         .side-col { display: flex; flex-direction: column; gap: 14px; }
         .panel {
@@ -493,6 +716,22 @@ export function PostEditor({
         .err { color: var(--rr-red); font-weight: 800; margin: 14px 0 0; }
         .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
         .unsaved { font-size: 0.8rem; font-weight: 800; color: rgba(13, 42, 74, 0.8); }
+        .unsaved-warn { color: var(--rr-red); }
+        .restore {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin: 0 0 14px;
+          padding: 10px 14px;
+          border-radius: 10px;
+          background: var(--rr-yellow);
+          border: 2px solid var(--rr-navy);
+          color: var(--rr-navy);
+          font-size: 0.88rem;
+        }
+        .restore-btns { display: flex; gap: 8px; flex-wrap: wrap; }
         .confirm { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--rr-red); margin-left: auto; flex-wrap: wrap; }
         .link-btn {
           background: none;

@@ -8,6 +8,7 @@ import type { AdminRole } from '@/lib/useAdminRole'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { RefreshButton } from '@/components/admin/RefreshButton'
 import { PostEditor } from '@/components/admin/blog/PostEditor'
+import { InstagramPanel } from '@/components/admin/blog/InstagramPanel'
 
 type Filter = 'active' | 'removed'
 
@@ -110,6 +111,11 @@ function BlogManager({ role }: { role: AdminRole }) {
     if (saved.deleted_at) setFilter('active')
   }
 
+  // Keeps the list current after an autosave without reopening the editor.
+  const onAutosaved = useCallback((saved: Post) => {
+    setPosts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
+  }, [])
+
   if (editing) {
     return (
       <>
@@ -121,6 +127,7 @@ function BlogManager({ role }: { role: AdminRole }) {
           canPublish={canPublish}
           onCancel={() => { setEditing(null); setAnnouncement('') }}
           onSaved={onSaved}
+          onAutosaved={onAutosaved}
         />
         <style jsx>{sharedStyles}</style>
       </>
@@ -140,6 +147,10 @@ function BlogManager({ role }: { role: AdminRole }) {
         </motion.button>
         <RefreshButton onClick={() => load('refresh')} refreshing={refreshing} label="Refresh posts" />
       </div>
+
+      {canPublish && filter === 'active' && (
+        <InstagramPanel onImported={(message) => { setAnnouncement(message); load('refresh') }} />
+      )}
 
       <div className="filters" role="tablist" aria-label="Which posts">
         <button type="button" role="tab" aria-selected={filter === 'active'} className={`filter ${filter === 'active' ? 'filter-on' : ''}`} onClick={() => setFilter('active')}>
@@ -196,6 +207,7 @@ function BlogManager({ role }: { role: AdminRole }) {
                         {s === 'removed' && `Removed ${formatPostDate(p.deleted_at)}`}
                       </span>
                       {p.rink_ids.length > 0 && <span>· {p.rink_ids.length} rink{p.rink_ids.length > 1 ? 's' : ''}</span>}
+                      {p.source === 'instagram' && <span className="chip chip-ig">From Instagram</span>}
                     </span>
                   </span>
                   {s === 'removed' ? (
@@ -295,6 +307,7 @@ function BlogManager({ role }: { role: AdminRole }) {
         .chip-scheduled { background: var(--rr-yellow); }
         .chip-draft { background: rgba(13, 42, 74, 0.12); }
         .chip-removed { background: var(--rr-tier-single); }
+        .chip-ig { background: #fff; border: 1.5px solid var(--rr-navy); }
         .post-list :global(.edit-btn) {
           min-height: 44px;
           min-width: 90px;
