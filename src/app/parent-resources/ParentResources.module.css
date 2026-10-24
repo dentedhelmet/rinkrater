@@ -1,0 +1,825 @@
+/* Rink Rater — Hockey Parent Resources
+   Palette: navy / red / ice. All text pairs meet WCAG AA. */
+
+.page {
+  --navy: #0d2a4a;
+  --navy-soft: #1b3d63;
+  --red: #c8102e;
+  --red-dark: #a10d25;
+  --ice: #eaf4fb;
+  --ice-line: #c9dfee;
+  --ink: #0d2a4a;
+  --ink-muted: #3d5470;
+  --card: #ffffff;
+  --radius: 14px;
+
+  color: var(--ink);
+  background: #ffffff;
+  overflow-x: hidden;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+}
+
+.heroImageWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1744 / 610;
+  min-height: 220px;
+  background: var(--ice);
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: 70% center;
+}
+
+.heroText {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 16px 8px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.h1 {
+  margin: 0 0 16px;
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  line-height: 1.1;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.bubble {
+  position: relative;
+  max-width: 760px;
+  padding: 18px 22px;
+  background: var(--ice);
+  border: 2px solid var(--ice-line);
+  border-radius: var(--radius);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.bubble p {
+  margin: 0;
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 32px;
+  width: 18px;
+  height: 18px;
+  background: var(--ice);
+  border-left: 2px solid var(--ice-line);
+  border-top: 2px solid var(--ice-line);
+  transform: rotate(45deg);
+}
+
+/* ---------- Sections ---------- */
+.section {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.iceBand,
+.navyBand {
+  max-width: none;
+  padding-left: max(16px, calc((100% - 1048px) / 2));
+  padding-right: max(16px, calc((100% - 1048px) / 2));
+}
+
+.iceBand {
+  background: var(--ice);
+}
+
+.navyBand {
+  background: var(--navy);
+  text-align: center;
+}
+
+.h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--navy);
+}
+
+.lede {
+  margin: 0 0 24px;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.onNavy {
+  color: #ffffff;
+}
+
+/* ---------- Hockey Parenting 101 carousel ---------- */
+.carouselHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.carouselArrows {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.arrowButton {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--navy);
+  background: #ffffff;
+  color: var(--navy);
+  font-size: 1.3rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.arrowButton:hover:not(:disabled) {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.arrowButton:disabled {
+  border-color: var(--ice-line);
+  color: #7d93ab;
+  cursor: default;
+}
+
+.carouselTrack {
+  list-style: none;
+  margin: 0;
+  padding: 6px 4px 34px;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  flex: 0 0 min(82%, 320px);
+  display: flex;
+  scroll-snap-align: start;
+  perspective: 1200px;
+}
+
+.flipCard {
+  position: relative;
+  flex: 1;
+  display: grid;
+  min-height: 330px;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(13, 42, 74, 0.12);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.3, 0.9, 0.35, 1.05);
+}
+
+.flipped {
+  transform: rotateY(180deg);
+}
+
+.face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.faceFront {
+  background: linear-gradient(160deg, #ffffff 0%, var(--ice) 100%);
+  border: 2px solid var(--ice-line);
+}
+
+.faceBack {
+  transform: rotateY(180deg);
+  background: var(--navy);
+  border: 2px solid var(--navy);
+  color: #ffffff;
+}
+
+.slideIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--ice-line);
+  font-size: 2rem;
+}
+
+.slideTitle {
+  margin: 0 0 6px;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.slideTeaser {
+  margin: 0 0 20px;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.flipButton,
+.flipBackButton {
+  margin-top: auto;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.flipButton {
+  background: var(--red);
+  border: 2px solid var(--red);
+  color: #ffffff;
+}
+
+.flipButton:hover {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+}
+
+.flipBackButton {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+.flipBackButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.backBy {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffd84d;
+}
+
+.backAnswer {
+  margin: 0 0 20px;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ice-line);
+  transform: translate(-50%, -50%);
+  transition: width 0.25s, background 0.25s;
+}
+
+.dotActive::after {
+  width: 28px;
+  background: var(--red);
+}
+
+.arrowButton:focus-visible,
+.flipButton:focus-visible,
+.dot:focus-visible,
+.tab:focus-visible,
+.resourceCard:focus-visible,
+.resetButton:focus-visible,
+.cta:focus-visible,
+.panel:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
+}
+
+.flipBackButton:focus-visible {
+  outline: 3px solid #ffd84d;
+  outline-offset: 3px;
+}
+
+/* ---------- Game plan ---------- */
+.planHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 10px 18px;
+  background: var(--navy);
+  border-radius: 10px;
+  color: #ffffff;
+  min-width: 120px;
+}
+
+.scoreLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scoreValue {
+  font-size: 2rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: #ffd84d;
+}
+
+.scoreOf {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.tab {
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 2px solid var(--ice-line);
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+  color: var(--navy);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+.tabLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tabName {
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.tabCheck {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #1e7d3a;
+  color: #ffffff;
+  font-size: 0.8rem;
+}
+
+.panel {
+  padding: 24px;
+  background: #ffffff;
+  border: 2px solid var(--navy);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.tipRow {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.tipEmoji {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--ice);
+  font-size: 1.6rem;
+}
+
+.tipBubble {
+  flex: 1;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.tipBubble p {
+  margin: 0;
+}
+
+.tipBy {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 4px !important;
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.resourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 44px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 2px solid var(--ice-line);
+  border-left: 6px solid var(--red);
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.resourceCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--navy);
+  border-left-color: var(--red);
+  box-shadow: 0 6px 16px rgba(13, 42, 74, 0.12);
+}
+
+.resourceTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.arrow {
+  color: var(--red);
+}
+
+.resourceBlurb {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.resourceSource {
+  margin-top: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--navy-soft);
+}
+
+.doneToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.doneToggle input,
+.gearItem input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--red);
+  flex: 0 0 auto;
+}
+
+/* ---------- Gear bag ---------- */
+.progressWrap {
+  margin-bottom: 24px;
+}
+
+.progressTrack {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ice);
+  border: 2px solid var(--ice-line);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--navy), var(--red));
+  transition: width 0.35s ease;
+}
+
+.puck {
+  position: absolute;
+  top: 50%;
+  width: 26px;
+  height: 16px;
+  margin-left: -13px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 3px 0 #000, inset 0 2px 0 #444;
+  transform: translateY(-50%);
+  transition: left 0.35s ease;
+}
+
+.progressText {
+  margin: 10px 0 0;
+  font-weight: 800;
+}
+
+.gearColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.gearGroup {
+  margin: 0;
+  padding: 18px;
+  border: 2px solid var(--ice-line);
+  border-radius: var(--radius);
+}
+
+.gearLegend {
+  padding: 0 6px;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.gearItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ice);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.gearItem:last-of-type {
+  border-bottom: none;
+}
+
+.gearItem input:checked + span {
+  text-decoration: line-through;
+  color: var(--ink-muted);
+}
+
+.gearNote {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--red-dark);
+  text-decoration: none;
+}
+
+.resetButton {
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 2px solid var(--navy);
+  border-radius: 999px;
+  color: var(--navy);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  background: var(--ice);
+}
+
+.smallPrint {
+  margin: 18px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+.inlineLink {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.inlineLink:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.smallPrint a {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+/* ---------- Rink Rater tie-in ---------- */
+.rinkChips {
+  list-style: none;
+  margin: 0 auto 28px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.rinkChip {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 1.05rem;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.cta:hover {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+}
+
+.navyBand .cta:focus-visible {
+  outline-color: #ffd84d;
+}
+
+/* ---------- Disclaimer ---------- */
+.disclaimer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  border-top: 2px solid var(--ice);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.disclaimer p {
+  margin: 0;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 680px) {
+  .heroImage {
+    object-position: 86% center;
+  }
+
+  .tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tab {
+    border-radius: 10px;
+    border-bottom: 2px solid var(--ice-line);
+  }
+
+  .tabActive {
+    border-color: var(--navy);
+  }
+
+  .panel {
+    margin-top: 8px;
+    padding: 18px;
+    border-radius: var(--radius);
+  }
+
+  .tipEmoji {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carouselTrack {
+    scroll-behavior: auto;
+  }
+
+  .flipCard,
+  .flipButton,
+  .resourceCard,
+  .progressFill,
+  .puck,
+  .cta {
+    transition: none;
+  }
+
+  .flipButton:hover,
+  .resourceCard:hover,
+  .cta:hover {
+    transform: none;
+  }
+}

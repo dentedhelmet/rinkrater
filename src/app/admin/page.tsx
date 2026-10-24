@@ -37,6 +37,7 @@ function HubContent({ role }: { role: AdminRole }) {
   const [refreshKey, setRefreshKey] = useState(0)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [trafficSignal, setTrafficSignal] = useState(0)
+  const [tipsPending, setTipsPending] = useState(0)
 
   const load = useCallback(async () => {
     setRefreshing(true)
@@ -50,8 +51,24 @@ function HubContent({ role }: { role: AdminRole }) {
       setRefreshKey((k) => k + 1)
       setUpdatedAt(new Date())
     }
+
+    // Parent Tips waiting count — only for roles that can moderate tips.
+    if (role === 'super_admin' || role === 'moderator') {
+      const { data: tipsData, error: tipsError } = await supabase.rpc('admin_list_parent_tips', {
+        p_status: 'pending',
+        p_instagram_only: false,
+        p_limit: 1,
+        p_offset: 0,
+      })
+      if (tipsError) {
+        console.error('parent tips count failed:', tipsError)
+      } else {
+        setTipsPending((tipsData as { total?: number } | null)?.total ?? 0)
+      }
+    }
+
     setRefreshing(false)
-  }, [])
+  }, [role])
 
   // First load, then a quiet refresh every minute while the tab is visible.
   useEffect(() => {
@@ -146,7 +163,10 @@ function HubContent({ role }: { role: AdminRole }) {
       <h2 className="section-heading">Tools</h2>
       <div className="sections">
         {sections.map((s, i) => {
-          const badgeCount = s.badge === 'pending' ? stats?.pending ?? 0 : 0
+          const badgeCount =
+            s.badge === 'pending' ? stats?.pending ?? 0
+            : s.badge === 'tips_pending' ? tipsPending
+            : 0
           const card = (
             <motion.div
               className={`clay-card section-card ${s.status === 'soon' ? 'section-soon' : ''}`}

@@ -15,7 +15,7 @@ export interface AdminSection {
   href:        string
   roles:       AdminRole[]     // who sees this card
   status:      'live' | 'soon'
-  badge?:      'pending'       // shows a live count from admin_dashboard_stats
+  badge?:      'pending' | 'tips_pending'  // live waiting count: reviews | parent tips
 }
 
 export const ADMIN_SECTIONS: AdminSection[] = [
@@ -28,6 +28,16 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     roles:       ['super_admin', 'moderator'],
     status:      'live',
     badge:       'pending',
+  },
+  {
+    id:          'parent-tips',
+    title:       'Parent Tips',
+    description: 'Approve tips from parents, and pick ones to feature on Instagram',
+    icon:        '💡',
+    href:        '/admin/parent-tips',
+    roles:       ['super_admin', 'moderator'],
+    status:      'live',
+    badge:       'tips_pending',
   },
   {
     id:          'rink-suggestions',

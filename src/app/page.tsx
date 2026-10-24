@@ -403,6 +403,38 @@ export default function HomePage() {
               )}
             </div>
           )}
+
+          {/* Parent resources — two cards under Most Reviewed Rinks. */}
+          <div className="parent-cards">
+            <Link href="/parent-resources" className="clay-card parent-card">
+              <Image
+                src="/category-icons/rr-skatesharpening_icon.png"
+                alt=""
+                width={56}
+                height={56}
+                className="parent-card-icon"
+              />
+              <span className="parent-card-text">
+                <span className="parent-card-title">New to Hockey?</span>
+                <span className="parent-card-desc">TJ&apos;s Mom&apos;s game plan for your rookie season</span>
+              </span>
+              <span className="parent-card-arrow" aria-hidden="true">{'\u2192'}</span>
+            </Link>
+            <Link href="/tips" className="clay-card parent-card">
+              <Image
+                src="/category-icons/rr-hometeaminsights_icon.png"
+                alt=""
+                width={56}
+                height={56}
+                className="parent-card-icon"
+              />
+              <span className="parent-card-text">
+                <span className="parent-card-title">Parent Tips</span>
+                <span className="parent-card-desc">Advice from hockey moms &amp; dads. Share yours!</span>
+              </span>
+              <span className="parent-card-arrow" aria-hidden="true">{'\u2192'}</span>
+            </Link>
+          </div>
           </div>
 
           <div className="rink-ad-col">
@@ -726,6 +758,75 @@ export default function HomePage() {
   height: 35px;
 }
 
+        /* New to Hockey? / Parent Tips cards under Most Reviewed Rinks */
+        .parent-cards {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .parent-cards :global(.parent-card) {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          min-height: 44px;
+          padding: 14px;
+          text-decoration: none;
+          color: var(--rr-navy);
+          transition: transform 0.12s, box-shadow 0.12s;
+        }
+        .parent-cards :global(.parent-card:hover) {
+          transform: translate(-2px, -2px);
+          box-shadow: var(--rr-shadow-lg);
+        }
+        .parent-cards :global(.parent-card:active) {
+          transform: translate(2px, 2px);
+          box-shadow: 1px 1px 0 var(--rr-navy);
+        }
+        .parent-cards :global(.parent-card:focus-visible) {
+          outline: 3px solid var(--rr-red);
+          outline-offset: 3px;
+        }
+        .parent-cards :global(.parent-card-icon) {
+          width: 56px;
+          height: 56px;
+          flex-shrink: 0;
+          filter: drop-shadow(1px 2px 0 rgba(13, 42, 74, 0.25));
+        }
+        .parent-card-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .parent-card-title {
+          font-family: var(--font-display);
+          font-weight: 900;
+          font-size: 15px;
+          line-height: 1.2;
+          text-transform: uppercase;
+        }
+        .parent-card-desc {
+          font-size: 12.5px;
+          line-height: 1.4;
+          color: rgba(13, 42, 74, 0.8);
+        }
+        .parent-card-arrow {
+          margin-top: auto;
+          align-self: flex-end;
+          font-weight: 900;
+          font-size: 18px;
+          color: var(--rr-red);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .parent-cards :global(.parent-card) {
+            transition: none;
+          }
+          .parent-cards :global(.parent-card:hover),
+          .parent-cards :global(.parent-card:active) {
+            transform: none;
+          }
+        }
+
         /* Ad card, next to Most Reviewed Rinks — stacked below on mobile,
            beside it on desktop */
         .rink-ad-col {
@@ -808,6 +909,17 @@ export default function HomePage() {
           .rink-ad-col {
             width: 240px;
             flex-shrink: 0;
+          }
+          .parent-cards :global(.parent-card) {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+          }
+          .parent-card-arrow {
+            margin-top: 0;
+            margin-left: auto;
+            align-self: center;
           }
         }
       `}</style>

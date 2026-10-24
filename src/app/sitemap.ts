@@ -9,6 +9,8 @@ const STATIC_PAGES: { path: string; priority: number; changeFrequency: MetadataR
   { path: '/',               priority: 1.0, changeFrequency: 'daily'   },
   { path: '/blog',           priority: 0.8, changeFrequency: 'weekly'  },
   { path: '/nearby',         priority: 0.6, changeFrequency: 'weekly'  },
+  { path: '/parent-resources', priority: 0.7, changeFrequency: 'monthly' },
+  { path: '/tips',           priority: 0.7, changeFrequency: 'daily'   },
   { path: '/whats-the-call', priority: 0.5, changeFrequency: 'weekly'  },
   { path: '/about',          priority: 0.4, changeFrequency: 'monthly' },
   { path: '/partners',       priority: 0.4, changeFrequency: 'monthly' },
