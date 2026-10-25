@@ -250,12 +250,13 @@ const GEAR_IN_BAG: GearItem[] = [
 
 const ALL_GEAR = [...GEAR_ON_PLAYER, ...GEAR_IN_BAG]
 
-const RINK_INFO = [
+// iconSrc (optional): round badge image shown instead of the emoji.
+const RINK_INFO: { icon: string; label: string; iconSrc?: string }[] = [
   { icon: '📍', label: 'Location & parking' },
   { icon: '❄️', label: 'Rink temp' },
   { icon: '🍴', label: 'Concessions' },
   { icon: '🛍️', label: 'Pro shop' },
-  { icon: '⛸️', label: 'Skate sharpening' },
+  { icon: '⛸️', label: 'Skate sharpening', iconSrc: '/category-icons/rr-skatesharpening_icon.png' },
   { icon: '💬', label: 'Real reviews from parents' },
 ]
 
@@ -731,7 +732,19 @@ export default function ParentResourcesClient() {
         <ul className={styles.rinkChips}>
           {RINK_INFO.map((r) => (
             <li key={r.label} className={styles.rinkChip}>
-              <span aria-hidden="true">{r.icon}</span> {r.label}
+              {r.iconSrc ? (
+                <Image
+                  src={r.iconSrc}
+                  alt=""
+                  aria-hidden="true"
+                  width={28}
+                  height={28}
+                  className={styles.rinkChipIcon}
+                />
+              ) : (
+                <span aria-hidden="true">{r.icon}</span>
+              )}{' '}
+              {r.label}
             </li>
           ))}
         </ul>
