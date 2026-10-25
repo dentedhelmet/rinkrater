@@ -50,6 +50,8 @@ type Period = {
   label: string
   name: string
   emoji: string
+  /** Optional round badge image; shown instead of the emoji. */
+  iconSrc?: string
   tip: string
   resources: Resource[]
 }
@@ -60,6 +62,7 @@ const PERIODS: Period[] = [
     label: '1st Period',
     name: 'Try It',
     emoji: '⛸️',
+    iconSrc: '/category-icons/rr-skatesharpening_icon.png',
     tip: "Don't buy a single thing yet. Let your kid try it first. Beginner learn-to-play programs are made for exactly this, and many even fit your kid with gear. You'll know in about ten minutes whether that grin is real. Bring a warm coat for yourself. Trust me on that one.",
     resources: [
       {
@@ -593,9 +596,20 @@ export default function ParentResourcesClient() {
           tabIndex={0}
         >
           <div className={styles.tipRow}>
-            <span className={styles.tipEmoji} aria-hidden="true">
-              {period.emoji}
-            </span>
+            {period.iconSrc ? (
+              <Image
+                src={period.iconSrc}
+                alt=""
+                aria-hidden="true"
+                width={54}
+                height={54}
+                className={styles.tipIconImg}
+              />
+            ) : (
+              <span className={styles.tipEmoji} aria-hidden="true">
+                {period.emoji}
+              </span>
+            )}
             <div className={styles.tipBubble}>
               <p className={styles.tipBy}>TJ&apos;s Mom says</p>
               <p>{period.tip}</p>
