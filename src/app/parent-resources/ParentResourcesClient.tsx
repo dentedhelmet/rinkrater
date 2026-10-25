@@ -16,7 +16,7 @@ import type { TipCategory } from '@/lib/parentTips'
    Last verified: Oct 24, 2026.
 ------------------------------------------------------------------- */
 const LINKS = {
-  tryHockeyForFree: 'http://www.tryhockeyforfree.com',
+  learnToPlay: 'https://learntoplay.nhl.com/about',
   findHockeyNearYou: 'http://www.comeplayyouthhockey.com/',
   whyHockey: 'https://www.usahockey.com/comeplayyouthhockey',
   newParents: 'https://www.usahockey.com/newparents',
@@ -60,13 +60,13 @@ const PERIODS: Period[] = [
     label: '1st Period',
     name: 'Try It',
     emoji: '⛸️',
-    tip: "Don't buy a single thing yet. Let your kid try it first. Lots of rinks host free first-timer days with loaner gear, and you'll know in about ten minutes whether that grin is real. Bring a warm coat for yourself. Trust me on that one.",
+    tip: "Don't buy a single thing yet. Let your kid try it first. Beginner learn-to-play programs are made for exactly this, and many even fit your kid with gear. You'll know in about ten minutes whether that grin is real. Bring a warm coat for yourself. Trust me on that one.",
     resources: [
       {
-        title: 'Try Hockey For Free',
-        blurb: 'Free intro sessions for young first-timers at rinks across the country. Search by zip code.',
-        href: LINKS.tryHockeyForFree,
-        source: 'tryhockeyforfree.com',
+        title: 'NHL/NHLPA Learn to Play',
+        blurb: 'A beginner program for first-time players ages 4 to 9, with head-to-toe gear included. Find one near you.',
+        href: LINKS.learnToPlay,
+        source: 'learntoplay.nhl.com',
       },
       {
         title: 'Find Hockey Near You',
@@ -165,12 +165,14 @@ const PERIODS: Period[] = [
   },
 ]
 
-type Truth = { id: string; icon: string; title: string; teaser: string; answer: string }
+// iconSrc: round badge in public/tip-icons/. `icon` is the emoji fallback.
+type Truth = { id: string; icon: string; iconSrc: string; title: string; teaser: string; answer: string }
 
 const TRUTHS: Truth[] = [
   {
     id: 'gear',
     icon: '🧤',
+    iconSrc: '/tip-icons/glove.png',
     title: 'The Gear',
     teaser: 'How much stuff are we talking?',
     answer:
@@ -179,6 +181,7 @@ const TRUTHS: Truth[] = [
   {
     id: 'time',
     icon: '⏰',
+    iconSrc: '/tip-icons/time.png',
     title: 'The Time',
     teaser: 'Why is practice at 6 a.m.?',
     answer:
@@ -187,14 +190,16 @@ const TRUTHS: Truth[] = [
   {
     id: 'cost',
     icon: '💵',
+    iconSrc: '/tip-icons/cash.png',
     title: 'The Cost',
     teaser: "Can we actually afford this?",
     answer:
-      "Hockey isn't cheap, and nobody should pretend it is. Start small with a free try-it day and a learn-to-skate or learn-to-play program before committing to a full season. Then ask your club straight up about fees, payment plans and scholarships. You won't be the first to ask.",
+      "Hockey isn't cheap, and nobody should pretend it is. Start small with a learn-to-skate or learn-to-play program before committing to a full season. Then ask your club straight up about fees, payment plans and scholarships. You won't be the first to ask.",
   },
   {
     id: 'energy',
     icon: '🔋',
+    iconSrc: '/tip-icons/energy.png',
     title: 'The Energy',
     teaser: "Who's going to be tired here?",
     answer:
@@ -203,6 +208,7 @@ const TRUTHS: Truth[] = [
   {
     id: 'commit',
     icon: '🤝',
+    iconSrc: '/tip-icons/commitment.png',
     title: 'The Commitment',
     teaser: 'Is it worth it?',
     answer:
@@ -290,6 +296,29 @@ function ExternalLink({ resource }: { resource: Resource }) {
         <span className={styles.srOnly}> (opens in a new tab)</span>
       </span>
     </a>
+  )
+}
+
+/** Card icon image; falls back to the emoji if the file can't load. */
+function TruthIcon({ src, fallback }: { src: string; fallback: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <span className={styles.slideIcon} aria-hidden="true">
+        {fallback}
+      </span>
+    )
+  }
+  return (
+    <Image
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={80}
+      height={80}
+      className={styles.slideIconImg}
+      onError={() => setFailed(true)}
+    />
   )
 }
 
@@ -460,9 +489,7 @@ export default function ParentResourcesClient() {
               >
                 <div className={`${styles.flipCard} ${flipped ? styles.flipped : ''}`}>
                   <div className={`${styles.face} ${styles.faceFront}`} aria-hidden={flipped}>
-                    <span className={styles.slideIcon} aria-hidden="true">
-                      {t.icon}
-                    </span>
+                    <TruthIcon src={t.iconSrc} fallback={t.icon} />
                     <p className={styles.slideTitle}>{t.title}</p>
                     <p className={styles.slideTeaser}>{t.teaser}</p>
                     <button

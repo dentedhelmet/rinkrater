@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/auth/AuthModal'
+import { TipCategoryIcon } from '@/components/tips/TipCategoryIcon'
 import {
   INSTAGRAM_HANDLE_RE,
   TIP_CATEGORIES,
@@ -241,7 +242,7 @@ export default function ShareTipModal({ isOpen, onClose, initialCategory }: Shar
                       checked={category === c.id}
                       onChange={() => setCategory(c.id)}
                     />
-                    <span aria-hidden="true" className="cat-icon">{c.icon}</span>
+                    <TipCategoryIcon category={c.id} size={30} />
                     <span>{c.label}</span>
                   </label>
                 ))}

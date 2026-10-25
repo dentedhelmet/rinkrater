@@ -255,6 +255,13 @@
   font-size: 2rem;
 }
 
+.slideIconImg {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 14px;
+  filter: drop-shadow(1px 2px 0 rgba(13, 42, 74, 0.2));
+}
+
 .slideTitle {
   margin: 0 0 6px;
   font-size: 1.45rem;

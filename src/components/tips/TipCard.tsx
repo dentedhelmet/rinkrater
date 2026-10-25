@@ -1,6 +1,7 @@
 'use client'
 
 import { TIP_CATEGORY_MAP, type PublicTip } from '@/lib/parentTips'
+import { TipCategoryIcon } from '@/components/tips/TipCategoryIcon'
 
 function formatDate(iso: string | null): string {
   if (!iso) return ''
@@ -14,7 +15,7 @@ export function TipCard({ tip, compact = false }: { tip: PublicTip; compact?: bo
   return (
     <article className={`clay-card tip-card ${compact ? 'tip-compact' : ''}`} aria-labelledby={`tip-${tip.id}`}>
       <span className="tip-chip">
-        <span aria-hidden="true">{cat?.icon}</span> {cat?.label ?? tip.category}
+        <TipCategoryIcon category={tip.category} size={22} /> {cat?.label ?? tip.category}
       </span>
       <h3 id={`tip-${tip.id}`} className="tip-title">{tip.title}</h3>
       <p className="tip-body">{tip.body}</p>
@@ -34,7 +35,10 @@ export function TipCard({ tip, compact = false }: { tip: PublicTip; compact?: bo
         }
         .tip-chip {
           align-self: flex-start;
-          padding: 4px 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 10px 3px 3px;
           border-radius: var(--rr-radius-pill);
           background: var(--rr-ice);
           border: var(--rr-outline-sm);

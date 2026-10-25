@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { TipCard } from '@/components/tips/TipCard'
 import ShareTipModal from '@/components/tips/ShareTipModal'
+import { TipCategoryIcon } from '@/components/tips/TipCategoryIcon'
 import { TIP_CATEGORIES, isTipCategory, type PublicTip, type TipCategory } from '@/lib/parentTips'
 
 const PAGE_SIZE = 24
@@ -119,7 +120,7 @@ export default function TipsBoardClient() {
             aria-pressed={filter === c.id}
             onClick={() => setFilter(c.id)}
           >
-            <span aria-hidden="true">{c.icon}</span> {c.label}
+            <TipCategoryIcon category={c.id} size={28} /> {c.label}
           </button>
         ))}
       </div>
@@ -224,8 +225,11 @@ export default function TipsBoardClient() {
         }
         .filter-chip {
           flex: 0 0 auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           min-height: 44px;
-          padding: 0 16px;
+          padding: 0 16px 0 8px;
           border: var(--rr-outline-sm);
           border-radius: var(--rr-radius-pill);
           background: #fff;

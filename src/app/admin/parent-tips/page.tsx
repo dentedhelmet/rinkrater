@@ -8,6 +8,7 @@ import { AdminShell } from '@/components/admin/AdminShell'
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber'
 import { RefreshButton } from '@/components/admin/RefreshButton'
 import { TIP_CATEGORY_MAP, type TipCategory } from '@/lib/parentTips'
+import { TipCategoryIcon } from '@/components/tips/TipCategoryIcon'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type Tab = 'pending' | 'published' | 'removed'
@@ -452,7 +453,7 @@ function TipModerationCard({
     <article className="clay-card tip-card" aria-labelledby={`tip-title-${row.id}`}>
       <header className="card-head">
         <span className="category-chip">
-          <span aria-hidden="true">{cat?.icon}</span> {cat?.label ?? row.category}
+          <TipCategoryIcon category={row.category} size={22} /> {cat?.label ?? row.category}
         </span>
         {row.instagram_ok ? (
           <span className="ig-chip ig-yes">
@@ -592,6 +593,9 @@ function TipModerationCard({
         }
         .category-chip,
         .ig-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           font-size: 0.78rem;
           font-weight: 800;
           padding: 4px 10px;

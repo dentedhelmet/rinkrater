@@ -8,18 +8,21 @@ export type TipCategory = 'nutrition' | 'workouts' | 'skills' | 'camps' | 'gear'
 export interface TipCategoryInfo {
   id:     TipCategory
   label:  string
+  /** Emoji fallback, used if the image file can't load. */
   icon:   string
+  /** Round 280×280 badge in public/tip-icons/ */
+  iconSrc: string
   /** Shown under the category in the share form to nudge good tips. */
   prompt: string
 }
 
 export const TIP_CATEGORIES: TipCategoryInfo[] = [
-  { id: 'nutrition', label: 'Nutrition', icon: '🍎', prompt: 'Game-day snacks, rink-friendly meals, staying hydrated' },
-  { id: 'workouts',  label: 'Workouts',  icon: '💪', prompt: 'Off-ice fun that builds strength, balance and stamina' },
-  { id: 'skills',    label: 'Skills',    icon: '🏒', prompt: 'Driveway drills, stickhandling, skating practice at home' },
-  { id: 'camps',     label: 'Camps',     icon: '⛺', prompt: 'Camps and clinics your family loved, and what to pack' },
-  { id: 'gear',      label: 'Gear',      icon: '🎒', prompt: 'Must-haves for the bag, sizing lessons, keeping gear fresh' },
-  { id: 'rink_life', label: 'Rink Life', icon: '🧊', prompt: 'Early mornings, carpools, tournament weekends, staying warm' },
+  { id: 'nutrition', label: 'Nutrition', icon: '🍎', iconSrc: '/tip-icons/rr-tip-nutrition_icon.png', prompt: 'Game-day snacks, rink-friendly meals, staying hydrated' },
+  { id: 'workouts',  label: 'Workouts',  icon: '💪', iconSrc: '/tip-icons/rr-tip-workouts_icon.png', prompt: 'Off-ice fun that builds strength, balance and stamina' },
+  { id: 'skills',    label: 'Skills',    icon: '🏒', iconSrc: '/tip-icons/rr-tip-skills_icon.png', prompt: 'Driveway drills, stickhandling, skating practice at home' },
+  { id: 'camps',     label: 'Camps',     icon: '⛺', iconSrc: '/tip-icons/rr-tip-camps_icon.png', prompt: 'Camps and clinics your family loved, and what to pack' },
+  { id: 'gear',      label: 'Gear',      icon: '🎒', iconSrc: '/tip-icons/rr-tip-gear_icon.png', prompt: 'Must-haves for the bag, sizing lessons, keeping gear fresh' },
+  { id: 'rink_life', label: 'Rink Life', icon: '🧊', iconSrc: '/tip-icons/rr-tip-rinklife_icon.png', prompt: 'Early mornings, carpools, tournament weekends, staying warm' },
 ]
 
 export const TIP_CATEGORY_MAP: Record<TipCategory, TipCategoryInfo> = Object.fromEntries(
