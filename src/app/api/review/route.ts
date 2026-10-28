@@ -31,9 +31,11 @@ You are NOT rewriting, rephrasing, editing, or "cleaning up" the reviewer's word
 Rink: ${rinkName} in ${city}, ${state}
 
 The reviewer has ALREADY told us which category each entry below belongs to — do not guess or reassign categories. For each numbered entry, decide:
-   - "published" = clean, factual, family-friendly → post immediately, exactly as written
-   - "pending" = mentions staff/employees by name negatively, unverifiable serious claims, borderline language, or anything needing human review
-   - "rejected" = profanity, hate speech, clearly fake/spam, or genuinely unrelated to the stated category
+   - "published" = clean, factual, family-friendly → post immediately, exactly as written. Blunt or negative opinions are fine as long as the language is clean (e.g. "the locker rooms are gross", "this rink sucks", "worst snack bar ever").
+   - "pending" = ANY profanity or crude language, mild or strong, spelled out or disguised (e.g. "damn", "hell", "crap", "sh*t", "f-ing", "WTF"); insults aimed at a person; staff/employees mentioned by name negatively; unverifiable serious claims stated as fact; or anything else a human should look at. If you are unsure between "published" and "pending", choose "pending".
+   - "rejected" = ONLY hate speech or slurs against a group, sexually explicit content, clearly fake/spam (ads, links, gibberish), or entries genuinely unrelated to the stated category. Profanity on its own is NEVER "rejected" — it always goes to "pending".
+
+For anything not "published", "reason" must be a short note for the moderator saying what triggered it (e.g. "Strong profanity", "Mild profanity", "Names staff member negatively", "Spam link").
 
 Entries:
 ${list}
