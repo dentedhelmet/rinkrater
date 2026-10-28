@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber'
 import { RefreshButton } from '@/components/admin/RefreshButton'
+import { VisitDing } from '@/components/admin/VisitDing'
 
 // ─── Types (mirror /api/admin/analytics?scope=detail) ─────────────────────────
 interface Detail {
@@ -109,6 +110,9 @@ function LiveView() {
           {data.detail && <p>Google said: {data.detail}</p>}
         </div>
       )}
+
+      {/* ── Instant ding feed (Supabase Realtime) ─────────────────────── */}
+      <VisitDing />
 
       {/* ── Hero: live count + per-minute bars ─────────────────────────── */}
       <section className="clay-card hero" aria-labelledby="live-h">

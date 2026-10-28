@@ -3,6 +3,7 @@ import { Nunito } from 'next/font/google'
 import { Suspense } from 'react'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { GaRouteTracker } from '@/components/analytics/GaRouteTracker'
+import { VisitBeacon } from '@/components/analytics/VisitBeacon'
 import { AuthProvider } from '@/context/AuthContext'
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 import '../styles/globals.css'
@@ -55,6 +56,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <OnboardingFlow />
           </AuthProvider>
         </div>
+        {/* Live Visitors ding — first page of each new visit (production only). */}
+        <VisitBeacon />
         {isProduction && (
           <Suspense fallback={null}>
             <GaRouteTracker />
