@@ -442,6 +442,10 @@ export default function HomePage() {
               const ad = ADS[adIndex]
               return (
                 <>
+                  <div className="ad-label">
+                    <span className="ad-pill">Ad</span>
+                    <span className="ad-label-text">Sponsored &middot; Amazon</span>
+                  </div>
                   <a
                     href={withAssociateTag(ad.link)}
                     target="_blank"
@@ -462,9 +466,14 @@ export default function HomePage() {
                       />
                     </div>
                   </a>
-                  <div style={{ fontSize: 9, lineHeight: 1.4, color: 'rgba(13,42,74,0.4)', textAlign: 'center', marginTop: 4 }}>
-                    As an Amazon Associate, Rink Rater earns from qualifying purchases.
-                  </div>
+                  <p className="ad-disclosure">
+                    <span aria-hidden="true">{'\u{1F49B}'}</span>{' '}
+                    <strong>Rink Rater earns a small commission</strong> when you buy through this link,
+                    at no extra cost to you. It helps keep Rink Rater free for hockey families.
+                    <span className="ad-disclosure-fine">
+                      As an Amazon Associate, Rink Rater earns from qualifying purchases.
+                    </span>
+                  </p>
                 </>
               )
             })()}
@@ -844,6 +853,54 @@ export default function HomePage() {
         .ad-link:focus-visible .ad-image-wrap {
           outline: 3px solid var(--rr-navy);
           outline-offset: 2px;
+        }
+        /* Clear "this is an ad" label above the ad image */
+        .ad-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+        }
+        .ad-pill {
+          font-family: var(--font-display);
+          font-weight: 900;
+          font-size: 11px;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: #fff;
+          background: var(--rr-navy);
+          border-radius: var(--rr-radius-pill);
+          padding: 2px 9px;
+          line-height: 1.5;
+        }
+        .ad-label-text {
+          font-family: var(--font-display);
+          font-weight: 800;
+          font-size: 12px;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: var(--rr-navy);
+        }
+        /* Affiliate disclosure — readable, friendly, easy to spot */
+        .ad-disclosure {
+          margin: 8px 0 0;
+          padding: 8px 10px;
+          font-size: 12px;
+          line-height: 1.45;
+          color: var(--rr-navy);
+          text-align: center;
+          background: rgba(255, 255, 255, 0.75);
+          border: 2px dashed rgba(13, 42, 74, 0.25);
+          border-radius: var(--rr-radius-sm);
+        }
+        .ad-disclosure strong {
+          font-weight: 800;
+        }
+        .ad-disclosure-fine {
+          display: block;
+          margin-top: 4px;
+          font-size: 11px;
+          color: rgba(13, 42, 74, 0.75);
         }
 
         @media (min-width: 768px) {
